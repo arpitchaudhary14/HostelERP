@@ -1,0 +1,16 @@
+# Environment and Secrets
+.env
+.env.local
+# Dependency Directories
+/node_modules/
+/vendor/
+/PHPMailer/
+# Python & System Cache
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+.DS_Store
+# User-Generated Content
+/uploads/
+/logs/

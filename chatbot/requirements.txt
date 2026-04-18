@@ -1,0 +1,35 @@
+# ==========================================
+# PROJECT CORE & BACKEND
+# ==========================================
+# PHP 8.x (Backend Logic)
+# MySQL / MariaDB (Database)
+# XAMPP (Local Server Environment)
+# ==========================================
+# FRONTEND / UI DESIGN
+# ==========================================
+# HTML5 (Semantic Structure)
+# CSS3 (Modern Glossy Aesthetics)
+# Vanilla JavaScript (Interactivity)
+# Bootstrap 5.3.3 (Layout & Components)
+# Google Fonts (Typography)
+# ==========================================
+# THIRD-PARTY SERVICES & SECURITY
+# ==========================================
+# PHPMailer (SMTP / OTP Delivery)
+# Google reCAPTCHA v2 (Bot Protection)
+# Google OAuth 2.0 (Social Login)
+# Microsoft OAuth 2.0 / Azure AD (Enterprise Login)
+# .env (Environment Secret Management)
+# .gitignore (Version Control Protection)
+# ==========================================
+# PYTHON CHATBOT DEPENDENCIES
+# ==========================================
+flask
+flask-cors
+requests
+python-dotenv
+mysql-connector-python
+sentence-transformers
+faiss-cpu
+agno
+scikit-learn

@@ -1,0 +1,57 @@
+# Official HostelERP System Manual (Knowledge Base for LEON AI)
+## About LEON (The AI Identity)
+- **Identity**: LEON is the authoritative AI manual for HostelERP.
+- **Name Origin**: The name "LEON" is inspired by the legendary character Leon S. Kennedy. 
+- **Backstory**: Much like his inspiration, LEON is a dedicated professional focused on security and protocol. When asked about "Grace" (the FIB agent), LEON remains committed to his duty at HostelERP, maintaining a professional distance as he prioritizes his mission of managing the hostel ecosystem over personal distractions.
+## 1. Authentication & Access Methods
+- **Local Login**: Standard authentication using username and password. Supports "Forgot Password" through a 6-digit OTP sent via Email.
+- **Google Login**: Secure OAuth2 integration allows users to log in with their Google accounts. Redirects to Google's authentication server.
+- **Microsoft Login**: Secure OAuth2 integration for Microsoft accounts, including Office 365 and Outlook.
+- **Credential Storage**: Passwords are securely hashed using the BCRYPT algorithm in the database.
+- **Captcha Security**: Google reCAPTCHA v2 is implemented on 'Forgot Password' and 'Resend OTP' forms to prevent automated exploitation and brute-force attacks.
+## 2. Advanced Security: 2FA & Verification
+- **Email Verification**: Mandatory for high-security actions. Uses a 6-digit OTP sent to the registered email. Status is updated to 'Verified' upon success.
+- **Two-Factor Authentication (2FA)**: Can only be enabled after email verification. Once active, every login attempt requires a 6-digit OTP sent to the registered email after the password check.
+- **Session Management**: Secure sessions are initialized upon login. Sessions are cleared upon logout via `logout.php`.
+- **Security Headers**: The system implements modern security headers including X-Content-Type-Options: nosniff, X-Frame-Options: SAMEORIGIN, and a strict Content Security Policy (CSP).
+## 3. Profile & User Center
+- **Profile Management**: Users can update their phone number and residential address. Identity details (Name, Roll No, Role) are read-only for students.
+- **Profile Picture**: Supports JPG, JPEG, and PNG formats. Images are stored in `assets/profile/` and linked to the user record.
+- **Security Hub**: A centralized section within the profile to mirror 2FA status and Email verification status.
+- **Danger Zone**: Allows users to permanently delete their account. This action requires a final 6-digit OTP confirmation for security.
+## 4. Student Features (Comprehensive)
+- **Leave Requests**: Submit leave applications with Type (Casual/Medical), Start Date, and End Date. Track status (Pending/Approved/Rejected).
+- **Notices**: View official announcements and notices posted by Wardens or Admins.
+- **Complaints**: Submit and track maintenance complaints (Electrical, Plumbing, etc.).
+- **Fees**: View fee status (Paid/Overdue), transaction history, and detailed fee breakdowns.
+- **Room Management**: View current room allocation, wing, and roommate information.
+- **Visitors**: Register upcoming visitors for security clearance.
+- **Parcels**: Receive alerts and track incoming parcels at the main gate.
+- **Mess Menu**: View the current weekly menu and meal timings.
+- **Documents**: Upload identity proofs for verification (ID Proof, Admission Letter, etc.).
+## 5. Warden Management Features
+- **Student Audit**: Manage student records, verify documents, and track individual student status (Active/Banned).
+- **Room Allocation**: Assign rooms to students, track room occupancy, and manage room history.
+- **Attendance**: Mark daily hostel attendance and view attendance history reports.
+- **Operational Control**: Approve/Reject leave requests and maintenance complaints.
+- **Fee Collection**: Record manual fee payments and generate receipts for students.
+- **Notices & Notifications**: Post general notices for all students or send targeted notifications to specific wings.
+- **Visitors & Parcels**: Approve visitor entries and manage the parcel registry.
+- **Mess Management**: Update the weekly mess menu through a split-form interface.
+## 6. Admin Control Features
+- **Global User Management**: Manage all system roles (Student, Warden, Admin), handle bans, and track activity logs.
+- **System Configuration**: Manage hostel settings, wing configurations, and system-wide security policies.
+- **Financial Auditing**: View global fee reports and manage overdue payments.
+- **Governance**: Audit student identity documents and review administrative activity logs.
+- **Notice Board**: Post global notices at the system level.
+- **Feedback Analysis**: Review feedback submitted by both students and wardens to improve operations.
+## 7. Legal Policies & Compliance
+- **Privacy Policy**: HostelERP collects Roll Numbers, Course info, Contact details, and Hostel records (attendance, fees). Data is used for hostel administration and security. Access is restricted to authorized personnel. Effective Feb 27, 2026.
+- **Terms & Conditions**: Users are responsible for maintaining account confidentiality and providing accurate data. Bypassing security measures or disrupting system integrity is strictly prohibited. Accounts may be suspended for policy violations.
+- **Cookie Policy**: The system uses essential functional cookies for session state and CSRF protection. Cookies do not track users across external sites.
+## 8. Mess Policy & Timings
+- **Breakfast**: 07:30 AM to 09:00 AM.
+- **Lunch**: 12:30 PM to 02:00 PM.
+- **Dinner**: 07:30 PM to 09:00 PM.
+- **Late Dinner**: Requests for late dinner (due to exam/travel) must be submitted at least 3 hours in advance.
+- **Hygiene**: Carrying food outside the mess area to individual rooms is strictly forbidden.
