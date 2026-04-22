@@ -10,7 +10,7 @@ $role = $_SESSION['role'] ?? '';
     <title>HostelERP</title>
     <link rel="icon" type="image/x-icon" href="/WebTechProject/assets/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/WebTechProject/assets/css/style.css">
+    <link rel="stylesheet" href="/WebTechProject/assets/css/style.css?v=<?= time(); ?>">
     <script>
         (function(){
             var t = localStorage.getItem('hostelerp-theme') || 'light';
@@ -49,6 +49,7 @@ HostelERP
 <li><a class="dropdown-item" href="/WebTechProject/student/submit_complaint.php">Submit Complaint</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/student/my_complaints.php">My Complaints</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/student/attendance.php">Attendance</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/student/attendance_correction.php">Correction Request</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/student/fees.php">Fees</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/student/my_room.php">My Room</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/student/feedback.php">Submit Feedback</a></li>
@@ -81,6 +82,11 @@ HostelERP
 <li><a class="dropdown-item" href="/WebTechProject/warden/notices.php">Post Notice</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/warden/feedback.php">Submit Feedback</a></li>
 <li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item" href="/WebTechProject/warden/my_attendance.php">My Attendance</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/warden/leave_request.php">Request Leave</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/warden/my_leaves.php">My Leaves</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/warden/attendance_correction.php">Correction Request</a></li>
+<li><hr class="dropdown-divider"></li>
 <li><a class="dropdown-item" href="/WebTechProject/warden/visitors.php">Manage Visitors</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/warden/parcels.php">Manage Parcels</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/warden/mess_menu.php">Mess Menu</a></li>
@@ -109,6 +115,11 @@ HostelERP
 <li><a class="dropdown-item" href="/WebTechProject/admin/view_feedback.php">View Feedback</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/admin/activity_logs.php">Activity Logs</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/admin/notices.php">Post Notice</a></li>
+<li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item" href="/WebTechProject/admin/mark_warden_attendance.php">Mark Warden Attendance</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/admin/warden_attendance.php">Warden Attendance</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/admin/manage_warden_leaves.php">Warden Leaves</a></li>
+<li><a class="dropdown-item" href="/WebTechProject/admin/manage_corrections.php">Attendance Corrections</a></li>
 <li><hr class="dropdown-divider"></li>
 <li><a class="dropdown-item" href="/WebTechProject/admin/visitors_records.php">Visitor Records</a></li>
 <li><a class="dropdown-item" href="/WebTechProject/admin/parcels_records.php">Parcel Records</a></li>

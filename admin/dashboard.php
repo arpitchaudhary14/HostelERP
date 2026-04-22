@@ -61,7 +61,22 @@ $attendance = mysqli_fetch_assoc(mysqli_query($conn,"
     SUM(status='absent') as absent,
     SUM(status='leave') as leave_days
     FROM attendance
+    WHERE user_id IN (SELECT id FROM users WHERE role='student')
 "));
+$warden_attendance = mysqli_fetch_assoc(mysqli_query($conn,"
+    SELECT 
+    SUM(status='present') as present,
+    SUM(status='absent') as absent,
+    SUM(status='leave') as leave_days
+    FROM attendance
+    WHERE user_id IN (SELECT id FROM users WHERE role='warden')
+"));
+$pending_corrections = mysqli_fetch_assoc(
+    mysqli_query($conn, "SELECT COUNT(*) as total FROM attendance_corrections WHERE status='Pending'")
+)['total'] ?? 0;
+$pending_warden_leaves = mysqli_fetch_assoc(
+    mysqli_query($conn, "SELECT COUNT(*) as total FROM warden_leave_requests WHERE status='Pending'")
+)['total'] ?? 0;
 ?>
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
@@ -90,6 +105,21 @@ $attendance = mysqli_fetch_assoc(mysqli_query($conn,"
 </div>
 </div>
 <div class="row g-4 mb-4">
+<div class="col-md-3 reveal">
+<div class="stat-card stat-primary">
+<h5>Warden Leaves</h5>
+<h2 class="text-gradient" data-count="<?= $pending_warden_leaves ?>"><?= $pending_warden_leaves ?></h2>
+<small style="color:#888;">Pending</small>
+</div>
+</div>
+<div class="col-md-3 reveal">
+<div class="stat-card stat-danger">
+<h5>Corrections</h5>
+<h2 style="color:var(--accent-danger);" data-count="<?= $pending_corrections ?>"><?= $pending_corrections ?></h2>
+<small style="color:#888;">Pending</small>
+</div>
+</div>
+<div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
 <h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Fees Collection</h6>
@@ -104,8 +134,16 @@ $attendance = mysqli_fetch_assoc(mysqli_query($conn,"
 </div>
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Attendance</h6>
+<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Student Attendance</h6>
 <canvas id="attendanceChart"></canvas>
+</div>
+</div>
+</div>
+<div class="row g-4 mb-4">
+<div class="col-md-4 reveal">
+<div class="glass-card-light" style="padding:var(--space-lg);">
+<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Warden Attendance</h6>
+<canvas id="wardenAttendanceChart"></canvas>
 </div>
 </div>
 </div>
@@ -173,6 +211,29 @@ new Chart(document.getElementById('attendanceChart'), {
                 'rgba(0, 230, 118, 0.8)',
                 'rgba(255, 82, 82, 0.8)',
                 'rgba(64, 196, 255, 0.8)'
+            ],
+            borderWidth: 0,
+            cutout: '65%'
+        }]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+new Chart(document.getElementById('wardenAttendanceChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Present','Absent','Leave'],
+        datasets: [{
+            data: [
+                <?= $warden_attendance['present'] ?? 0 ?>,
+                <?= $warden_attendance['absent'] ?? 0 ?>,
+                <?= $warden_attendance['leave_days'] ?? 0 ?>
+            ],
+            backgroundColor: [
+                'rgba(108, 99, 255, 0.8)',
+                'rgba(255, 171, 64, 0.8)',
+                'rgba(0, 230, 118, 0.8)'
             ],
             borderWidth: 0,
             cutout: '65%'

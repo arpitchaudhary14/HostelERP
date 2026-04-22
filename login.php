@@ -146,6 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="button" class="eye-toggle" id="loginEyeToggle" aria-label="Toggle password visibility"></button>
                 </div>
             </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe" style="font-size: 0.9rem; color: var(--text-muted-light);">
+                        Remember Me
+                    </label>
+                </div>
+            </div>
             <button type="submit" name="login" id="loginBtn" class="btn-gradient" disabled>
                 Login
             </button>
@@ -191,12 +199,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameIn   = document.getElementById('loginUsername');
     const passwordIn   = document.getElementById('loginPassword');
     const eyeToggleBtn = document.getElementById('loginEyeToggle');
+    const rememberMeCheck = document.getElementById('rememberMe');
     Validator.attachLiveValidation(usernameIn, { required: true, minLen: 3 });
     Validator.attachLiveValidation(passwordIn, { required: true, minLen: 1 });
     const checkBtn = () => {
         loginBtn.disabled = !(usernameIn.value.trim().length >= 3 && passwordIn.value.length >= 1);
     };
     loginForm.addEventListener('input', checkBtn);
+    let savedCreds = JSON.parse(localStorage.getItem('hostelerp_creds') || '{}');
+    usernameIn.addEventListener('input', function() {
+        if (savedCreds[this.value] && rememberMeCheck.checked) {
+            passwordIn.value = savedCreds[this.value];
+            checkBtn();
+        }
+    });
+    loginForm.addEventListener('submit', function() {
+        if (rememberMeCheck.checked) {
+            savedCreds[usernameIn.value] = passwordIn.value;
+            localStorage.setItem('hostelerp_last_user', usernameIn.value);
+        } else {
+            delete savedCreds[usernameIn.value];
+        }
+        localStorage.setItem('hostelerp_creds', JSON.stringify(savedCreds));
+        localStorage.setItem('hostelerp_remember', rememberMeCheck.checked);
+    });
+    if (localStorage.getItem('hostelerp_remember') === 'true') {
+        rememberMeCheck.checked = true;
+        let lastUser = localStorage.getItem('hostelerp_last_user');
+        if (lastUser && savedCreds[lastUser]) {
+            usernameIn.value = lastUser;
+            passwordIn.value = savedCreds[lastUser];
+            checkBtn();
+        }
+    }
     const autofillTimer = setInterval(() => {
         if (usernameIn.value.length > 0 && passwordIn.value.length > 0) {
             loginBtn.disabled = false;

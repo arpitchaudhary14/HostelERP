@@ -21,12 +21,28 @@ through a centralized digital platform.
 <div class="col-md-3 mb-4">
 <h6>Features</h6>
 <ul class="list-unstyled" style="color: var(--text-muted-light);">
-<?php $f_link = isset($_SESSION['user_id']) ? '' : '/WebTechProject/login.php'; ?>
+<?php 
+$f_link = isset($_SESSION['user_id']) ? '' : '/WebTechProject/login.php'; 
+$f_role = $_SESSION['role'] ?? 'guest';
+?>
+<?php if ($f_role === 'warden'): ?>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/my_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Attendance</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/mark_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Mark Attendance</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/attendance_correction.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Corrections</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/my_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Leaves</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/leave_requests.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Student Leaves</a></li>
+<?php elseif ($f_role === 'admin'): ?>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/warden_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Warden Attendance</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_warden_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Leaves</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_corrections.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Corrections</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_users.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">User Management</a></li>
+<?php else: ?>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/my_room.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Room Management</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/submit_complaint.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Complaints System</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/leave_request.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Leave Requests</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Attendance Tracking</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/fees.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Fees Management</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/student/attendance_correction.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Corrections</a></li>
+<?php endif; ?>
 </ul>
 </div>
 <div class="col-md-3 mb-4">

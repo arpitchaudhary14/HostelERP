@@ -1,9 +1,11 @@
 # HostelERP
 A full-stack hostel management system with an AI assistant to automate student and administrative tasks.
 ## Key Features
-*   **Role-Based Access**: Specialized portals for Admins, Wardens, and Students.
-*   **Secure Authentication**: Includes Google/Microsoft Login, 2FA (Email), and reCAPTCHA protection.
-*   **Operational Tools**: Manage rooms, fees, attendance, and digital documents.
+*   **Role-Based Access**: Specialized portals for Admins, Wardens, and Students with dynamic role-based navigation.
+*   **Secure Authentication**: Includes Google/Microsoft Login, 2FA (Email), reCAPTCHA protection, and Multi-account 'Remember Me' for easy testing.
+*   **Operational Tools**: Manage rooms, fees, student attendance, and digital documents.
+*   **Warden Self-Service**: Wardens can track their own attendance, apply for leaves, and request attendance corrections.
+*   **Attendance Corrections**: Multi-tier approval system where Admins oversee Warden corrections and Wardens oversee Student corrections.
 *   **Logistics Tracking**: Dedicated modules for managing visitor records and student parcels.
 *   **Student Life Tools**: Real-time mess menu management, notifications, and feedback.
 *   **Data Export**: Quickly export student records to CSV for reporting.
@@ -27,10 +29,10 @@ The project features a context-aware AI bot called **LEON**, which uses:
 4.  **Run**: Start your XAMPP server (Apache/MySQL) and run `python main.py` inside the `chatbot/` directory.
 ---
 ### Admin Panel
-User management with role control and account actions.
+User management with role control, warden attendance tracking, and attendance correction overrides (God Mode).
 ![Admin](assets/screenshots/admin_users.png)
 ### Warden Panel
-Room allocation and hostel operations management.
+Room allocation, hostel operations management, and personal self-service (attendance/leaves).
 ![Warden](assets/screenshots/warden_rooms.png)
 ### Student Panel
 Leave requests and status tracking.

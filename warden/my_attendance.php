@@ -1,7 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'student'){
+if($_SESSION['role'] != 'warden'){
     header("Location: ../dashboard.php");
     exit();
 }
@@ -24,7 +24,7 @@ $today = date('Y-m-d');
 include("../header.php");
 ?>
 <div class="container mt-4">
-    <h3 class="mb-2">My Attendance</h3>
+    <h3 class="mb-2" style="font-weight:700; color:#1a1a2e;">📊 My Attendance</h3>
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="stat-card stat-success text-center">
@@ -67,13 +67,9 @@ include("../header.php");
                             <td><?= htmlspecialchars($row['date']) ?></td>
                             <td>
                                 <?php
-                                    if($row['status']==='present'){
-                                        echo "<span class='badge bg-success'>Present</span>";
-                                    } elseif($row['status']==='absent'){
-                                        echo "<span class='badge bg-danger'>Absent</span>";
-                                    } else {
-                                        echo "<span class='badge bg-warning text-dark'>On Leave</span>";
-                                    }
+                                    if($row['status']==='present') echo "<span class='badge bg-success'>Present</span>";
+                                    elseif($row['status']==='absent') echo "<span class='badge bg-danger'>Absent</span>";
+                                    else echo "<span class='badge bg-warning text-dark'>On Leave</span>";
                                 ?>
                             </td>
                             <td>

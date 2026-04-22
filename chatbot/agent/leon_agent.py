@@ -10,6 +10,8 @@ def process_action(user_id, query):
         '{"action": "apply_leave", "data": {"from_date": "YYYY-MM-DD", "to_date": "YYYY-MM-DD", "reason": "sick leave"}} '
         "OR "
         '{"action": "submit_complaint", "data": {"subject": "...", "message": "..."}} '
+        "OR "
+        '{"action": "request_correction", "data": {"date": "YYYY-MM-DD", "current_status": "Absent", "requested_status": "Present", "reason": "..."}} '
         "If you cannot detect the action, return: "
         '{"action": "unknown", "data": {}}'
     )
@@ -38,6 +40,16 @@ def process_action(user_id, query):
                 reply_message = f"Your complaint '{subject}' has been registered successfully."
             else:
                 reply_message = f"Failed to submit complaint: {res.get('error')}"
+        elif action_type == "request_correction":
+            date = payload.get("date")
+            current_status = payload.get("current_status")
+            requested_status = payload.get("requested_status")
+            reason = payload.get("reason")
+            res = db.insert_correction(user_id, date, current_status, requested_status, reason)
+            if res.get("success"):
+                reply_message = f"Your attendance correction request for {date} has been submitted successfully."
+            else:
+                reply_message = f"Failed to submit correction request: {res.get('error')}"
         else:
             reply_message = "I couldn't quite understand what action you want to take. Could you be more specific?"
         return reply_message

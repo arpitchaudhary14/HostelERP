@@ -61,7 +61,14 @@ $attendance = mysqli_fetch_assoc(mysqli_query($conn,"
     SUM(status='absent') as absent,
     SUM(status='leave') as leave_days
     FROM attendance
+    WHERE user_id IN (SELECT id FROM users WHERE role='student')
 "));
+// Warden's own attendance
+$my_att = mysqli_fetch_assoc(mysqli_query($conn,
+    "SELECT SUM(status='present') as p, SUM(status='absent') as a, SUM(status='leave') as l, COUNT(*) as t FROM attendance WHERE user_id=$user_id"
+));
+$my_p = intval($my_att['p'] ?? 0); $my_a = intval($my_att['a'] ?? 0); $my_l = intval($my_att['l'] ?? 0); $my_t = intval($my_att['t'] ?? 0);
+$my_pct = $my_t > 0 ? round(($my_p/$my_t)*100) : 0;
 ?>
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
@@ -106,6 +113,40 @@ $attendance = mysqli_fetch_assoc(mysqli_query($conn,"
 <div class="glass-card-light" style="padding:var(--space-lg);">
 <h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Attendance</h6>
 <canvas id="attendanceChart"></canvas>
+</div>
+</div>
+</div>
+</div>
+<!-- Warden's own attendance summary -->
+<div class="row g-4 mb-4">
+<div class="col-12 reveal">
+<div class="glass-card-light" style="padding:var(--space-lg);">
+<h6 style="font-weight:600; color:#1a1a2e; margin-bottom:16px;">📊 My Attendance</h6>
+<div class="row g-3">
+<div class="col-md-3">
+    <div class="text-center">
+        <span class="badge bg-success" style="font-size:1.5rem; padding:12px 20px;"><?= $my_p ?></span>
+        <p style="color:#666; margin-top:8px; font-size:0.85rem;">Present</p>
+    </div>
+</div>
+<div class="col-md-3">
+    <div class="text-center">
+        <span class="badge bg-danger" style="font-size:1.5rem; padding:12px 20px;"><?= $my_a ?></span>
+        <p style="color:#666; margin-top:8px; font-size:0.85rem;">Absent</p>
+    </div>
+</div>
+<div class="col-md-3">
+    <div class="text-center">
+        <span class="badge bg-warning text-dark" style="font-size:1.5rem; padding:12px 20px;"><?= $my_l ?></span>
+        <p style="color:#666; margin-top:8px; font-size:0.85rem;">On Leave</p>
+    </div>
+</div>
+<div class="col-md-3">
+    <div class="text-center">
+        <span class="badge bg-primary" style="font-size:1.5rem; padding:12px 20px;"><?= $my_pct ?>%</span>
+        <p style="color:#666; margin-top:8px; font-size:0.85rem;">Attendance</p>
+    </div>
+</div>
 </div>
 </div>
 </div>

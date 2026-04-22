@@ -7,6 +7,8 @@
 /PHPMailer/
 # Python & System Cache
 __pycache__/
+venv/
+env/
 .pytest_cache/
 *.pyc
 *.log

@@ -235,3 +235,27 @@ CREATE TABLE IF NOT EXISTS documents (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
 );
+CREATE TABLE IF NOT EXISTS warden_leave_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    warden_id INT NOT NULL,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    reason TEXT,
+    status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (warden_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS attendance_corrections (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    role ENUM('student','warden') NOT NULL,
+    date DATE NOT NULL,
+    current_status ENUM('present','absent','leave') NOT NULL,
+    requested_status ENUM('present','absent','leave') NOT NULL,
+    reason TEXT NOT NULL,
+    status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
+    reviewed_by INT NULL,
+    reviewed_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

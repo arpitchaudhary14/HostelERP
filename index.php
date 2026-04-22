@@ -13,13 +13,17 @@
         <p class="lead mt-3" style="max-width:600px;">
             A complete digital platform for hostel administration — manage rooms, attendance, fees, complaints, and more with ease.
         </p>
-        <div class="mt-4 hero-search">
+        <div class="mt-4 hero-search" id="heroSearchWrap">
             <input
                 type="text"
                 id="globalSearch"
                 placeholder="🔍 Search pages, features, rooms, complaints..."
-                onkeydown="handleGlobalSearch(event)"
+                autocomplete="off"
             >
+            <button type="button" class="hero-search-btn" id="searchBtn" title="Search" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <div class="hero-search-dropdown" id="searchDropdown"></div>
         </div>
         <div class="mt-4 hero-btns" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
             <a href="login.php" class="btn-hero-primary">
@@ -87,9 +91,9 @@
             <div class="col-md-4 mb-4 reveal">
                 <a href="<?= $link_prefix ?: 'dashboard.php' ?>" style="text-decoration:none;">
                 <div class="feature-card">
-                    <div class="feature-icon-wrap">📊</div>
-                    <h5>Analytics & Reports</h5>
-                    <p>Generate detailed reports, charts, and analytics for administration.</p>
+                    <div class="feature-icon-wrap">🤖</div>
+                    <h5>AI Assistant (LEON)</h5>
+                    <p>Automate tasks, apply for leaves, and get instant answers using natural language.</p>
                 </div>
                 </a>
             </div>
@@ -177,7 +181,7 @@
                 </h2>
                 <div id="faq3" class="accordion-collapse collapse">
                     <div class="accordion-body">
-                        Yes, HostelERP implements password hashing, session management, role-based access control, and OAuth2 authentication (Google & Microsoft) to ensure data security.
+                        Yes, HostelERP implements password hashing, session management, role-based access control, Two-Factor Authentication (2FA), reCAPTCHA protection, and OAuth2 authentication (Google & Microsoft) to ensure maximum data security.
                     </div>
                 </div>
             </div>
@@ -190,6 +194,18 @@
                 <div id="faq4" class="accordion-collapse collapse">
                     <div class="accordion-body">
                         Absolutely! HostelERP is built with a fully responsive design that works beautifully on smartphones, tablets, and desktops.
+                    </div>
+                </div>
+        </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        Does HostelERP have an AI Assistant?
+                    </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        Yes! HostelERP comes with a smart AI assistant named LEON. LEON can instantly answer questions about hostel policies, fetch your personal data, and even perform actions like applying for leaves directly through chat.
                     </div>
                 </div>
             </div>
@@ -306,28 +322,109 @@ function saveCookieSettings(){
     let modal=bootstrap.Modal.getInstance(document.getElementById("cookieSettingsModal"));
     modal.hide();
 }
-function handleGlobalSearch(event){
-    if(event.key !== 'Enter') return;
-    let input = document.getElementById("globalSearch").value.toLowerCase().trim();
-    if(!input) return;
-    const routes={
-        "login":"login.php",
-        "register":"register.php",
-        "contact":"contact.php",
-        "leave":"student/leave_request.php",
-        "complaint":"student/submit_complaint.php",
-        "attendance":"student/attendance.php",
-        "fees":"student/fees.php",
-        "profile":"profile.php",
-        "room":"student/my_room.php",
-        "dashboard":"dashboard.php"
-    };
-    for(let key in routes){
-        if(input.includes(key)){
-            window.location.href = routes[key];
-            return;
-        }
-    }
+const searchRoutes = [
+    { keywords: ["login", "sign in", "signin"], label: "Login", desc: "Sign in to your account", icon: "🔑", url: "login.php" },
+    { keywords: ["register", "sign up", "signup", "create account"], label: "Register", desc: "Create a new account", icon: "📝", url: "register.php" },
+    { keywords: ["contact", "support", "help"], label: "Contact Us", desc: "Get in touch with support", icon: "📞", url: "contact.php" },
+    { keywords: ["leave", "leave request", "apply leave"], label: "Leave Request", desc: "Apply for hostel leave", icon: "📅", url: "student/leave_request.php" },
+    { keywords: ["complaint", "submit complaint", "grievance", "issue"], label: "Submit Complaint", desc: "File a new complaint", icon: "📋", url: "student/submit_complaint.php" },
+    { keywords: ["attendance", "present", "absent"], label: "Attendance", desc: "View attendance records", icon: "✅", url: "student/attendance.php" },
+    { keywords: ["fees", "payment", "hostel fees", "pay"], label: "Fees", desc: "View and manage hostel fees", icon: "💰", url: "student/fees.php" },
+    { keywords: ["profile", "my profile", "account", "settings"], label: "Profile", desc: "View and edit your profile", icon: "👤", url: "profile.php" },
+    { keywords: ["room", "my room", "room details", "hostel room"], label: "My Room", desc: "View room assignment details", icon: "🏠", url: "student/my_room.php" },
+    { keywords: ["dashboard", "home", "overview", "panel"], label: "Dashboard", desc: "Your main dashboard", icon: "📊", url: "dashboard.php" },
+    { keywords: ["notice", "notices", "announcement", "alert"], label: "Notices", desc: "View hostel notices & alerts", icon: "📢", url: "student/notices.php" },
+    { keywords: ["feedback", "review", "rate"], label: "Submit Feedback", desc: "Share your feedback", icon: "💬", url: "student/feedback.php" },
+    { keywords: ["visitor", "visitors", "guest"], label: "Visitors", desc: "View visitor information", icon: "🧑‍🤝‍🧑", url: "student/visitors.php" },
+    { keywords: ["parcel", "parcels", "delivery", "package"], label: "Parcels", desc: "Track your parcels", icon: "📦", url: "student/parcels.php" },
+    { keywords: ["mess", "mess menu", "food", "canteen", "menu"], label: "Mess Menu", desc: "View weekly mess menu", icon: "🍽️", url: "student/mess_menu.php" },
+    { keywords: ["notification", "notifications", "bell"], label: "Notifications", desc: "View your notifications", icon: "🔔", url: "student/notifications.php" },
+    { keywords: ["document", "documents", "upload", "certificate"], label: "Documents", desc: "Manage your documents", icon: "📄", url: "student/documents.php" },
+    { keywords: ["forgot", "forgot password", "reset password", "password"], label: "Forgot Password", desc: "Reset your password", icon: "🔒", url: "forgot_password.php" },
+    { keywords: ["chatbot", "leon", "ai", "chat", "bot", "assistant"], label: "LEON Chatbot", desc: "Ask the AI assistant", icon: "🤖", url: "chatbot_ui.php" }
+];
+const searchInput  = document.getElementById("globalSearch");
+const searchDrop   = document.getElementById("searchDropdown");
+const searchBtn    = document.getElementById("searchBtn");
+let activeIdx = -1;
+function filterRoutes(q) {
+    if (!q) return [];
+    return searchRoutes.filter(r =>
+        r.keywords.some(k => k.includes(q)) ||
+        r.label.toLowerCase().includes(q) ||
+        r.desc.toLowerCase().includes(q)
+    );
 }
+function renderDropdown(results, q) {
+    if (!q) { searchDrop.innerHTML = ""; searchDrop.classList.remove("open"); activeIdx = -1; return; }
+    if (results.length === 0) {
+        searchDrop.innerHTML = '<div class="search-no-result">No results for "<strong>' + q.replace(/</g,"&lt;") + '</strong>"</div>';
+        searchDrop.classList.add("open");
+        activeIdx = -1;
+        return;
+    }
+    searchDrop.innerHTML = results.map((r, i) =>
+        '<a href="' + r.url + '" class="search-item' + (i === activeIdx ? ' active' : '') + '" data-idx="' + i + '">' +
+            '<span class="search-item-icon">' + r.icon + '</span>' +
+            '<span class="search-item-text"><span class="search-item-label">' + r.label + '</span><span class="search-item-desc">' + r.desc + '</span></span>' +
+            '<span class="search-item-arrow">→</span>' +
+        '</a>'
+    ).join("");
+    searchDrop.classList.add("open");
+}
+function doSearch() {
+    let q = searchInput.value.toLowerCase().trim();
+    let results = filterRoutes(q);
+    activeIdx = -1;
+    renderDropdown(results, q);
+}
+searchInput.addEventListener("input", doSearch);
+searchInput.addEventListener("focus", doSearch);
+searchInput.addEventListener("keydown", function(e) {
+    let items = searchDrop.querySelectorAll(".search-item");
+    if (items.length === 0 && e.key === "Enter") {
+        doSearch();
+        return;
+    }
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        activeIdx = (activeIdx + 1) % items.length;
+        items.forEach((it, i) => it.classList.toggle("active", i === activeIdx));
+        items[activeIdx]?.scrollIntoView({ block: "nearest" });
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        activeIdx = (activeIdx - 1 + items.length) % items.length;
+        items.forEach((it, i) => it.classList.toggle("active", i === activeIdx));
+        items[activeIdx]?.scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (activeIdx >= 0 && items[activeIdx]) {
+            window.location.href = items[activeIdx].getAttribute("href");
+        } else if (items.length > 0) {
+            window.location.href = items[0].getAttribute("href");
+        }
+    } else if (e.key === "Escape") {
+        searchDrop.innerHTML = "";
+        searchDrop.classList.remove("open");
+        activeIdx = -1;
+    }
+});
+searchBtn.addEventListener("click", function() {
+    let q = searchInput.value.toLowerCase().trim();
+    let results = filterRoutes(q);
+    if (results.length > 0) {
+        window.location.href = results[0].url;
+    } else {
+        doSearch();
+        searchInput.focus();
+    }
+});
+document.addEventListener("click", function(e) {
+    if (!document.getElementById("heroSearchWrap").contains(e.target)) {
+        searchDrop.innerHTML = "";
+        searchDrop.classList.remove("open");
+        activeIdx = -1;
+    }
+});
 </script>
 <?php include("footer.php"); ?>

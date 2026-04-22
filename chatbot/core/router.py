@@ -10,14 +10,18 @@ def classify_intent(query):
       - "apply", "submit", "register", "request" -> action
     """
     query_lower = query.lower()
+    question_phrases = ["how to", "how do i", "how can i", "what is", "where is", "can you tell me", "can i", "do i"]
+    for qp in question_phrases:
+        if qp in query_lower:
+            return "INFO"
     action_keywords = [
         "apply", "submit", "register", "request", "create", 
         "post", "verify", "assign", "collect", "delete", 
-        "upload", "update", "mark", "approve", "reject", "change"
+        "upload", "update", "mark", "approve", "reject", "change", "correct", "fix"
     ]
     data_keywords = [
         "my", "fees", "room", "attendance", "profile", "complaints", 
-        "leave status", "history", "records", "documents", "picture", "logs"
+        "leave status", "history", "records", "documents", "picture", "logs", "correction", "corrections"
     ]
     info_keywords = [
         "policy", "rules", "timings", "menu", "curfew", "warden", 

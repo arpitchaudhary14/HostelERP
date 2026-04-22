@@ -30,20 +30,37 @@ def get_user_data(user_id):
     data['fees'] = cursor.fetchall()
     cursor.execute("SELECT subject, status, created_at FROM complaints WHERE student_id = %s ORDER BY created_at DESC LIMIT 3", (user_id,))
     data['complaints'] = cursor.fetchall()
-    cursor.execute("SELECT from_date, to_date, reason, status FROM leave_requests WHERE student_id = %s ORDER BY created_at DESC LIMIT 3", (user_id,))
+    role = user.get('role', 'student')
+    if role == 'warden':
+        cursor.execute("SELECT from_date, to_date, reason, status FROM warden_leave_requests WHERE warden_id = %s ORDER BY created_at DESC LIMIT 3", (user_id,))
+    else:
+        cursor.execute("SELECT from_date, to_date, reason, status FROM leave_requests WHERE student_id = %s ORDER BY created_at DESC LIMIT 3", (user_id,))
     data['leaves'] = cursor.fetchall()
+    cursor.execute("SELECT date, status, marked_by FROM attendance WHERE user_id = %s ORDER BY date DESC LIMIT 5", (user_id,))
+    data['attendance'] = cursor.fetchall()
+    cursor.execute("SELECT date, current_status, requested_status, status FROM attendance_corrections WHERE user_id = %s ORDER BY created_at DESC LIMIT 3", (user_id,))
+    data['corrections'] = cursor.fetchall()
     cursor.close()
     conn.close()
     return data
 def insert_leave(user_id, from_date, to_date, reason):
     """Insert a leave request into the database"""
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute(
-            "INSERT INTO leave_requests (student_id, from_date, to_date, reason, status) VALUES (%s, %s, %s, %s, 'Pending')",
-            (user_id, from_date, to_date, reason)
-        )
+        cursor.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        role = user['role'] if user else 'student'
+        if role == 'warden':
+            cursor.execute(
+                "INSERT INTO warden_leave_requests (warden_id, from_date, to_date, reason, status) VALUES (%s, %s, %s, %s, 'Pending')",
+                (user_id, from_date, to_date, reason)
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO leave_requests (student_id, from_date, to_date, reason, status) VALUES (%s, %s, %s, %s, 'Pending')",
+                (user_id, from_date, to_date, reason)
+            )
         conn.commit()
         return {"success": True, "message": "Leave request submitted successfully."}
     except Exception as e:
@@ -62,6 +79,22 @@ def insert_complaint(user_id, subject, message):
         )
         conn.commit()
         return {"success": True, "message": "Complaint registered successfully."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
+def insert_correction(user_id, date, current_status, requested_status, reason):
+    """Insert an attendance correction request into the database"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO attendance_corrections (user_id, date, current_status, requested_status, reason, status) VALUES (%s, %s, %s, %s, %s, 'Pending')",
+            (user_id, date, current_status, requested_status, reason)
+        )
+        conn.commit()
+        return {"success": True, "message": "Attendance correction request submitted successfully."}
     except Exception as e:
         return {"success": False, "error": str(e)}
     finally:
