@@ -18,7 +18,7 @@ A full-stack hostel management system with an AI assistant to automate student a
 *   **Premium Email Templates**: Upgraded all system emails to high-end, branded HTML templates.
 *   **Defense in Depth**: Hardened the entire backend with 100% Prepared Statements, CSRF validation, and Session AFK auto-logout.
 ### Recent UI Enhancements
-*   **Done some changes in the Dashboard, Profile and OTP System UI Pages.
+* Done some changes in the Dashboard, Profile and OTP System UI Pages.
 ## Tech Stack
 *   **Backend**: PHP 8 (Logic), MySQL (Database)
 *   **Frontend**: HTML5, Vanilla CSS, JavaScript, Bootstrap 5
