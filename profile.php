@@ -117,11 +117,9 @@ if(isset($_POST['confirm_email_verification'])){
         $upd_v = mysqli_prepare($conn, "UPDATE users SET is_verified=1 WHERE id=?");
         mysqli_stmt_bind_param($upd_v, "i", $user_id);
         mysqli_stmt_execute($upd_v);
-        
         $del_o = mysqli_prepare($conn, "DELETE FROM otp_codes WHERE email=? AND type='email_verification'");
         mysqli_stmt_bind_param($del_o, "s", $user['email']);
         mysqli_stmt_execute($del_o);
-        
         $success = "Email verified successfully!";
         $stmt2 = mysqli_prepare($conn, "SELECT * FROM users WHERE id=?");
         mysqli_stmt_bind_param($stmt2, "i", $user_id);
@@ -151,8 +149,10 @@ if (empty(trim($full_name))) $full_name = $user['full_name'] ?? 'User';
 include("header.php");
 ?>
 <div class="container mt-4 page-fade-in" style="max-width:700px;">
-<h4 class="mb-2 reveal" style="font-weight:700; color:#1a1a2e;">My Profile</h4>
-<p class="mb-4 reveal" style="color:#666;">Manage your account settings</p>
+<div class="section-header-elite">
+    <h3>Profile Settings</h3>
+    <p>Manage your account security and personal details</p>
+</div>
 <?php if(isset($success)) echo "<div class='alert alert-success' style='border-radius:var(--radius-sm);'>$success</div>"; ?>
 <?php if(isset($error)) echo "<div class='alert alert-danger' style='border-radius:var(--radius-sm);'>$error</div>"; ?>
 <div class="glass-card-light mb-4 text-center reveal">
@@ -234,8 +234,8 @@ Change Password
             <small class="text-muted">Required for high-security actions</small>
         </div>
         <div>
-            <?php if(isset($user['is_verified']) && $user['is_verified']): ?>
-                <span class="badge bg-success py-2 px-3">Verified</span>
+            <?php if($user['is_verified']): ?>
+                <span class="status-pill verified">Verified</span>
             <?php else: ?>
                 <?php if(isset($show_email_verify) && $show_email_verify): ?>
                     <form method="POST" class="d-flex flex-column align-items-end">
@@ -244,10 +244,12 @@ Change Password
                             <input type="text" name="email_otp" id="emailVerifyOtpIn" class="form-input-light form-control-sm me-2" style="width:100px;" placeholder="OTP Code" required pattern="[0-9]{6}">
                             <button class="btn btn-sm btn-success" name="confirm_email_verification" id="emailVerifyConfirmBtn">Verify</button>
                         </div>
-                        <small style="font-size:0.85rem; color:#495057; font-weight:700; margin-top:5px;">⏱️ Expires: <strong id="emailVerifyExpiryTimer" class="text-primary">02:00</strong></small>
+                        <div id="emailVerifyExpiryTimerWrapper" class="timer-pill" style="transform: scale(0.8); margin-top:-5px;">
+                            ⏱️ Expires: <strong id="emailVerifyExpiryTimer">02:00</strong>
+                        </div>
                     </form>
                 <?php else: ?>
-                    <span class="badge bg-danger mb-2 d-block w-100">Unverified</span>
+                    <span class="status-pill unverified">Unverified</span>
                     <form method="POST">
                         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <button class="btn btn-sm btn-outline-primary w-100" name="request_email_verification">Verify Email</button>
@@ -261,16 +263,12 @@ Change Password
             <h6 class="mb-1" style="font-weight:600;">Two-Factor Authentication (2FA)</h6>
             <small class="text-muted">Protects your login with an active email OTP</small>
         </div>
-        <div>
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                <?php if(isset($user['two_factor_enabled']) && $user['two_factor_enabled']): ?>
-                    <button class="btn btn-sm btn-danger" name="toggle_2fa">Disable 2FA</button>
-                <?php else: ?>
-                    <button class="btn btn-sm btn-success" name="toggle_2fa" <?= (isset($user['is_verified']) && $user['is_verified'] ? '' : 'disabled title="Verify email first"') ?>>Enable 2FA</button>
-                <?php endif; ?>
-            </form>
-        </div>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+            <button type="submit" name="toggle_2fa" class="status-pill <?= $user['two_factor_enabled'] ? 'verified' : 'unverified' ?>" style="cursor:pointer; border:none; outline:none;">
+                <?= $user['two_factor_enabled'] ? 'Enabled' : 'Disabled' ?>
+            </button>
+        </form>
     </div>
 </div>
 <div class="glass-card-light reveal mt-4" style="border: 1px solid rgba(255, 0, 0, 0.2);">
@@ -282,8 +280,10 @@ Change Password
         <div class="mb-3">
             <label style="font-weight:500; color:#d32f2f; font-size:0.88rem;">Enter OTP sent to <?php echo htmlspecialchars($user['email']); ?></label>
             <input type="text" name="delete_otp" id="deleteOtpIn" class="form-input-light" placeholder="6-digit code" required pattern="[0-9]{6}">
-            <div class="mt-2" style="font-size: 0.9rem; color: #d32f2f; font-weight: 700; display: flex; align-items: center; gap: 5px;">
-                ⏱️ Code expires in: <strong id="deleteExpiryTimer" style="font-size: 1.05rem;">02:00</strong>
+            <div class="mt-3 d-flex justify-content-center">
+                <div id="deleteExpiryTimerWrapper" class="timer-pill warning">
+                    ⏱️ Code expires in: <strong id="deleteExpiryTimer">02:00</strong>
+                </div>
             </div>
         </div>
         <button class="btn btn-danger w-100" name="confirm_delete_account" id="deleteConfirmBtn" style="font-weight:600; padding:10px;">
@@ -327,15 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         function tick() {
             let remaining = Math.max(0, Math.floor((stored - Date.now()) / 1000));
+            const wrapper = document.getElementById(displayId + 'Wrapper');
             if(remaining > 0) {
                 let m = Math.floor(remaining / 60).toString().padStart(2, '0');
                 let s = (remaining % 60).toString().padStart(2, '0');
                 display.textContent = `${m}:${s}`;
-                if(remaining <= 30) display.style.color = '#ff5252';
+                if(remaining <= 30 && wrapper) wrapper.classList.add('warning');
                 setTimeout(tick, 1000);
             } else {
                 display.textContent = "EXPIRED";
-                display.style.color = '#ff5252';
+                if(wrapper) wrapper.classList.add('warning');
                 if(input) input.disabled = true;
                 if(btn) btn.disabled = true;
                 sessionStorage.removeItem(key);

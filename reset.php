@@ -116,8 +116,10 @@ if(isset($_POST['reset'])){
                     <span class="validation-icon icon-valid">✅</span>
                     <span class="validation-icon icon-invalid">❌</span>
                 </div>
-                <div class="otp-expiry-info mt-2" style="font-size: 0.95rem; color: #495057; display: flex; align-items: center; gap: 6px; font-weight: 600;">
-                    <span>⏱️ Code expires in: <strong id="otpExpiryTimer" class="text-primary" style="font-size: 1.1rem;">02:00</strong></span>
+                <div class="otp-expiry-info mt-3 d-flex align-items-center justify-content-center">
+                    <div id="otpExpiryTimerWrapper" class="timer-pill">
+                        ⏱️ Code expires in: <strong id="otpExpiryTimer">02:00</strong>
+                    </div>
                 </div>
             </div>
             <div class="field-group">
@@ -203,20 +205,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateExpiryTimer() {
         if(!storedExpiry || !otpExpiryTimer) return;
         let remaining = Math.max(0, Math.floor((storedExpiry - Date.now()) / 1000));
+        const wrapper = document.getElementById('otpExpiryTimerWrapper');
         if(remaining > 0) {
             let m = Math.floor(remaining / 60).toString().padStart(2, '0');
             let s = (remaining % 60).toString().padStart(2, '0');
             otpExpiryTimer.textContent = `${m}:${s}`;
-            if(remaining <= 30) {
-                otpExpiryTimer.style.color = '#ff5252';
-                otpExpiryTimer.classList.remove('text-primary');
-            }
+            if(remaining <= 30 && wrapper) wrapper.classList.add('warning');
             setTimeout(updateExpiryTimer, 1000);
         } else {
             otpExpiryTimer.textContent = "EXPIRED";
-            otpExpiryTimer.style.color = '#ff5252';
-            resetOtpIn.disabled = true;
-            resetMainBtn.disabled = true;
+            if(wrapper) wrapper.classList.add('warning');
+            if(resetOtpIn) resetOtpIn.disabled = true;
+            if(resetMainBtn) resetMainBtn.disabled = true;
             resetOtpIn.placeholder = "Code Expired. Please Resend.";
             sessionStorage.removeItem(expiryKey);
         }

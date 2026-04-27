@@ -83,8 +83,10 @@ if (isset($_POST['verify_2fa'])) {
                 <div class="input-wrapper">
                     <input type="text" name="otp" id="otpIn" class="form-input-modern text-center" style="font-size:1.2rem; letter-spacing:4px;" placeholder="• • • • • •" required pattern="[0-9]{6}">
                 </div>
-                <div class="otp-expiry-info mt-3" style="font-size: 0.95rem; color: #495057; display: flex; justify-content: center; align-items: center; font-weight: 600; gap: 8px;">
-                    <span>⏱️ Code expires in: <strong id="otpExpiryTimer" class="text-primary" style="font-size: 1.1rem;">02:00</strong></span>
+                <div class="otp-expiry-info mt-3 d-flex align-items-center justify-content-center">
+                    <div id="otpExpiryTimerWrapper" class="timer-pill">
+                        ⏱️ Code expires in: <strong id="otpExpiryTimer">02:00</strong>
+                    </div>
                 </div>
             </div>
             <button type="submit" name="verify_2fa" id="verifyBtn" class="btn-gradient w-100 mt-3" style="font-weight:600;">
@@ -115,21 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateExpiryTimer() {
         if(!storedExpiry || !otpExpiryTimer) return;
         let remaining = Math.max(0, Math.floor((storedExpiry - Date.now()) / 1000));
+        const wrapper = document.getElementById('otpExpiryTimerWrapper');
         if(remaining > 0) {
             let m = Math.floor(remaining / 60).toString().padStart(2, '0');
             let s = (remaining % 60).toString().padStart(2, '0');
             otpExpiryTimer.textContent = `${m}:${s}`;
-            if(remaining <= 30) {
-                otpExpiryTimer.style.color = '#ff5252';
-                otpExpiryTimer.classList.remove('text-primary');
-            }
+            if(remaining <= 30 && wrapper) wrapper.classList.add('warning');
             setTimeout(updateExpiryTimer, 1000);
         } else {
             otpExpiryTimer.textContent = "EXPIRED";
-            otpExpiryTimer.style.color = '#ff5252';
-            otpIn.disabled = true;
-            verifyBtn.disabled = true;
-            otpIn.placeholder = "Expired";
+            if(wrapper) wrapper.classList.add('warning');
+            if(otpIn) otpIn.disabled = true;
+            if(verifyBtn) verifyBtn.disabled = true;
             sessionStorage.removeItem(timerKey);
         }
     }

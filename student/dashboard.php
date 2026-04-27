@@ -65,26 +65,28 @@ $attendance = mysqli_fetch_assoc(mysqli_query($conn,"
 ?>
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
-<div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl) var(--space-xl);">
-    <h3 style="font-weight:700; color:#1a1a2e;">Welcome, <?= htmlspecialchars($full_name) ?> 👋</h3>
-    <p style="color:#666; margin:0;">System analytics overview &mdash; here's what's happening today.</p>
+<div class="glass-card-light mb-4 reveal">
+    <div class="section-header-elite">
+        <h3>Welcome, <?= htmlspecialchars($full_name) ?> 👋</h3>
+        <p>System analytics overview &mdash; here's what's happening today.</p>
+    </div>
 </div>
 <div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
-<div class="stat-card stat-primary">
-<h5>Leaves</h5>
-<h2 class="text-gradient" data-count="<?= $leave_count ?>"><?= $leave_count ?></h2>
+<div class="stat-card-premium">
+<h5>Leaves Status</h5>
+<h2 class="text-gradient" style="color:var(--accent-primary);" data-count="<?= $leave_count ?>"><?= $leave_count ?></h2>
 </div>
 </div>
 <div class="col-md-4 reveal">
-<div class="stat-card stat-danger">
-<h5>Complaints</h5>
+<div class="stat-card-premium">
+<h5>Active Complaints</h5>
 <h2 style="color:var(--accent-danger);" data-count="<?= $complaint_count ?>"><?= $complaint_count ?></h2>
 </div>
 </div>
 <div class="col-md-4 reveal">
-<div class="stat-card stat-success">
-<h5>Notices</h5>
+<div class="stat-card-premium">
+<h5>System Notices</h5>
 <h2 style="color:var(--accent-secondary);" data-count="<?= $notice_count ?>"><?= $notice_count ?></h2>
 </div>
 </div>

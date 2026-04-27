@@ -16,15 +16,24 @@ class OTPManager {
     }
     public function canRequestOTP($identifier) {
         $ip = $_SERVER['REMOTE_ADDR'];
-        $identifier = mysqli_real_escape_string($this->conn, $identifier);
-        mysqli_query($this->conn, "DELETE FROM otp_rate_limits WHERE last_attempt_time < NOW() - INTERVAL 1 HOUR");
+        
+        // Clean up old records (older than 1 hour)
+        $stmt_del = mysqli_prepare($this->conn, "DELETE FROM otp_rate_limits WHERE last_attempt_time < NOW() - INTERVAL 1 HOUR");
+        mysqli_stmt_execute($stmt_del);
+
+        // Global limit check
         $global_res = mysqli_query($this->conn, "SELECT SUM(attempts) as total_hourly FROM otp_rate_limits WHERE type='ip'");
         $total_hourly = mysqli_fetch_assoc($global_res)['total_hourly'] ?? 0;
         if ($total_hourly >= $this->global_max_per_hour) {
              return "SYSTEM PAUSED: Max global OTP limit reached. Try again later.";
         }
-        $query = "SELECT * FROM otp_rate_limits WHERE identifier='$ip' OR identifier='$identifier'";
-        $result = mysqli_query($this->conn, $query);
+
+        // Check specific IP and Email
+        $stmt = mysqli_prepare($this->conn, "SELECT attempts, last_attempt_time FROM otp_rate_limits WHERE identifier=? OR identifier=?");
+        mysqli_stmt_bind_param($stmt, "ss", $ip, $identifier);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
         while($row = mysqli_fetch_assoc($result)) {
             if ($row['attempts'] >= $this->max_per_hour) {
                 return "You have exceeded the maximum OTP requests. Please try again in an hour.";
@@ -34,25 +43,30 @@ class OTPManager {
                 $seconds_since_last = time() - $last_time;
                 if ($seconds_since_last < $this->cooldown_seconds) {
                     $wait = $this->cooldown_seconds - $seconds_since_last;
-                    if ($wait > 60) {
-                        $mins = ceil($wait / 60);
-                        return "Please wait $mins minutes before requesting another OTP.";
-                    }
                     return "Please wait $wait seconds before requesting another OTP.";
                 }
             }
         }
         return true;
     }
+
     private function recordAttempt($identifier) {
         $ip = $_SERVER['REMOTE_ADDR'];
         foreach ([$ip, $identifier] as $id) {
-            $id = mysqli_real_escape_string($this->conn, $id);
-            $check = mysqli_query($this->conn, "SELECT id FROM otp_rate_limits WHERE identifier='$id'");
+            $stmt_check = mysqli_prepare($this->conn, "SELECT id FROM otp_rate_limits WHERE identifier=?");
+            mysqli_stmt_bind_param($stmt_check, "s", $id);
+            mysqli_stmt_execute($stmt_check);
+            $check = mysqli_stmt_get_result($stmt_check);
+
             if (mysqli_num_rows($check) > 0) {
-                mysqli_query($this->conn, "UPDATE otp_rate_limits SET attempts = attempts + 1, last_attempt_time = NOW() WHERE identifier='$id'");
+                $stmt_upd = mysqli_prepare($this->conn, "UPDATE otp_rate_limits SET attempts = attempts + 1, last_attempt_time = NOW() WHERE identifier=?");
+                mysqli_stmt_bind_param($stmt_upd, "s", $id);
+                mysqli_stmt_execute($stmt_upd);
             } else {
-                mysqli_query($this->conn, "INSERT INTO otp_rate_limits (identifier, type, last_attempt_time) VALUES ('$id', 'ip', NOW())");
+                $type = ($id === $ip) ? 'ip' : 'email';
+                $stmt_ins = mysqli_prepare($this->conn, "INSERT INTO otp_rate_limits (identifier, type, last_attempt_time, attempts) VALUES (?, ?, NOW(), 1)");
+                mysqli_stmt_bind_param($stmt_ins, "ss", $id, $type);
+                mysqli_stmt_execute($stmt_ins);
             }
         }
     }
