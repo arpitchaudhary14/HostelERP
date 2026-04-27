@@ -1,10 +1,16 @@
 <?php
-date_default_timezone_set("Asia/Kolkata");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (isset($_SESSION['user_id'])) {
+    $role = $_SESSION['role'] ?? 'student';
+    header("Location: " . $role . "/dashboard.php");
+    exit();
+}
 include("db.php");
 require_once "otp_manager.php";
-if(isset($_POST['send_otp'])){
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
     validate_csrf();
-}
     $email = trim($_POST['email']);
     if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
         $error = "Invalid email format.";
@@ -12,23 +18,26 @@ if(isset($_POST['send_otp'])){
         $recaptcha_secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? "";
         $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
         $verify = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"));
-        if(!$verify->success) {
+        if(empty($recaptcha_response)) {
+            $error = "Please check the 'I'm not a robot' checkbox.";
+        } elseif(!$verify || !$verify->success) {
             $error = "Please verify that you are not a robot.";
         } else {
             $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE email=?");
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-        $check = mysqli_stmt_get_result($stmt);
-        if(mysqli_num_rows($check) == 0){
-            $error = "Email not registered.";
-        } else {
-            $otpManager = new OTPManager($conn);
-            $response   = $otpManager->requestOTP($email, 'forgot_password');
-            if ($response['status'] === 'success') {
-                $success = "OTP sent to your email. Redirecting...";
-                header("refresh:2;url=reset.php?email=$email&timer=1");
+            mysqli_stmt_bind_param($stmt, "s", $email);
+            mysqli_stmt_execute($stmt);
+            $check = mysqli_stmt_get_result($stmt);
+            if(mysqli_num_rows($check) !== 1){
+                $error = "This email is not registered in our system.";
             } else {
-                $error = $response['message'];
+                $otpManager = new OTPManager($conn);
+                $response   = $otpManager->requestOTP($email, 'forgot_password');
+                if ($response['status'] === 'success') {
+                    $success = "OTP sent to your email. Redirecting...";
+                    echo "<script>setTimeout(() => { window.location.href = 'reset.php?email=" . urlencode($email) . "&timer=1'; }, 3000);</script>";
+                } else {
+                    $error = $response['message'];
+                }
             }
         }
     }
@@ -96,6 +105,26 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', () => {
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending OTP...';
         btn.disabled = true;
+    });
+    const errorDivs = document.querySelectorAll('.alert-glass-danger');
+    errorDivs.forEach(div => {
+        const text = div.innerText;
+        const match = text.match(/Please wait (\d+) (seconds|minutes)|try again in an (hour)/i);
+        if (match) {
+            let totalSeconds = match[3] === 'hour' ? 3600 : parseInt(match[1]) * (match[2]?.startsWith('minute') ? 60 : 1);
+            const timerInterval = setInterval(() => {
+                totalSeconds--;
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    div.innerText = "You can now request another OTP. Please refresh or click below.";
+                    div.className = 'alert-glass-success mb-3';
+                } else {
+                    let m = Math.floor(totalSeconds / 60);
+                    let s = totalSeconds % 60;
+                    div.innerText = `Please wait ${m > 0 ? m + 'm ' : ''}${s}s before requesting another OTP.`;
+                }
+            }, 1000);
+        }
     });
 });
 </script>

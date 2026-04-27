@@ -1,4 +1,16 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (isset($_SESSION['user_id'])) {
+    $role = $_SESSION['role'] ?? 'student';
+    header("Location: " . $role . "/dashboard.php");
+    exit();
+}
+if (!isset($_GET['email']) || empty($_GET['email'])) {
+    header("Location: login.php");
+    exit();
+}
 date_default_timezone_set("Asia/Kolkata");
 include("db.php");
 require_once "otp_manager.php";
@@ -10,18 +22,29 @@ if(isset($_POST['resend_otp'])) {
     $recaptcha_secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? "";
     $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
     $verify = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"));
-    if(!$verify->success) {
+    if(empty($recaptcha_response)) {
+        $error = "Please check the 'I'm not a robot' checkbox.";
+    } elseif(!$verify || !$verify->success) {
         $error = "Please verify that you are not a robot to resend.";
     } else {
-        $otpManager = new OTPManager($conn);
-    $response = $otpManager->requestOTP($email, 'forgot_password');
-    if ($response['status'] == 'success') {
-        $success = "OTP resent successfully!";
-        $timer_start = true; 
-    } else {
-        $error = $response['message'];
+        $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE email=?");
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        $check = mysqli_stmt_get_result($stmt);
+        if(mysqli_num_rows($check) == 0){
+            $error = "Email not registered.";
+        } else {
+            $otpManager = new OTPManager($conn);
+            $response = $otpManager->requestOTP($email, 'forgot_password');
+            if ($response['status'] == 'success') {
+                $success = "OTP resent successfully!";
+                $timer_start = true; 
+                echo "<script>setTimeout(() => { if(document.querySelector('.alert-glass-success')) document.querySelector('.alert-glass-success').style.display='none'; }, 5000);</script>";
+            } else {
+                $error = $response['message'];
+            }
+        }
     }
-}
 }
 if(isset($_POST['reset'])){
     validate_csrf();
@@ -92,6 +115,9 @@ if(isset($_POST['reset'])){
                            required pattern="[0-9]{6}">
                     <span class="validation-icon icon-valid">✅</span>
                     <span class="validation-icon icon-invalid">❌</span>
+                </div>
+                <div class="otp-expiry-info mt-2" style="font-size: 0.95rem; color: #495057; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                    <span>⏱️ Code expires in: <strong id="otpExpiryTimer" class="text-primary" style="font-size: 1.1rem;">02:00</strong></span>
                 </div>
             </div>
             <div class="field-group">
@@ -164,24 +190,59 @@ document.addEventListener('DOMContentLoaded', () => {
     storedTime = Date.now() + (duration * 1000);
     sessionStorage.setItem(timerKey, storedTime);
     <?php endif; ?>
-    function updateTimer() {
-        if(!storedTime || !emailWrap) {
-            resendBtn.disabled = false;
-            return;
-        }
-        let remaining = Math.max(0, Math.floor((storedTime - Date.now()) / 1000));
+    const otpExpiryTimer = document.getElementById('otpExpiryTimer');
+    const resetOtpIn = document.getElementById('resetOtp');
+    const resetMainBtn = document.getElementById('resetBtn');
+    let expiryDuration = 120;
+    let expiryKey = "otp_expiry_" + emailWrap;
+    let storedExpiry = sessionStorage.getItem(expiryKey);
+    <?php if($timer_start): ?>
+    storedExpiry = Date.now() + (expiryDuration * 1000);
+    sessionStorage.setItem(expiryKey, storedExpiry);
+    <?php endif; ?>
+    function updateExpiryTimer() {
+        if(!storedExpiry || !otpExpiryTimer) return;
+        let remaining = Math.max(0, Math.floor((storedExpiry - Date.now()) / 1000));
         if(remaining > 0) {
-            resendBtn.disabled = true;
-            let s = remaining.toString().padStart(2, '0');
-            timerDisplay.textContent = `(${s}s)`;
-            setTimeout(updateTimer, 1000);
+            let m = Math.floor(remaining / 60).toString().padStart(2, '0');
+            let s = (remaining % 60).toString().padStart(2, '0');
+            otpExpiryTimer.textContent = `${m}:${s}`;
+            if(remaining <= 30) {
+                otpExpiryTimer.style.color = '#ff5252';
+                otpExpiryTimer.classList.remove('text-primary');
+            }
+            setTimeout(updateExpiryTimer, 1000);
         } else {
-            resendBtn.disabled = false;
-            timerDisplay.textContent = "";
-            sessionStorage.removeItem(timerKey);
+            otpExpiryTimer.textContent = "EXPIRED";
+            otpExpiryTimer.style.color = '#ff5252';
+            resetOtpIn.disabled = true;
+            resetMainBtn.disabled = true;
+            resetOtpIn.placeholder = "Code Expired. Please Resend.";
+            sessionStorage.removeItem(expiryKey);
         }
     }
+    updateExpiryTimer();
     updateTimer();
+    const errorDivs = document.querySelectorAll('.alert-glass-danger');
+    errorDivs.forEach(div => {
+        const text = div.innerText;
+        const match = text.match(/Please wait (\d+) (seconds|minutes)|try again in an (hour)/i);
+        if (match) {
+            let totalSeconds = match[3] === 'hour' ? 3600 : parseInt(match[1]) * (match[2]?.startsWith('minute') ? 60 : 1);
+            const timerInterval = setInterval(() => {
+                totalSeconds--;
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    div.innerText = "You can now request another OTP. Please refresh or click below.";
+                    div.className = 'alert-glass-success mb-3';
+                } else {
+                    let m = Math.floor(totalSeconds / 60);
+                    let s = totalSeconds % 60;
+                    div.innerText = `Please wait ${m > 0 ? m + 'm ' : ''}${s}s before requesting another OTP.`;
+                }
+            }, 1000);
+        }
+    });
 });
 </script>
 <?php include("footer.php"); ?>

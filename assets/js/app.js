@@ -26,6 +26,40 @@
         initPageTransition();
         initScrollReveal();
         ThemeToggle.init();
+        const errorDivs = document.querySelectorAll('.alert-glass-danger');
+        errorDivs.forEach(div => {
+            const text = div.innerText;
+            console.log("Checking for OTP timer in:", text);
+            const match = text.match(/Please wait (\d+) (seconds|minutes)|try again in an (hour)/i);
+            if (match) {
+                let totalSeconds = 0;
+                if (match[3] === 'hour') {
+                    totalSeconds = 3600;
+                } else {
+                    let num = parseInt(match[1]);
+                    totalSeconds = match[2].startsWith('minute') ? num * 60 : num;
+                }
+                console.log("Starting OTP countdown from:", totalSeconds, "seconds");
+                const timerInterval = setInterval(() => {
+                    totalSeconds--;
+                    if (totalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        div.innerText = "You can now request another OTP. Please refresh or click below.";
+                        div.className = 'alert-glass-success mb-3';
+                    } else {
+                        let h = Math.floor(totalSeconds / 3600);
+                        let m = Math.floor((totalSeconds % 3600) / 60);
+                        let s = totalSeconds % 60;
+                        let display = "Please wait ";
+                        if (h > 0) display += `${h}h ${m}m ${s}s`;
+                        else if (m > 0) display += `${m}m ${s}s`;
+                        else display += `${s} seconds`;
+                        display += " before requesting another OTP.";
+                        div.innerText = display;
+                    }
+                }, 1000);
+            }
+        });
     });
 })();
 const ThemeToggle = {

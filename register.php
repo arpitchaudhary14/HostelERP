@@ -7,6 +7,7 @@ if (!isset($_SESSION['csrf_token'])) {
 }
 include("db.php");
 if (isset($_POST['register'])) {
+    validate_csrf();
     $first_name = trim($_POST['first_name']);
     $last_name  = !empty($_POST['last_name']) ? trim($_POST['last_name']) : NULL;
     $dob        = !empty($_POST['dob']) ? $_POST['dob'] : NULL;
@@ -17,11 +18,20 @@ if (isset($_POST['register'])) {
     $role       = $_POST['role'];
     $username   = trim($_POST['username']);
     $password   = $_POST['password'];
-    if (!empty($phone) && !preg_match("/^[0-9]{10}$/", $phone)) {
+
+    $recaptcha_secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? "";
+    $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
+    $verify = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}"));
+
+    if(empty($recaptcha_response)) {
+        $error = "Please check the 'I'm not a robot' checkbox.";
+    } elseif(!$verify || !$verify->success) {
+        $error = "Please verify that you are not a robot.";
+    } elseif (!empty($phone) && !preg_match("/^[0-9]{10}$/", $phone)) {
         $error = "Phone number must be exactly 10 digits.";
     }
     elseif (!preg_match('/^(?=(?:.*[^A-Za-z0-9]){2,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/', $password)) {
-        $error = "Password must be strong (10+ chars, upper, lower, number, 2 special chars).";
+        $error = "Password must be strong (10+ chars, upper, lower, number, 2 special characters).";
     }
     else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -69,6 +79,7 @@ if (isset($_POST['register'])) {
     <title>Register - HostelERP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/WebTechProject/assets/css/style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="auth-bg">
 <div class="auth-container register">
@@ -191,6 +202,7 @@ if (isset($_POST['register'])) {
                 </div>
                 <div class="strength-text" id="strengthText"></div>
             </div>
+            <div class="g-recaptcha mb-3" data-sitekey="<?php echo $_ENV['RECAPTCHA_SITE_KEY'] ?? ''; ?>"></div>
             <button type="submit" name="register" id="registerBtn" class="btn-gradient" disabled>
                 Create Account
             </button>

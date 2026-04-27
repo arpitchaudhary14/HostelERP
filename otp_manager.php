@@ -79,9 +79,30 @@ class OTPManager {
             );
         }
         $this->recordAttempt($email);
-        $subject = "HostelERP — Your OTP";
-        $message = "Your OTP for " . str_replace('_', ' ', $type) . " is: <strong>$otp</strong><br>Valid for {$this->expiry_minutes} minutes.";
-        return $this->sendEmail($email, $subject, $message);
+        $type_label = str_replace('_', ' ', $type);
+        $subject = "HostelERP - Your Verification Code";
+        $body = "
+        <div style='background-color:#f8f9fa; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;'>
+            <div style='max-width: 500px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #eef0f2;'>
+                <div style='background: linear-gradient(135deg, #6c63ff, #8b5cf6); padding: 40px 20px; text-align: center;'>
+                    <h1 style='color: white; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;'>HostelERP</h1>
+                </div>
+                <div style='padding: 40px; color: #2d3436;'>
+                    <h2 style='color: #1a1a2e; margin-top: 0; font-size: 22px; font-weight: 700;'>Verification Required</h2>
+                    <p style='font-size: 16px; line-height: 1.6; color: #636e72;'>Hello,</p>
+                    <p style='font-size: 16px; line-height: 1.6; color: #636e72;'>You requested a verification code for <strong>$type_label</strong>. Use the code below to proceed securely:</p>
+                    <div style='background: #f1f3f5; border-radius: 12px; padding: 24px; text-align: center; margin: 32px 0; border: 1px dashed #ced4da;'>
+                        <span style='display: block; font-size: 12px; text-transform: uppercase; color: #a8aeb3; margin-bottom: 8px; font-weight: 700; letter-spacing: 1.5px;'>ONE-TIME PASSWORD</span>
+                        <span style='font-size: 38px; font-weight: 800; color: #6c63ff; letter-spacing: 8px; font-family: \"Courier New\", Courier, monospace;'>$otp</span>
+                    </div>  
+                    <p style='font-size: 14px; color: #b2bec3; line-height: 1.5;'>This code is valid for <strong>{$this->expiry_minutes} minutes</strong>. For security reasons, do not share this code with anyone.</p>    
+                    <div style='margin-top: 40px; padding-top: 24px; border-top: 1px solid #f1f3f5; text-align: center;'>
+                        <p style='font-size: 12px; color: #b2bec3; margin-bottom: 0;'>&copy; 2026 HostelERP. All rights reserved.<br>Your security is our priority.</p>
+                    </div>
+                </div>
+            </div>
+        </div>";
+        return $this->sendEmail($email, $subject, $body);
     }
     private function sendEmail($to, $subject, $body) {
         $mail = new PHPMailer(true);
@@ -97,12 +118,7 @@ class OTPManager {
             $mail->addAddress($to);
             $mail->isHTML(true);
             $mail->Subject = $subject;
-            $mail->Body    = "
-                <div style='font-family:Arial,sans-serif;max-width:480px;margin:0 auto;'>
-                    <h2 style='color:#6c63ff;'>HostelERP</h2>
-                    <p style='font-size:15px;'>$body</p>
-                    <p style='color:#888;font-size:12px;'>Do not share this OTP with anyone.</p>
-                </div>";
+            $mail->Body    = $body;
             $mail->send();
             return ['status' => 'success', 'message' => 'OTP sent to your email.'];
         } catch (Exception $e) {

@@ -114,8 +114,14 @@ if(isset($_POST['confirm_email_verification'])){
         $error = "Invalid or expired OTP.";
         $show_email_verify = true;
     } else {
-        mysqli_query($conn, "UPDATE users SET is_verified=1 WHERE id=$user_id");
-        mysqli_query($conn, "DELETE FROM otp_codes WHERE email='{$user['email']}' AND type='email_verification'");
+        $upd_v = mysqli_prepare($conn, "UPDATE users SET is_verified=1 WHERE id=?");
+        mysqli_stmt_bind_param($upd_v, "i", $user_id);
+        mysqli_stmt_execute($upd_v);
+        
+        $del_o = mysqli_prepare($conn, "DELETE FROM otp_codes WHERE email=? AND type='email_verification'");
+        mysqli_stmt_bind_param($del_o, "s", $user['email']);
+        mysqli_stmt_execute($del_o);
+        
         $success = "Email verified successfully!";
         $stmt2 = mysqli_prepare($conn, "SELECT * FROM users WHERE id=?");
         mysqli_stmt_bind_param($stmt2, "i", $user_id);
@@ -129,7 +135,10 @@ if(isset($_POST['toggle_2fa'])){
         $error = "You must verify your email before enabling True 2-Factor Authentication.";
     } else {
         $new_status = $user['two_factor_enabled'] ? 0 : 1;
-        mysqli_query($conn, "UPDATE users SET two_factor_enabled=$new_status WHERE id=$user_id");
+        $upd_2f = mysqli_prepare($conn, "UPDATE users SET two_factor_enabled=? WHERE id=?");
+        mysqli_stmt_bind_param($upd_2f, "ii", $new_status, $user_id);
+        mysqli_stmt_execute($upd_2f);
+        
         $success = $new_status ? "Two-Factor Authentication Enabled." : "Two-Factor Authentication Disabled.";
         $stmt2 = mysqli_prepare($conn, "SELECT * FROM users WHERE id=?");
         mysqli_stmt_bind_param($stmt2, "i", $user_id);
@@ -229,10 +238,13 @@ Change Password
                 <span class="badge bg-success py-2 px-3">Verified</span>
             <?php else: ?>
                 <?php if(isset($show_email_verify) && $show_email_verify): ?>
-                    <form method="POST" class="d-flex w-100">
+                    <form method="POST" class="d-flex flex-column align-items-end">
                         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                        <input type="text" name="email_otp" class="form-input-light form-control-sm me-2" placeholder="OTP Code" required pattern="[0-9]{6}">
-                        <button class="btn btn-sm btn-success" name="confirm_email_verification">Verify</button>
+                        <div class="d-flex mb-1">
+                            <input type="text" name="email_otp" id="emailVerifyOtpIn" class="form-input-light form-control-sm me-2" style="width:100px;" placeholder="OTP Code" required pattern="[0-9]{6}">
+                            <button class="btn btn-sm btn-success" name="confirm_email_verification" id="emailVerifyConfirmBtn">Verify</button>
+                        </div>
+                        <small style="font-size:0.85rem; color:#495057; font-weight:700; margin-top:5px;">⏱️ Expires: <strong id="emailVerifyExpiryTimer" class="text-primary">02:00</strong></small>
                     </form>
                 <?php else: ?>
                     <span class="badge bg-danger mb-2 d-block w-100">Unverified</span>
@@ -269,9 +281,12 @@ Change Password
         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="mb-3">
             <label style="font-weight:500; color:#d32f2f; font-size:0.88rem;">Enter OTP sent to <?php echo htmlspecialchars($user['email']); ?></label>
-            <input type="text" name="delete_otp" class="form-input-light" placeholder="6-digit code" required pattern="[0-9]{6}">
+            <input type="text" name="delete_otp" id="deleteOtpIn" class="form-input-light" placeholder="6-digit code" required pattern="[0-9]{6}">
+            <div class="mt-2" style="font-size: 0.9rem; color: #d32f2f; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                ⏱️ Code expires in: <strong id="deleteExpiryTimer" style="font-size: 1.05rem;">02:00</strong>
+            </div>
         </div>
-        <button class="btn btn-danger w-100" name="confirm_delete_account" style="font-weight:600; padding:10px;">
+        <button class="btn btn-danger w-100" name="confirm_delete_account" id="deleteConfirmBtn" style="font-weight:600; padding:10px;">
             Confirm Permanent Deletion
         </button>
     </form>
@@ -298,6 +313,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const textEl     = document.getElementById('profileStrengthText');
     if (passIn && eyeBtn) createEyeToggle(passIn, eyeBtn);
     if (passIn && fillEl) Validator.attachPasswordStrength(passIn, fillEl, textEl);
+    function startExpiryTimer(displayId, inputId, btnId, type, initialDuration = 120) {
+        const display = document.getElementById(displayId);
+        const input = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        if(!display) return;
+        const email = "<?php echo $user['email']; ?>";
+        const key = "otp_expiry_" + type + "_" + email;
+        let stored = sessionStorage.getItem(key);
+        if(!stored) {
+            stored = Date.now() + (initialDuration * 1000);
+            sessionStorage.setItem(key, stored);
+        }
+        function tick() {
+            let remaining = Math.max(0, Math.floor((stored - Date.now()) / 1000));
+            if(remaining > 0) {
+                let m = Math.floor(remaining / 60).toString().padStart(2, '0');
+                let s = (remaining % 60).toString().padStart(2, '0');
+                display.textContent = `${m}:${s}`;
+                if(remaining <= 30) display.style.color = '#ff5252';
+                setTimeout(tick, 1000);
+            } else {
+                display.textContent = "EXPIRED";
+                display.style.color = '#ff5252';
+                if(input) input.disabled = true;
+                if(btn) btn.disabled = true;
+                sessionStorage.removeItem(key);
+            }
+        }
+        tick();
+    }
+    <?php if(isset($show_delete_verify) && $show_delete_verify): ?>
+    startExpiryTimer('deleteExpiryTimer', 'deleteOtpIn', 'deleteConfirmBtn', 'delete');
+    <?php endif; ?>
+    <?php if(isset($show_email_verify) && $show_email_verify): ?>
+    startExpiryTimer('emailVerifyExpiryTimer', 'emailVerifyOtpIn', 'emailVerifyConfirmBtn', 'email');
+    <?php endif; ?>
 });
 </script>
 <?php include("footer.php"); ?>

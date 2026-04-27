@@ -11,6 +11,12 @@ A full-stack hostel management system with an AI assistant to automate student a
 *   **Data Export**: Quickly export student records to CSV for reporting.
 *   **Activity Logging**: Tracks all administrative actions for accountability.
 *   **Interactive AI**: A built-in assistant (LEON) to help users with platform tasks and actions.
+    -   **Rate Limiting**: IP-based and Email-based OTP request limits (5 per hour).
+### Recent Security Hardening (April 2026)
+*   **Google reCAPTCHA v2**: Added comprehensive bot protection to Login, Registration, and Forgot Password flows.
+*   **Dynamic OTP UX**: Implemented real-time, live-ticking countdown timers for all verification screens.
+*   **Premium Email Templates**: Upgraded all system emails to high-end, branded HTML templates.
+*   **Defense in Depth**: Hardened the entire backend with 100% Prepared Statements, CSRF validation, and Session AFK auto-logout.
 ## Tech Stack
 *   **Backend**: PHP 8 (Logic), MySQL (Database)
 *   **Frontend**: HTML5, Vanilla CSS, JavaScript, Bootstrap 5

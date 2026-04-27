@@ -81,10 +81,13 @@ if (isset($_POST['verify_2fa'])) {
             <div class="field-group">
                 <label>Authentication Code</label>
                 <div class="input-wrapper">
-                    <input type="text" name="otp" class="form-input-modern text-center" style="font-size:1.2rem; letter-spacing:4px;" placeholder="• • • • • •" required pattern="[0-9]{6}">
+                    <input type="text" name="otp" id="otpIn" class="form-input-modern text-center" style="font-size:1.2rem; letter-spacing:4px;" placeholder="• • • • • •" required pattern="[0-9]{6}">
+                </div>
+                <div class="otp-expiry-info mt-3" style="font-size: 0.95rem; color: #495057; display: flex; justify-content: center; align-items: center; font-weight: 600; gap: 8px;">
+                    <span>⏱️ Code expires in: <strong id="otpExpiryTimer" class="text-primary" style="font-size: 1.1rem;">02:00</strong></span>
                 </div>
             </div>
-            <button type="submit" name="verify_2fa" class="btn-gradient w-100 mt-3" style="font-weight:600;">
+            <button type="submit" name="verify_2fa" id="verifyBtn" class="btn-gradient w-100 mt-3" style="font-weight:600;">
                 Verify & Continue
             </button>
         </form>  
@@ -94,5 +97,44 @@ if (isset($_POST['verify_2fa'])) {
     </div>
 </div>
 <script src="/WebTechProject/assets/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const otpIn = document.getElementById('otpIn');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const otpExpiryTimer = document.getElementById('otpExpiryTimer');
+    const email = "<?php echo $user['email']; ?>";
+    const timerKey = "otp_expiry_2fa_" + email;
+    let storedExpiry = sessionStorage.getItem(timerKey);
+    let duration = 120; 
+    <?php if(isset($_GET['sent'])): ?>
+    if(!storedExpiry) {
+        storedExpiry = Date.now() + (duration * 1000);
+        sessionStorage.setItem(timerKey, storedExpiry);
+    }
+    <?php endif; ?>
+    function updateExpiryTimer() {
+        if(!storedExpiry || !otpExpiryTimer) return;
+        let remaining = Math.max(0, Math.floor((storedExpiry - Date.now()) / 1000));
+        if(remaining > 0) {
+            let m = Math.floor(remaining / 60).toString().padStart(2, '0');
+            let s = (remaining % 60).toString().padStart(2, '0');
+            otpExpiryTimer.textContent = `${m}:${s}`;
+            if(remaining <= 30) {
+                otpExpiryTimer.style.color = '#ff5252';
+                otpExpiryTimer.classList.remove('text-primary');
+            }
+            setTimeout(updateExpiryTimer, 1000);
+        } else {
+            otpExpiryTimer.textContent = "EXPIRED";
+            otpExpiryTimer.style.color = '#ff5252';
+            otpIn.disabled = true;
+            verifyBtn.disabled = true;
+            otpIn.placeholder = "Expired";
+            sessionStorage.removeItem(timerKey);
+        }
+    }
+    updateExpiryTimer();
+});
+</script>
 </body>
 </html>

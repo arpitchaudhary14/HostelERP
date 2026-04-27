@@ -178,5 +178,24 @@ shortDiv.style.display = "block";
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <?php include __DIR__ . '/chatbot_ui.php'; ?>
+<?php if (isset($_SESSION['user_id'])): ?>
+<?php $client_timeout = isset($timeout_duration) ? $timeout_duration : 900; ?>
+<script>
+(function() {
+    let timeoutDuration = <?= $client_timeout ?> * 1000;
+    let timeoutTimer;
+    function resetTimer() {
+        clearTimeout(timeoutTimer);
+        timeoutTimer = setTimeout(function() {
+            window.location.href = '/WebTechProject/login.php?session=expired';
+        }, timeoutDuration);
+    }
+    resetTimer();
+    ['mousemove', 'keypress', 'click', 'scroll'].forEach(evt => 
+        document.addEventListener(evt, resetTimer, {passive: true})
+    );
+})();
+</script>
+<?php endif; ?>
 </body>
 </html>

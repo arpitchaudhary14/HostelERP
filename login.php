@@ -206,38 +206,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loginBtn.disabled = !(usernameIn.value.trim().length >= 3 && passwordIn.value.length >= 1);
     };
     loginForm.addEventListener('input', checkBtn);
-    let savedCreds = JSON.parse(localStorage.getItem('hostelerp_creds') || '{}');
-    usernameIn.addEventListener('input', function() {
-        if (savedCreds[this.value] && rememberMeCheck.checked) {
-            passwordIn.value = savedCreds[this.value];
-            checkBtn();
-        }
-    });
-    loginForm.addEventListener('submit', function() {
-        if (rememberMeCheck.checked) {
-            savedCreds[usernameIn.value] = passwordIn.value;
-            localStorage.setItem('hostelerp_last_user', usernameIn.value);
-        } else {
-            delete savedCreds[usernameIn.value];
-        }
-        localStorage.setItem('hostelerp_creds', JSON.stringify(savedCreds));
-        localStorage.setItem('hostelerp_remember', rememberMeCheck.checked);
-    });
-    if (localStorage.getItem('hostelerp_remember') === 'true') {
-        rememberMeCheck.checked = true;
-        let lastUser = localStorage.getItem('hostelerp_last_user');
-        if (lastUser && savedCreds[lastUser]) {
-            usernameIn.value = lastUser;
-            passwordIn.value = savedCreds[lastUser];
-            checkBtn();
-        }
-    }
     const autofillTimer = setInterval(() => {
         if (usernameIn.value.length > 0 && passwordIn.value.length > 0) {
             loginBtn.disabled = false;
             clearInterval(autofillTimer);
         }
-    }, 300);
+    }, 500);
     createEyeToggle(passwordIn, eyeToggleBtn);
 });
 </script>

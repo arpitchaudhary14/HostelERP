@@ -9,7 +9,7 @@ if (empty($_SESSION['csrf_token'])) {
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header_remove("Content-Security-Policy");
-header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net http://127.0.0.1:5000 http://localhost:5000; img-src 'self' data: https:;");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com 'unsafe-inline'; frame-src 'self' https://www.google.com https://recaptcha.google.com; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net http://127.0.0.1:5000 http://localhost:5000; img-src 'self' data: https:;");
 header_remove('X-Powered-By');
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);

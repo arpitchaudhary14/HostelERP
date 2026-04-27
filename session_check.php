@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
     exit();
 }
-$timeout_duration = 1800;
+$timeout_duration = 900;
 if (isset($_SESSION['LAST_ACTIVITY']) &&
     (time() - $_SESSION['LAST_ACTIVITY']) > $timeout_duration) {
     session_unset();
