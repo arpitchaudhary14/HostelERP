@@ -7,6 +7,11 @@ mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
+$stmt_hist = mysqli_prepare($conn, "SELECT * FROM login_history WHERE user_id=? ORDER BY login_time DESC LIMIT 5");
+mysqli_stmt_bind_param($stmt_hist, "i", $user_id);
+mysqli_stmt_execute($stmt_hist);
+$history_res = mysqli_stmt_get_result($stmt_hist);
+$login_history = mysqli_fetch_all($history_res, MYSQLI_ASSOC);
 if(isset($_POST['update_profile'])){
     validate_csrf();
     $phone   = trim($_POST['phone']);
@@ -53,11 +58,55 @@ if(isset($_POST['change_password'])){
     } elseif (!preg_match('/^(?=(?:.*[^A-Za-z0-9]){2,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/', $new)) {
         $error = "New password must be at least 10 characters with uppercase, lowercase, number, and 2 special characters.";
     } else {
-        $hashed = password_hash($new, PASSWORD_DEFAULT);
-        $upd = mysqli_prepare($conn, "UPDATE users SET password=? WHERE id=?");
-        mysqli_stmt_bind_param($upd, "si", $hashed, $user_id);
-        mysqli_stmt_execute($upd);
-        $success = "Password changed successfully.";
+        require_once "otp_manager.php";
+        $otpManager = new OTPManager($conn);
+        $response = $otpManager->requestOTP($user['email'], 'password_change');
+        if ($response['status'] == 'success') {
+            $_SESSION['pending_password_change'] = $new;
+            $success = "Verification OTP sent to your email to confirm password change.";
+            $show_password_verify = true;
+        } else {
+            $error = $response['message'];
+        }
+    }
+}
+if(isset($_POST['confirm_password_change'])){
+    validate_csrf();
+    $otp = trim($_POST['password_otp']);
+    $new_pass = $_SESSION['pending_password_change'] ?? '';
+    if(empty($new_pass)) {
+        $error = "Session expired. Please try password change again.";
+    } else {
+        $stmt = mysqli_prepare($conn, "SELECT * FROM otp_codes WHERE email=? AND otp=? AND type='password_change' AND expiry_time > NOW()");
+        mysqli_stmt_bind_param($stmt, "ss", $user['email'], $otp);
+        mysqli_stmt_execute($stmt);
+        $check = mysqli_stmt_get_result($stmt);
+        if(mysqli_num_rows($check)==0){
+            $error = "Invalid or expired OTP.";
+            $show_password_verify = true;
+        } else {
+            $hashed = password_hash($new_pass, PASSWORD_DEFAULT);
+            $upd = mysqli_prepare($conn, "UPDATE users SET password=? WHERE id=?");
+            mysqli_stmt_bind_param($upd, "si", $hashed, $user_id);
+            mysqli_stmt_execute($upd);
+            unset($_SESSION['pending_password_change']);
+            $success = "Password changed successfully.";
+        }
+    }
+}
+if(isset($_POST['resend_otp_profile'])){
+    validate_csrf();
+    $resend_type = $_POST['resend_type'];
+    require_once "otp_manager.php";
+    $otpManager = new OTPManager($conn);
+    $response = $otpManager->requestOTP($user['email'], $resend_type);
+    if ($response['status'] == 'success') {
+        $success = "OTP resent successfully!";
+        if($resend_type == 'delete_account') $show_delete_verify = true;
+        if($resend_type == 'email_verification') $show_email_verify = true;
+        if($resend_type == 'password_change') $show_password_verify = true;
+    } else {
+        $error = $response['message'];
     }
 }
 if(isset($_POST['request_delete_otp'])){
@@ -136,7 +185,6 @@ if(isset($_POST['toggle_2fa'])){
         $upd_2f = mysqli_prepare($conn, "UPDATE users SET two_factor_enabled=? WHERE id=?");
         mysqli_stmt_bind_param($upd_2f, "ii", $new_status, $user_id);
         mysqli_stmt_execute($upd_2f);
-        
         $success = $new_status ? "Two-Factor Authentication Enabled." : "Two-Factor Authentication Disabled.";
         $stmt2 = mysqli_prepare($conn, "SELECT * FROM users WHERE id=?");
         mysqli_stmt_bind_param($stmt2, "i", $user_id);
@@ -205,26 +253,48 @@ Update Profile
 </div>
 <div class="glass-card-light reveal">
 <h5 style="font-weight:600; color:#1a1a2e; margin-bottom:var(--space-md);">Change Password</h5>
-<form method="POST">
-<input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-<div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Current Password</label>
-<input type="password" name="current_password" class="form-input-light" required>
-</div>
-<div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">New Password</label>
-<div class="input-wrapper password-wrapper" style="position:relative;">
-    <input type="password" name="new_password" id="profileNewPass" class="form-input-light" required
-           placeholder="Min 10 chars, upper, lower, number, 2 special chars">
-    <button type="button" class="eye-toggle" id="profileEyeToggle" aria-label="Toggle password visibility"></button>
-</div>
-<div class="strength-meter mt-1"><div class="strength-meter-fill" id="profileStrengthFill"></div></div>
-<div class="strength-text" id="profileStrengthText" style="font-size:0.8rem; margin-top:4px;"></div>
-</div>
-<button class="btn-gradient" name="change_password" style="background:linear-gradient(135deg, #ff9800, #ff5722);">
-Change Password
-</button>
-</form>
+<?php if(isset($show_password_verify) && $show_password_verify): ?>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <div class="mb-3">
+            <label style="font-weight:500; color:#555; font-size:0.88rem;">Enter OTP sent to your email</label>
+            <input type="text" name="password_otp" id="passwordOtpIn" class="form-input-light text-center" placeholder="6-digit code" required pattern="[0-9]{6}" style="font-size:1.2rem; letter-spacing:4px;">
+            <div id="passwordExpiryTimerWrapper" class="timer-pill mt-2">
+                ⏱️ Expires: <strong id="passwordExpiryTimer">02:00</strong>
+            </div>
+        </div>
+        <button class="btn-gradient w-100" name="confirm_password_change" id="passwordConfirmBtn">
+            Verify & Update Password
+        </button>
+    </form>
+    <form method="POST" class="mt-2 text-center">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <input type="hidden" name="resend_type" value="password_change">
+        <button type="submit" name="resend_otp_profile" class="btn btn-link btn-sm text-decoration-none" style="color:var(--primary-color);">Didn't receive? Resend OTP</button>
+    </form>
+<?php else: ?>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <div class="mb-3">
+            <label style="font-weight:500; color:#555; font-size:0.88rem;">Current Password</label>
+            <input type="password" name="current_password" class="form-input-light" required>
+        </div>
+        <div class="mb-3">
+            <label style="font-weight:500; color:#555; font-size:0.88rem;">New Password</label>
+            <div class="input-wrapper password-wrapper" style="position:relative;">
+                <input type="password" name="new_password" id="profileNewPass" class="form-input-light" required
+                       placeholder="Min 10 chars, upper, lower, number, 2 special chars">
+                <button type="button" class="eye-toggle" id="profileEyeToggle" aria-label="Toggle password visibility"></button>
+            </div>
+            <div class="strength-meter mt-1"><div class="strength-meter-fill" id="profileStrengthFill"></div></div>
+            <div class="strength-text" id="profileStrengthText" style="font-size:0.8rem; margin-top:4px;"></div>
+        </div>
+        <button class="btn-gradient" name="change_password" style="background:linear-gradient(135deg, #ff9800, #ff5722);">
+            Change Password
+        </button>
+        <p class="text-center mt-2 text-muted" style="font-size:0.75rem;">(A verification code will be sent to your email)</p>
+    </form>
+<?php endif; ?>
 </div>
 <div class="glass-card-light reveal mt-4 mb-4">
     <h5 style="font-weight:600; color:#1a1a2e; margin-bottom:var(--space-md);">Security Hub</h5>
@@ -248,11 +318,17 @@ Change Password
                             ⏱️ Expires: <strong id="emailVerifyExpiryTimer">02:00</strong>
                         </div>
                     </form>
+                    <form method="POST" class="mt-1">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                        <input type="hidden" name="resend_type" value="email_verification">
+                        <button type="submit" name="resend_otp_profile" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 11px;">Resend OTP</button>
+                    </form>
                 <?php else: ?>
                     <span class="status-pill unverified">Unverified</span>
                     <form method="POST">
                         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <button class="btn btn-sm btn-outline-primary w-100" name="request_email_verification">Verify Email</button>
+                        <p class="text-center mt-1 text-muted" style="font-size:0.65rem;">OTP will be sent</p>
                     </form>
                 <?php endif; ?>
             <?php endif; ?>
@@ -290,9 +366,11 @@ Change Password
             Confirm Permanent Deletion
         </button>
     </form>
-    <form method="POST" class="mt-2">
+    <form method="POST" class="mt-2 text-center d-flex justify-content-between">
          <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-         <button class="btn btn-link w-100 text-muted" style="text-decoration:none;">Cancel</button>
+         <input type="hidden" name="resend_type" value="delete_account">
+         <button type="submit" name="resend_otp_profile" class="btn btn-link text-muted p-0 text-decoration-none" style="font-size: 13px;">Resend OTP</button>
+         <button name="cancel_action" class="btn btn-link text-muted p-0 text-decoration-none" style="font-size: 13px;">Cancel</button>
     </form>
 <?php else: ?>
     <form method="POST" onsubmit="return confirm('Are you absolutely sure you want to delete your account? This will send an OTP to your email.');">
@@ -302,6 +380,49 @@ Change Password
         </button>
     </form>
 <?php endif; ?>
+</div>
+<div class="glass-card-light reveal mt-4 mb-5">
+    <h5 style="font-weight:600; color:#1a1a2e; margin-bottom:var(--space-md);">Recent Login Activity</h5>
+    <div class="table-responsive">
+        <table class="table table-sm" style="font-size:0.85rem;">
+            <thead class="text-muted">
+                <tr>
+                    <th>Time</th>
+                    <th>IP Address</th>
+                    <th>Type</th>
+                    <th>Device</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if(empty($login_history)): ?>
+                    <tr><td colspan="4" class="text-center text-muted">No recent activity found.</td></tr>
+                <?php else: ?>
+                    <?php foreach($login_history as $row): ?>
+                        <tr>
+                            <td><?php echo date('M d, H:i', strtotime($row['login_time'])); ?></td>
+                            <td><code><?php echo $row['ip_address']; ?></code></td>
+                            <td>
+                                <span class="badge <?php echo $row['login_type'] == 'normal' ? 'bg-secondary' : ($row['login_type'] == 'google' ? 'bg-danger' : 'bg-primary'); ?>">
+                                    <?php echo ucfirst($row['login_type']); ?>
+                                </span>
+                            </td>
+                            <td class="text-truncate" style="max-width: 150px;" title="<?php echo htmlspecialchars($row['user_agent']); ?>">
+                                <?php 
+                                    $ua = $row['user_agent'];
+                                    if(strpos($ua, 'Windows') !== false) echo "Windows";
+                                    elseif(strpos($ua, 'Android') !== false) echo "Android";
+                                    elseif(strpos($ua, 'iPhone') !== false) echo "iPhone";
+                                    elseif(strpos($ua, 'Mac') !== false) echo "Mac";
+                                    else echo "Unknown Device";
+                                ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted text-center mt-2" style="font-size:0.75rem;">Showing last 5 login attempts</p>
 </div>
 </div>
 <script src="/WebTechProject/assets/js/app.js"></script>
@@ -350,6 +471,29 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php if(isset($show_email_verify) && $show_email_verify): ?>
     startExpiryTimer('emailVerifyExpiryTimer', 'emailVerifyOtpIn', 'emailVerifyConfirmBtn', 'email');
     <?php endif; ?>
+    <?php if(isset($show_password_verify) && $show_password_verify): ?>
+    startExpiryTimer('passwordExpiryTimer', 'passwordOtpIn', 'passwordConfirmBtn', 'password');
+    <?php endif; ?>
+    const errorDivs = document.querySelectorAll('.alert-danger');
+    errorDivs.forEach(div => {
+        const text = div.innerText;
+        const match = text.match(/Please wait (\d+)(?:m\s*)?(\d+)?s|try again in an (hour)/i);
+        if (match) {
+            let totalSeconds = match[3] === 'hour' ? 3600 : (parseInt(match[1]) * (text.includes('m') ? 60 : 1)) + (match[2] ? parseInt(match[2]) : 0);
+            const timerInterval = setInterval(() => {
+                totalSeconds--;
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    div.innerText = "You can now request another OTP. Please refresh the page.";
+                    div.className = 'alert alert-success';
+                } else {
+                    let m = Math.floor(totalSeconds / 60);
+                    let s = totalSeconds % 60;
+                    div.innerText = `Please wait ${m > 0 ? m + 'm ' : ''}${s}s before requesting another OTP.`;
+                }
+            }, 1000);
+        }
+    });
 });
 </script>
 <?php include("footer.php"); ?>

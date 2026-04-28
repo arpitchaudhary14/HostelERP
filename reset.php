@@ -85,6 +85,15 @@ if(isset($_POST['reset'])){
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/WebTechProject/assets/css/style.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.2s ease-in-out 0s 2; background: rgba(255, 77, 77, 0.1) !important; border: 1px solid #ff4d4d !important; }
+        .timer-pill.warning { color: #ff4d4d; font-weight: 700; }
+    </style>
 </head>
 <body class="auth-bg">
 <div class="auth-container" style="max-width:420px;">
@@ -141,15 +150,18 @@ if(isset($_POST['reset'])){
                 Reset Password
             </button>
         </form>
-        <div class="text-center mt-3" style="font-size:0.85rem;" id="resendContainer">
-            <p class="mb-2">Didn't receive code?</p>
-            <form method="POST" id="resendForm">
+        <div class="text-center mt-4" style="font-size:0.85rem;" id="resendContainer">
+            <p class="mb-2" style="color: rgba(255,255,255,0.7); position: relative;">Didn't receive the code? 
+                <a href="javascript:void(0)" onclick="const btn=document.getElementById('resendBtn'); const t=document.getElementById('otpExpiryTimerWrapper'); const msg=document.getElementById('resendMsg'); if(!btn.disabled) { btn.click(); } else { t.classList.add('shake'); msg.style.opacity='1'; setTimeout(()=>{t.classList.remove('shake'); msg.style.opacity='0';}, 1500); }" style="color: #6c63ff; font-weight: 700; text-decoration: none; margin-left: 5px;">Try Resending</a>
+                <span id="resendMsg" style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #ff4d4d; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;">Wait for timer to finish</span>
+            </p>
+            <form method="POST" id="resendForm" onsubmit="document.getElementById('resendBtn').innerHTML='Sending...';">
                 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <input type="hidden" name="email" id="resendEmail" value="<?php echo htmlspecialchars($email_prefill); ?>">
-                <div class="d-flex justify-content-center mb-2">
+                <div class="d-flex justify-content-center mb-3">
                     <div class="g-recaptcha" data-sitekey="<?php echo $_ENV['RECAPTCHA_SITE_KEY'] ?? ''; ?>"></div>
                 </div>
-                <button type="submit" name="resend_otp" id="resendBtn" class="btn btn-outline-secondary btn-sm" disabled>
+                <button type="submit" name="resend_otp" id="resendBtn" class="btn btn-outline-primary btn-sm px-4" disabled style="border-radius: 8px; font-weight: 600; transition: all 0.3s;">
                     Resend OTP <span id="timerDisplay"></span>
                 </button>
             </form>
@@ -187,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailWrap = document.getElementById('resendEmail').value;
     let timerKey = "otp_timer_" + emailWrap;
     let storedTime = sessionStorage.getItem(timerKey);
-    let duration = 60;
+    let duration = 120;
     <?php if($timer_start): ?>
     storedTime = Date.now() + (duration * 1000);
     sessionStorage.setItem(timerKey, storedTime);
@@ -221,14 +233,28 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.removeItem(expiryKey);
         }
     }
+    function updateTimer() {
+        if (!resendBtn) return;
+        let now = Date.now();
+        if (storedTime && now < storedTime) {
+            let remaining = Math.floor((storedTime - now) / 1000);
+            resendBtn.disabled = true;
+            timerDisplay.textContent = `(${remaining}s)`;
+            setTimeout(updateTimer, 1000);
+        } else {
+            resendBtn.disabled = false;
+            timerDisplay.textContent = "";
+            sessionStorage.removeItem(timerKey);
+        }
+    }
     updateExpiryTimer();
     updateTimer();
     const errorDivs = document.querySelectorAll('.alert-glass-danger');
     errorDivs.forEach(div => {
         const text = div.innerText;
-        const match = text.match(/Please wait (\d+) (seconds|minutes)|try again in an (hour)/i);
+        const match = text.match(/Please wait (\d+)(?:m\s*)?(\d+)?s|try again in an (hour)/i);
         if (match) {
-            let totalSeconds = match[3] === 'hour' ? 3600 : parseInt(match[1]) * (match[2]?.startsWith('minute') ? 60 : 1);
+            let totalSeconds = match[3] === 'hour' ? 3600 : (parseInt(match[1]) * (text.includes('m') ? 60 : 1)) + (match[2] ? parseInt(match[2]) : 0);
             const timerInterval = setInterval(() => {
                 totalSeconds--;
                 if (totalSeconds <= 0) {

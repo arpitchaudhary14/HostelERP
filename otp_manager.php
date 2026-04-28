@@ -16,24 +16,27 @@ class OTPManager {
     }
     public function canRequestOTP($identifier) {
         $ip = $_SERVER['REMOTE_ADDR'];
-        
-        // Clean up old records (older than 1 hour)
-        $stmt_del = mysqli_prepare($this->conn, "DELETE FROM otp_rate_limits WHERE last_attempt_time < NOW() - INTERVAL 1 HOUR");
+        $stmt_del = mysqli_prepare($this->conn, "DELETE FROM otp_rate_limits WHERE last_attempt_time < NOW() - INTERVAL 1 HOUR AND blocked_until IS NULL");
         mysqli_stmt_execute($stmt_del);
-
-        // Global limit check
+        $stmt_block = mysqli_prepare($this->conn, "SELECT blocked_until FROM otp_rate_limits WHERE (identifier=? OR identifier=?) AND blocked_until > NOW() LIMIT 1");
+        mysqli_stmt_bind_param($stmt_block, "ss", $ip, $identifier);
+        mysqli_stmt_execute($stmt_block);
+        $block_res = mysqli_stmt_get_result($stmt_block);
+        if ($row_block = mysqli_fetch_assoc($block_res)) {
+            $wait_time = strtotime($row_block['blocked_until']) - time();
+            $h = ceil($wait_time / 3600);
+            $m = ceil(($wait_time % 3600) / 60);
+            return "Security Alert: Access is temporarily restricted. Try again in $h hours $m minutes.";
+        }
         $global_res = mysqli_query($this->conn, "SELECT SUM(attempts) as total_hourly FROM otp_rate_limits WHERE type='ip'");
         $total_hourly = mysqli_fetch_assoc($global_res)['total_hourly'] ?? 0;
         if ($total_hourly >= $this->global_max_per_hour) {
              return "SYSTEM PAUSED: Max global OTP limit reached. Try again later.";
         }
-
-        // Check specific IP and Email
         $stmt = mysqli_prepare($this->conn, "SELECT attempts, last_attempt_time FROM otp_rate_limits WHERE identifier=? OR identifier=?");
         mysqli_stmt_bind_param($stmt, "ss", $ip, $identifier);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-
         while($row = mysqli_fetch_assoc($result)) {
             if ($row['attempts'] >= $this->max_per_hour) {
                 return "You have exceeded the maximum OTP requests. Please try again in an hour.";
@@ -49,7 +52,6 @@ class OTPManager {
         }
         return true;
     }
-
     private function recordAttempt($identifier) {
         $ip = $_SERVER['REMOTE_ADDR'];
         foreach ([$ip, $identifier] as $id) {
@@ -57,13 +59,12 @@ class OTPManager {
             mysqli_stmt_bind_param($stmt_check, "s", $id);
             mysqli_stmt_execute($stmt_check);
             $check = mysqli_stmt_get_result($stmt_check);
-
             if (mysqli_num_rows($check) > 0) {
                 $stmt_upd = mysqli_prepare($this->conn, "UPDATE otp_rate_limits SET attempts = attempts + 1, last_attempt_time = NOW() WHERE identifier=?");
                 mysqli_stmt_bind_param($stmt_upd, "s", $id);
                 mysqli_stmt_execute($stmt_upd);
             } else {
-                $type = ($id === $ip) ? 'ip' : 'email';
+                $type = ($id === $ip) ? 'ip' : 'user';
                 $stmt_ins = mysqli_prepare($this->conn, "INSERT INTO otp_rate_limits (identifier, type, last_attempt_time, attempts) VALUES (?, ?, NOW(), 1)");
                 mysqli_stmt_bind_param($stmt_ins, "ss", $id, $type);
                 mysqli_stmt_execute($stmt_ins);
@@ -87,12 +88,18 @@ class OTPManager {
             $otp    = (string) random_int(100000, 999999);
             $expiry = date("Y-m-d H:i:s", strtotime("+{$this->expiry_minutes} minutes"));
             mysqli_query($this->conn, "DELETE FROM otp_codes WHERE email='$email_safe' AND type='$type_safe'");
+            $req_ip = $_SERVER['REMOTE_ADDR'];
             mysqli_query($this->conn,
-                "INSERT INTO otp_codes (email, otp, expiry_time, type)
-                 VALUES ('$email_safe', '$otp', '$expiry', '$type_safe')"
+                "INSERT INTO otp_codes (email, ip_address, otp, expiry_time, type)
+                 VALUES ('$email_safe', '$req_ip', '$otp', '$expiry', '$type_safe')"
             );
         }
         $this->recordAttempt($email);
+        $baseUrl     = "http://localhost/WebTechProject/security_actions.php";
+        $actionToken = hash_hmac('sha256', $email . $otp, $_ENV['DB_PASS'] ?? 'secret');
+        $cancelLink  = "$baseUrl?action=cancel&email=" . urlencode($email) . "&token=$actionToken";
+        $blockLink   = "$baseUrl?action=block&email=" . urlencode($email) . "&token=$actionToken";
+        $auditLink   = "http://localhost/WebTechProject/login.php";
         $type_label = str_replace('_', ' ', $type);
         $subject = "HostelERP - Your Verification Code";
         $body = "
@@ -110,6 +117,15 @@ class OTPManager {
                         <span style='font-size: 38px; font-weight: 800; color: #6c63ff; letter-spacing: 8px; font-family: \"Courier New\", Courier, monospace;'>$otp</span>
                     </div>  
                     <p style='font-size: 14px; color: #b2bec3; line-height: 1.5;'>This code is valid for <strong>{$this->expiry_minutes} minutes</strong>. For security reasons, do not share this code with anyone.</p>    
+                    <div style='background: #fff5f5; border-left: 4px solid #ff4d4d; padding: 20px; margin: 25px 0; border-radius: 8px; text-align: left;'>
+                        <p style='margin: 0; font-size: 14px; color: #d63031; font-weight: 700;'>Suspicious Activity?</p>
+                        <p style='margin: 8px 0 16px; font-size: 13px; color: #636e72; line-height: 1.5;'>If you didn't request this code, someone may be trying to access your account. Use the options below to protect yourself instantly:</p>
+                        <div style='display: flex; gap: 10px; flex-wrap: wrap;'>
+                            <a href='$cancelLink' style='background: #f1f3f5; color: #1a1a2e; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; border: 1px solid #dee2e6;'>Cancel This OTP</a>
+                            <a href='$blockLink' style='background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;'>Block Requester</a>
+                            <a href='$auditLink' style='background: #6c63ff; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;'>Login Activity</a>
+                        </div>
+                    </div>
                     <div style='margin-top: 40px; padding-top: 24px; border-top: 1px solid #f1f3f5; text-align: center;'>
                         <p style='font-size: 12px; color: #b2bec3; margin-bottom: 0;'>&copy; 2026 HostelERP. All rights reserved.<br>Your security is our priority.</p>
                     </div>

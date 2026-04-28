@@ -83,6 +83,8 @@ if (!$user) {
 }
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['role']    = $user['role'];
+require_once "security_config.php";
+record_login($conn, $user['id'], 'microsoft');
 header("Location: dashboard.php");
 exit();
 ?>

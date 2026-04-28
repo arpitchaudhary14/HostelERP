@@ -16,3 +16,12 @@ env/
 # User-Generated Content
 /uploads/
 /logs/
+/assets/profile/user_*
+/assets/profile/*.jpg
+/assets/profile/*.png
+/assets/profile/*.jpeg
+# IDE and System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

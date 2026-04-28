@@ -53,6 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = strtolower($user['role']);
+                require_once "security_config.php";
+                record_login($conn, $user['id'], 'normal');
                 if ($_SESSION['role'] == 'student') {
                     header("Location: student/dashboard.php");
                 } elseif ($_SESSION['role'] == 'warden') {

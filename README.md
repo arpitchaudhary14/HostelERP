@@ -13,9 +13,12 @@ A full-stack hostel management system with an AI assistant to automate student a
 *   **Interactive AI**: A built-in assistant (LEON) to help users with platform tasks and actions.
     -   **Rate Limiting**: IP-based and Email-based OTP request limits (5 per hour).
 ### Recent Security Hardening (April 2026)
+*   **Security Action Center**: Integrated actionable security links in OTP emails (Cancel OTP, Block IP, Audit Activity) for instant self-service account protection.
+*   **Login Auditing**: Comprehensive tracking of login attempts (IP, User-Agent, Type) with a user-facing activity log in the profile.
+*   **Enhanced Account Protection**: Required OTP verification for sensitive account changes (Password Change, Account Deletion) to prevent session hijacking.
 *   **Google reCAPTCHA v2**: Added comprehensive bot protection to Login, Registration, and Forgot Password flows.
 *   **Dynamic OTP UX**: Implemented real-time, live-ticking countdown timers for all verification screens.
-*   **Premium Email Templates**: Upgraded all system emails to high-end, branded HTML templates.
+*   **Premium Email Templates**: Upgraded all system emails to high-end, branded HTML templates with clear security calls to action.
 *   **Defense in Depth**: Hardened the entire backend with 100% Prepared Statements, CSRF validation, and Session AFK auto-logout.
 ### Recent UI Enhancements
 * Done some changes in the Dashboard, Profile and OTP System UI Pages.

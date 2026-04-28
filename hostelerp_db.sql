@@ -111,13 +111,16 @@ CREATE TABLE otp_codes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(100),
     otp VARCHAR(10),
+    type VARCHAR(50) DEFAULT 'reset_password',
+    ip_address VARCHAR(45) DEFAULT NULL,
     expiry_time DATETIME
 );
 ALTER TABLE users
   ADD status ENUM('active','banned') DEFAULT 'active',
   ADD google_id VARCHAR(100) DEFAULT NULL,
   ADD microsoft_id VARCHAR(100) DEFAULT NULL,
-  ADD two_factor_enabled TINYINT(1) DEFAULT 0;
+  ADD two_factor_enabled TINYINT(1) DEFAULT 0,
+  ADD is_verified TINYINT(1) DEFAULT 0;
 INSERT INTO system_settings (id, hostel_name, contact_email, contact_phone)
 SELECT 1, 'HostelERP', 'support@hostelerp.com', '+91 9876543210'
 WHERE NOT EXISTS (SELECT 1 FROM system_settings WHERE id = 1);
@@ -135,9 +138,10 @@ CREATE TABLE IF NOT EXISTS system_settings (
 CREATE TABLE IF NOT EXISTS otp_rate_limits (
     id INT AUTO_INCREMENT PRIMARY KEY,
     identifier VARCHAR(100) NOT NULL,
-    type VARCHAR(20) DEFAULT 'ip',
+    type ENUM('ip','user','email') DEFAULT 'ip',
     attempts INT DEFAULT 1,
     last_attempt_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    blocked_until DATETIME DEFAULT NULL,
     UNIQUE KEY unique_identifier (identifier)
 );
 CREATE TABLE IF NOT EXISTS visitors (
@@ -257,5 +261,14 @@ CREATE TABLE IF NOT EXISTS attendance_corrections (
     reviewed_by INT NULL,
     reviewed_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS login_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    login_type ENUM('normal', 'google', 'microsoft') DEFAULT 'normal',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
