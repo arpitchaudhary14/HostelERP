@@ -252,21 +252,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorDivs = document.querySelectorAll('.alert-glass-danger');
     errorDivs.forEach(div => {
         const text = div.innerText;
-        const match = text.match(/Please wait (\d+)(?:m\s*)?(\d+)?s|try again in an (hour)/i);
+        const match = text.match(/wait (?:(\d+)m\s*)?(\d+)\s*s|in (\d+)\s*h(?:ours?)?\s*(?:(\d+)\s*m(?:inutes?)?)?|in an (hour)/i);
+        
         if (match) {
-            let totalSeconds = match[3] === 'hour' ? 3600 : (parseInt(match[1]) * (text.includes('m') ? 60 : 1)) + (match[2] ? parseInt(match[2]) : 0);
-            const timerInterval = setInterval(() => {
-                totalSeconds--;
-                if (totalSeconds <= 0) {
-                    clearInterval(timerInterval);
-                    div.innerText = "You can now request another OTP. Please refresh or click below.";
-                    div.className = 'alert-glass-success mb-3';
-                } else {
-                    let m = Math.floor(totalSeconds / 60);
-                    let s = totalSeconds % 60;
-                    div.innerText = `Please wait ${m > 0 ? m + 'm ' : ''}${s}s before requesting another OTP.`;
-                }
-            }, 1000);
+            let totalSeconds = 0;
+            if (match[5] === 'hour') {
+                totalSeconds = 3600;
+            } else if (match[3]) {
+                totalSeconds = (parseInt(match[3]) * 3600) + (match[4] ? parseInt(match[4]) * 60 : 0);
+            } else {
+                totalSeconds = (match[1] ? parseInt(match[1]) * 60 : 0) + parseInt(match[2]);
+            }
+
+            if (totalSeconds > 0) {
+                const timerInterval = setInterval(() => {
+                    totalSeconds--;
+                    if (totalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        div.innerText = "You can now request another OTP. Please refresh or click below.";
+                        div.className = 'alert-glass-success mb-3';
+                    } else {
+                        let h = Math.floor(totalSeconds / 3600);
+                        let m = Math.floor((totalSeconds % 3600) / 60);
+                        let s = totalSeconds % 60;
+                        let timeStr = (h > 0 ? h + "h " : "") + (m > 0 || h > 0 ? m + "m " : "") + s + "s";
+                        div.innerText = `Please wait ${timeStr} before requesting another OTP.`;
+                    }
+                }, 1000);
+            }
         }
     });
 });

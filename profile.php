@@ -270,7 +270,7 @@ Update Profile
     <form method="POST" class="mt-2 text-center">
         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <input type="hidden" name="resend_type" value="password_change">
-        <button type="submit" name="resend_otp_profile" class="btn btn-link btn-sm text-decoration-none" style="color:var(--primary-color);">Didn't receive? Resend OTP</button>
+        <button type="submit" name="resend_otp_profile" id="passwordResendBtn" class="btn btn-link btn-sm text-decoration-none" style="color:var(--primary-color); font-weight:700;" disabled>Didn't receive? Resend OTP <span id="passwordResendTimer"></span></button>
     </form>
 <?php else: ?>
     <form method="POST">
@@ -321,7 +321,7 @@ Update Profile
                     <form method="POST" class="mt-1">
                         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <input type="hidden" name="resend_type" value="email_verification">
-                        <button type="submit" name="resend_otp_profile" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 11px;">Resend OTP</button>
+                        <button type="submit" name="resend_otp_profile" id="emailResendBtn" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 11px; color: var(--primary-color); font-weight:600;" disabled>Resend OTP <span id="emailResendTimer"></span></button>
                     </form>
                 <?php else: ?>
                     <span class="status-pill unverified">Unverified</span>
@@ -366,11 +366,11 @@ Update Profile
             Confirm Permanent Deletion
         </button>
     </form>
-    <form method="POST" class="mt-2 text-center d-flex justify-content-between">
+    <form method="POST" class="mt-3 text-center d-flex justify-content-between">
          <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
          <input type="hidden" name="resend_type" value="delete_account">
-         <button type="submit" name="resend_otp_profile" class="btn btn-link text-muted p-0 text-decoration-none" style="font-size: 13px;">Resend OTP</button>
-         <button name="cancel_action" class="btn btn-link text-muted p-0 text-decoration-none" style="font-size: 13px;">Cancel</button>
+         <button type="submit" name="resend_otp_profile" id="deleteResendBtn" class="btn btn-link p-0 text-decoration-none" style="font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600;" disabled>Resend OTP <span id="deleteResendTimer"></span></button>
+         <button name="cancel_action" class="btn btn-link p-0 text-decoration-none" style="font-size: 13px; color: rgba(255,255,255,0.5);">Cancel</button>
     </form>
 <?php else: ?>
     <form method="POST" onsubmit="return confirm('Are you absolutely sure you want to delete your account? This will send an OTP to your email.');">
@@ -474,24 +474,68 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php if(isset($show_password_verify) && $show_password_verify): ?>
     startExpiryTimer('passwordExpiryTimer', 'passwordOtpIn', 'passwordConfirmBtn', 'password');
     <?php endif; ?>
+    function startResendCooldown(btnId, displayId, type) {
+        const btn = document.getElementById(btnId);
+        const display = document.getElementById(displayId);
+        if(!btn) return;
+        const email = "<?php echo $user['email']; ?>";
+        const key = "resend_cooldown_" + type + "_" + email;
+        let stored = sessionStorage.getItem(key);
+        <?php if(isset($_POST['resend_otp_profile']) || isset($_POST['change_password']) || isset($_POST['request_delete_otp']) || isset($_POST['request_email_verification'])): ?>
+        if(!stored || Date.now() > stored - 110000) {
+             stored = Date.now() + (120 * 1000);
+             sessionStorage.setItem(key, stored);
+        }
+        <?php endif; ?>
+        function tick() {
+            let remaining = Math.max(0, Math.floor((stored - Date.now()) / 1000));
+            if(remaining > 0) {
+                btn.disabled = true;
+                if(display) display.textContent = `(${remaining}s)`;
+                setTimeout(tick, 1000);
+            } else {
+                btn.disabled = false;
+                if(display) display.textContent = "";
+                sessionStorage.removeItem(key);
+            }
+        }
+        tick();
+    }
+    startResendCooldown('deleteResendBtn', 'deleteResendTimer', 'delete');
+    startResendCooldown('emailResendBtn', 'emailResendTimer', 'email');
+    startResendCooldown('passwordResendBtn', 'passwordResendTimer', 'password');
     const errorDivs = document.querySelectorAll('.alert-danger');
     errorDivs.forEach(div => {
         const text = div.innerText;
-        const match = text.match(/Please wait (\d+)(?:m\s*)?(\d+)?s|try again in an (hour)/i);
+        const match = text.match(/wait (?:(\d+)m\s*)?(\d+)\s*s|in (\d+)\s*h(?:ours?)?\s*(?:(\d+)\s*m(?:inutes?)?)?|in an (hour)/i);
         if (match) {
-            let totalSeconds = match[3] === 'hour' ? 3600 : (parseInt(match[1]) * (text.includes('m') ? 60 : 1)) + (match[2] ? parseInt(match[2]) : 0);
-            const timerInterval = setInterval(() => {
-                totalSeconds--;
-                if (totalSeconds <= 0) {
-                    clearInterval(timerInterval);
-                    div.innerText = "You can now request another OTP. Please refresh the page.";
-                    div.className = 'alert alert-success';
-                } else {
-                    let m = Math.floor(totalSeconds / 60);
-                    let s = totalSeconds % 60;
-                    div.innerText = `Please wait ${m > 0 ? m + 'm ' : ''}${s}s before requesting another OTP.`;
-                }
-            }, 1000);
+            let totalSeconds = 0;
+            if (match[5] === 'hour') {
+                totalSeconds = 3600;
+            } else if (match[3]) { 
+                totalSeconds = (parseInt(match[3]) * 3600) + (match[4] ? parseInt(match[4]) * 60 : 0);
+            } else { 
+                totalSeconds = (match[1] ? parseInt(match[1]) * 60 : 0) + parseInt(match[2]);
+            }
+            if (totalSeconds > 0) {
+                const timerInterval = setInterval(() => {
+                    totalSeconds--;
+                    if (totalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        div.innerText = "You can now request another OTP. Please refresh the page.";
+                        div.className = 'alert alert-success';
+                    } else {
+                        let h = Math.floor(totalSeconds / 3600);
+                        let m = Math.floor((totalSeconds % 3600) / 60);
+                        let s = totalSeconds % 60;
+                        let timeStr = "";
+                        if (h > 0) timeStr += h + "h ";
+                        if (m > 0 || h > 0) timeStr += m + "m ";
+                        timeStr += s + "s";
+                        div.innerText = `Please wait ${timeStr} before requesting another OTP.`;
+                    }
+                }, 1000);
+            }
         }
     });
 });

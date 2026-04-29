@@ -192,53 +192,6 @@ CREATE TABLE IF NOT EXISTS documents (
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
 );
 SELECT * FROM users;
-CREATE TABLE IF NOT EXISTS visitors (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    visitor_name VARCHAR(100) NOT NULL,
-    phone VARCHAR(15),
-    purpose TEXT,
-    entry_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    exit_time DATETIME NULL,
-    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS parcels (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    courier_name VARCHAR(100) NOT NULL,
-    tracking_id VARCHAR(100),
-    description TEXT,
-    received_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    collected_at DATETIME NULL,
-    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS mess_menu (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    day_of_week VARCHAR(10) NOT NULL,
-    meal_type VARCHAR(20) NOT NULL,
-    items TEXT NOT NULL,
-    UNIQUE KEY unique_day_meal (day_of_week, meal_type)
-);
-CREATE TABLE IF NOT EXISTS notifications (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    title VARCHAR(200) NOT NULL,
-    message TEXT NOT NULL,
-    is_read TINYINT(1) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS documents (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    document_type VARCHAR(50) NOT NULL,
-    file_path VARCHAR(255) NOT NULL,
-    status ENUM('Pending','Verified','Rejected') DEFAULT 'Pending',
-    verified_by INT NULL,
-    verified_at DATETIME NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
-);
 CREATE TABLE IF NOT EXISTS warden_leave_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     warden_id INT NOT NULL,

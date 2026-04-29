@@ -30,6 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !isset($_GET['sent'])) {
 if (isset($_GET['sent'])) {
     $success = "A 6-digit True 2-Factor Authentication code has been sent to your email.";
 }
+if (isset($_POST['resend_2fa'])) {
+    validate_csrf();
+    $res = $otpManager->requestOTP($user['email'], '2fa');
+    if ($res['status'] == 'success') {
+        $success = "A new 2FA code has been sent to your email.";
+        $_SESSION['2fa_resend_timer'] = time() + 120;
+    } else {
+        $error = $res['message'];
+    }
+}
 if (isset($_POST['verify_2fa'])) {
     validate_csrf();
     $otp = trim($_POST['otp']);
@@ -92,7 +102,16 @@ if (isset($_POST['verify_2fa'])) {
             <button type="submit" name="verify_2fa" id="verifyBtn" class="btn-gradient w-100 mt-3" style="font-weight:600;">
                 Verify & Continue
             </button>
-        </form>  
+        </form>
+        <div class="text-center mt-4">
+            <p class="mb-1" style="font-size:0.85rem; color:#666;">Didn't receive the code?</p>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                <button type="submit" name="resend_2fa" id="resendBtn" class="btn btn-link btn-sm text-decoration-none" style="color:var(--primary-color); font-weight:600;" disabled>
+                    Resend OTP <span id="resendTimerDisplay"></span>
+                </button>
+            </form>
+        </div>
         <div class="text-center mt-3">
              <a href="login.php" class="text-muted" style="text-decoration:none; font-size:0.85rem;">← Back to login</a>
         </div>
@@ -133,6 +152,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     updateExpiryTimer();
+    const resendBtn = document.getElementById('resendBtn');
+    const resendTimerDisplay = document.getElementById('resendTimerDisplay');
+    let resendKey = "otp_resend_2fa_" + email;
+    let storedResend = sessionStorage.getItem(resendKey);
+    <?php if(isset($_POST['resend_2fa']) || isset($_GET['sent'])): ?>
+    storedResend = Date.now() + (120 * 1000);
+    sessionStorage.setItem(resendKey, storedResend);
+    <?php endif; ?>
+    function updateResendTimer() {
+        if(!resendBtn) return;
+        let remaining = Math.max(0, Math.floor((storedResend - Date.now()) / 1000));
+        if(remaining > 0) {
+            resendBtn.disabled = true;
+            resendTimerDisplay.textContent = `(${remaining}s)`;
+            setTimeout(updateResendTimer, 1000);
+        } else {
+            resendBtn.disabled = false;
+            resendTimerDisplay.textContent = "";
+            sessionStorage.removeItem(resendKey);
+        }
+    }
+    updateResendTimer();
+    const errorDivs = document.querySelectorAll('.alert-glass-danger');
+    errorDivs.forEach(div => {
+        const text = div.innerText;
+        const match = text.match(/wait (?:(\d+)m\s*)?(\d+)\s*s|in (\d+)\s*h(?:ours?)?\s*(?:(\d+)\s*m(?:inutes?)?)?|in an (hour)/i);
+        if (match) {
+            let totalSeconds = 0;
+            if (match[5] === 'hour') totalSeconds = 3600;
+            else if (match[3]) totalSeconds = (parseInt(match[3]) * 3600) + (match[4] ? parseInt(match[4]) * 60 : 0);
+            else totalSeconds = (match[1] ? parseInt(match[1]) * 60 : 0) + parseInt(match[2]);
+            if (totalSeconds > 0) {
+                const timerInterval = setInterval(() => {
+                    totalSeconds--;
+                    if (totalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        div.innerText = "You can now request another OTP. Please refresh the page.";
+                        div.className = 'alert-glass-success mb-3';
+                    } else {
+                        let h = Math.floor(totalSeconds / 3600);
+                        let m = Math.floor((totalSeconds % 3600) / 60);
+                        let s = totalSeconds % 60;
+                        let timeStr = (h > 0 ? h + "h " : "") + (m > 0 || h > 0 ? m + "m " : "") + s + "s";
+                        div.innerText = `Please wait ${timeStr} before requesting another OTP.`;
+                    }
+                }, 1000);
+            }
+        }
+    });
 });
 </script>
 </body>

@@ -125,9 +125,10 @@ class OTPManager {
                             <a href='$blockLink' style='background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;'>Block Requester</a>
                             <a href='$auditLink' style='background: #6c63ff; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;'>Login Activity</a>
                         </div>
+                        <p style='margin: 15px 0 0; font-size: 12px; color: #636e72;'>Need help? <a href='mailto:hostelerp.system@gmail.com' style='color: #d63031; text-decoration: none; font-weight: 700;'>Contact Support</a></p>
                     </div>
                     <div style='margin-top: 40px; padding-top: 24px; border-top: 1px solid #f1f3f5; text-align: center;'>
-                        <p style='font-size: 12px; color: #b2bec3; margin-bottom: 0;'>&copy; 2026 HostelERP. All rights reserved.<br>Your security is our priority.</p>
+                        <p style='font-size: 12px; color: #b2bec3; margin-bottom: 0;'>&copy; 2026 HostelERP. All rights reserved.<br>Questions? <a href='mailto:hostelerp.system@gmail.com' style='color: #6c63ff; text-decoration: none;'>hostelerp.system@gmail.com</a></p>
                     </div>
                 </div>
             </div>
