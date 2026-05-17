@@ -26,7 +26,7 @@ $visits = mysqli_query($conn, "SELECT v.*, u.first_name, u.last_name FROM visito
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
     <div class="glass-card-light p-4 reveal">
-        <h4 style="font-weight:700; color:#1a1a2e;">Manage Visitors</h4>
+        <h4 style="font-weight:700; ">Manage Visitors</h4>
         <div class="table-responsive mt-3">
             <table class="table table-hover">
                 <thead class="table-light">

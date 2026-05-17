@@ -13,7 +13,7 @@ $result = mysqli_stmt_get_result($stmt);
 include("../header.php");
 ?>
 <div class="container mt-4">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">📋 My Leave Requests</h4>
+<h4 class="mb-3" style="font-weight:700; ">📋 My Leave Requests</h4>
 <div class="glass-card-light">
 <table class="table table-bordered mb-0">
 <thead class="table-dark">

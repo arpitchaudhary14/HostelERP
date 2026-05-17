@@ -31,7 +31,7 @@ include("../header.php");
     $percent = $total > 0 ? round(($present / $total) * 100) : 0;
 ?>
 <a href="warden_attendance.php" class="btn btn-outline-secondary btn-sm mb-3">← Back to All Wardens</a>
-<h3 class="mb-3" style="font-weight:700; color:#1a1a2e;">📊 <?= htmlspecialchars($wname['full_name']) ?>'s Attendance</h3>
+<h3 class="mb-3" style="font-weight:700; ">📊 <?= htmlspecialchars($wname['full_name']) ?>'s Attendance</h3>
 <div class="row g-3 mb-4">
     <div class="col-md-3">
         <div class="stat-card stat-success text-center">
@@ -84,7 +84,7 @@ include("../header.php");
     </table>
 </div>
 <?php else: ?>
-    <h3 class="mb-3" style="font-weight:700; color:#1a1a2e;">📊 Warden Attendance Records</h3>
+    <h3 class="mb-3" style="font-weight:700;">📊 Warden Attendance Records</h3>
     <div class="glass-card-light">
     <table class="table table-bordered mb-0">
         <thead class="table-dark">

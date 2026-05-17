@@ -33,7 +33,7 @@ $parcels = mysqli_query($conn, "SELECT p.*, s.first_name as s_fn, s.last_name as
     <div class="row">
         <div class="col-md-4">
             <div class="glass-card-light p-4 reveal">
-                <h4 style="font-weight:700; color:#1a1a2e;">Log New Parcel</h4>
+                <h4 style="font-weight:700; ">Log New Parcel</h4>
                 <?php if($msg) echo "<div class='alert alert-success'>$msg</div>"; ?>
                 <?php if($error) echo "<div class='alert alert-danger'>$error</div>"; ?>
                 <form method="POST">
@@ -61,7 +61,7 @@ $parcels = mysqli_query($conn, "SELECT p.*, s.first_name as s_fn, s.last_name as
         </div>
         <div class="col-md-8">
             <div class="glass-card-light p-4 reveal" style="min-height: 400px;">
-                <h4 style="font-weight:700; color:#1a1a2e;">Parcel Logs</h4>
+                <h4 style="font-weight:700; ">Parcel Logs</h4>
                 <div class="table-responsive mt-3">
                     <table class="table table-hover">
                         <thead class="table-light">

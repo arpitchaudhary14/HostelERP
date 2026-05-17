@@ -11,8 +11,19 @@ A full-stack hostel management system with an AI assistant to automate student a
 *   **Data Export**: Quickly export student records to CSV for reporting.
 *   **Activity Logging**: Tracks all administrative actions for accountability.
 *   **Interactive AI**: A built-in assistant (LEON) to help users with platform tasks and actions.
-    -   **Rate Limiting**: IP-based and Email-based OTP request limits (5 per hour).
-### Recent Security Hardening (April 2026)
+*   **MatrixFit Gym Management**: Complete gym module with role-agnostic membership plans, automated self-check-in/out, digital member cards, and real-time revenue analytics for admins.
+*   **Indexia Library Management**: Paperless book catalog searchable by ISBN/Author, digital library cards, book borrow requests, out-of-stock reservations, and an integrated fine payment ledger.
+*   **Cleanly Laundry Operations**: A high-end operations center featuring subscription packs, digital wash passes, live wash tracking, a warden drop-off desk, and real-time machine monitor metrics.
+*   **Smart Roommate & Matchmaking Engine**: 
+    -   Provisional allocation rules with a strict 24-hour verification countdown.
+    -   An invite-based Roommate Agreement portal requiring mutual student consent.
+    -   A dynamic roommate matchmaker that automatically matches solo students based on college attendance criteria.
+    -   Room Swapping desks where students request swaps subject to recipient consent and Warden mediation.
+    -   Simplified unified room configurations (2-Seater / 3-Seater with AC, Air-Cooled, or Normal ventilation tiers).
+*   **System Knowledge Registry**: A secure portal for admins to dynamically add, update, and remove institutional protocols which instantly synchronize with the AI Assistant.
+*   **Rate Limiting**: IP-based and Email-based OTP request limits (5 per hour) to safeguard security flows.
+### Premium Upgrades & Hardening (May 2026)
+*   **Self-Aware Text-to-SQL RAG**: LEON AI utilizes live MySQL schema discovery to execute dynamic SELECT queries directly, enabling natural-language queries for plans, timings, costs, and availability.
 *   **Security Action Center**: Integrated actionable security links in OTP emails (Cancel OTP, Block IP, Audit Activity) for instant self-service account protection.
 *   **Login Auditing**: Comprehensive tracking of login attempts (IP, User-Agent, Type) with a user-facing activity log in the profile.
 *   **Enhanced Account Protection**: Required OTP verification for sensitive account changes (Password Change, Account Deletion) to prevent session hijacking.
@@ -20,8 +31,9 @@ A full-stack hostel management system with an AI assistant to automate student a
 *   **Dynamic OTP UX**: Implemented real-time, live-ticking countdown timers for all verification screens.
 *   **Premium Email Templates**: Upgraded all system emails to high-end, branded HTML templates with clear security calls to action.
 *   **Defense in Depth**: Hardened the entire backend with 100% Prepared Statements, CSRF validation, and Session AFK auto-logout.
-### Recent UI Enhancements
-* Done some changes in the Dashboard, Profile and OTP System UI Pages.
+### Recent UI & UX Enhancements
+*   Upgraded Manage Rooms search queries into an integrated, glassmorphic bootstrap input group featuring pre-appended search indicators and a solid primary search trigger.
+*   Standardized portal navigation links with feature dropdown menus and role-based permissions across all user roles.
 ## Tech Stack
 *   **Backend**: PHP 8 (Logic), MySQL (Database)
 *   **Frontend**: HTML5, Vanilla CSS, JavaScript, Bootstrap 5

@@ -10,7 +10,7 @@ $parcels = mysqli_query($conn, "SELECT p.*, s.first_name as s_fn, s.last_name as
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
     <div class="glass-card-light p-4 reveal" style="min-height: 400px;">
-        <h4 style="font-weight:700; color:#1a1a2e;">Global Parcel Records</h4>
+        <h4 style="font-weight:700;">Global Parcel Records</h4>
         <div class="table-responsive mt-3">
             <table class="table table-hover">
                 <thead class="table-light">

@@ -29,7 +29,7 @@ $result = mysqli_query($conn, $query);
 include("../header.php");
 ?>
 <div class="container mt-4">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">📅 Warden Leave Requests</h4>
+<h4 class="mb-3" style="font-weight:700;">📅 Warden Leave Requests</h4>
 <div class="glass-card-light">
 <table class="table table-bordered mb-0">
 <thead class="table-dark">

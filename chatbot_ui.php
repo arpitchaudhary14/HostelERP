@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         } catch (error) {
             hideTyping();
-            appendMessage('ai', "Error connecting to the backend server. Is it running?");
+            appendMessage('ai', "LEON is currently undergoing a system maintenance mission. My digital brain is offline for a moment, but my mission continues. Please check back in a few minutes or consult the physical manual.");
             console.error(error);
         }
     }

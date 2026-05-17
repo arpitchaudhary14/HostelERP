@@ -43,3 +43,24 @@ def answer_data_query(query, user_data):
         "If the data is missing, say you don't have that information. Be friendly and concise."
     )
     return call_gemini(system_prompt, query, context)
+def answer_system_data_query(query):
+    """Handle general system data queries using Text-to-SQL logic with Dynamic Schema"""
+    import db.db_queries as db_q
+    live_schema, _ = db_q.get_dynamic_schema()
+    sql_gen_prompt = (
+        f"Based on the following LIVE Database Schema, generate a single MySQL SELECT query to answer the user's question.\n"
+        f"Schema:\n{live_schema}\n"
+        f"Rule: Return ONLY the SQL query string. No markdown, no explanation. Just the query.\n"
+        f"Example Question: 'What is the price of the monthly gym plan?'\n"
+        f"Example Answer: SELECT name, price FROM gym_plans WHERE name LIKE '%monthly%'"
+    )
+    generated_sql = call_gemini(sql_gen_prompt, query).strip().replace("```sql", "").replace("```", "").strip()
+    results = db_q.execute_system_query(generated_sql)
+    context = f"SQL Query: {generated_sql}\nQuery Results: {results}"
+    system_prompt = (
+        "You are LEON, an AI assistant for a Hostel ERP system. "
+        "Use the provided SQL Results to answer the user's question accurately. "
+        "If the results are empty or there is an error, say you don't have that information. "
+        "Be professional and concise."
+    )
+    return call_gemini(system_prompt, query, context)

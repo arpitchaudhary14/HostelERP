@@ -25,7 +25,7 @@ $fees_result = mysqli_query($conn, "
 include("../header.php");
 ?>
 <div class="container mt-4">
-<h3 class="mb-3" style="font-weight:700; color:#1a1a2e;">Collect Fees</h3>
+<h3 class="mb-3" style="font-weight:700; ">Collect Fees</h3>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <div class="glass-card-light mb-4">
 <h5 class="mb-3" style="font-weight:600;">All Fee Records</h5>

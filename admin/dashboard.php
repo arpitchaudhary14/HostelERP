@@ -81,8 +81,53 @@ $pending_warden_leaves = mysqli_fetch_assoc(
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
 <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl) var(--space-xl);">
-    <h3 style="font-weight:700; color:#1a1a2e;">Welcome, <?= htmlspecialchars($full_name) ?> 👋</h3>
-    <p style="color:#666; margin:0;">System analytics overview &mdash; here's what's happening today.</p>
+    <h3 style="font-weight:700;">Welcome, <?= htmlspecialchars($full_name) ?> 👋</h3>
+    <p style="margin:0;">System analytics overview &mdash; here's what's happening today.</p>
+</div>
+<div class="row mb-4 reveal">
+    <div class="col-12">
+        <div class="glass-card-light d-flex justify-content-between align-items-center" style="padding:var(--space-lg); border-left: 5px solid var(--accent-primary);">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="bi bi-shield-lock me-2 text-primary"></i> System Knowledge Registry</h5>
+                <p class="text-muted mb-0 small">Publish official guidelines, update protocols, and manage system-wide information.</p>
+            </div>
+            <a href="chatbot/knowledge.php" class="btn btn-primary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
+                <i class="bi bi-journal-text me-2"></i> Manage Registry
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row g-4 mb-4 reveal">
+    <div class="col-md-4">
+        <div class="glass-card-light d-flex align-items-center p-3 h-100" style="border-left: 5px solid var(--accent-primary);">
+            <img src="/WebTechProject/assets/images/Indexia_Logo.jpeg" height="40" class="me-3 rounded shadow-sm">
+            <div class="flex-grow-1">
+                <h6 class="fw-bold mb-0">Indexia Library</h6>
+                <small class="text-muted text-xxs text-uppercase">Books & Borrows</small>
+            </div>
+            <a href="library/dashboard.php" class="btn btn-sm btn-outline-primary rounded-pill px-3">Dashboard</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card-light d-flex align-items-center p-3 h-100" style="border-left: 5px solid var(--accent-secondary);">
+            <img src="/WebTechProject/assets/images/MatrixFit_Logo.jpeg" height="40" class="me-3 rounded shadow-sm">
+            <div class="flex-grow-1">
+                <h6 class="fw-bold mb-0">MatrixFit Gym</h6>
+                <small class="text-muted text-xxs text-uppercase">Members & Plans</small>
+            </div>
+            <a href="gym/dashboard.php" class="btn btn-sm btn-outline-success rounded-pill px-3">Dashboard</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card-light d-flex align-items-center p-3 h-100" style="border-left: 5px solid #0ea5e9;">
+            <img src="/WebTechProject/assets/images/Cleanly_Logo.jpeg" height="40" class="me-3 rounded shadow-sm">
+            <div class="flex-grow-1">
+                <h6 class="fw-bold mb-0">Cleanly Laundry</h6>
+                <small class="text-muted text-xxs text-uppercase">Service & Orders</small>
+            </div>
+            <a href="laundry/dashboard.php" class="btn btn-sm btn-outline-info rounded-pill px-3">Dashboard</a>
+        </div>
+    </div>
 </div>
 <div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
@@ -109,32 +154,32 @@ $pending_warden_leaves = mysqli_fetch_assoc(
 <div class="stat-card stat-primary">
 <h5>Warden Leaves</h5>
 <h2 class="text-gradient" data-count="<?= $pending_warden_leaves ?>"><?= $pending_warden_leaves ?></h2>
-<small style="color:#888;">Pending</small>
+<small >Pending</small>
 </div>
 </div>
 <div class="col-md-3 reveal">
 <div class="stat-card stat-danger">
 <h5>Corrections</h5>
 <h2 style="color:var(--accent-danger);" data-count="<?= $pending_corrections ?>"><?= $pending_corrections ?></h2>
-<small style="color:#888;">Pending</small>
+<small >Pending</small>
 </div>
 </div>
 <div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Fees Collection</h6>
+<h6 class="text-center" style="font-weight:600;">Fees Collection</h6>
 <canvas id="feesChart"></canvas>
 </div>
 </div>
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Complaint Stats</h6>
+<h6 class="text-center" style="font-weight:600;">Complaint Stats</h6>
 <canvas id="complaintChart"></canvas>
 </div>
 </div>
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Student Attendance</h6>
+<h6 class="text-center" style="font-weight:600;">Student Attendance</h6>
 <canvas id="attendanceChart"></canvas>
 </div>
 </div>
@@ -142,7 +187,7 @@ $pending_warden_leaves = mysqli_fetch_assoc(
 <div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Warden Attendance</h6>
+<h6 class="text-center" style="font-weight:600;">Warden Attendance</h6>
 <canvas id="wardenAttendanceChart"></canvas>
 </div>
 </div>

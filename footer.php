@@ -30,18 +30,26 @@ $f_role = $_SESSION['role'] ?? 'guest';
 <li><a href="<?= $f_link ?: '/WebTechProject/warden/mark_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Mark Attendance</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/warden/attendance_correction.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Corrections</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/warden/my_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Leaves</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/leave_requests.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Student Leaves</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/gym/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/warden/laundry/requests.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
 <?php elseif ($f_role === 'admin'): ?>
 <li><a href="<?= $f_link ?: '/WebTechProject/admin/warden_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Warden Attendance</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_warden_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Leaves</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_corrections.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Corrections</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_users.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">User Management</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/gym/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/laundry/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/admin/chatbot/knowledge.php' ?>" style="color:var(--text-muted-light); text-decoration:none; font-weight: 600;"><i class="bi bi-cpu-fill me-1 text-info"></i> LEON AI Registry</a></li>
 <?php else: ?>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/my_room.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Room Management</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/submit_complaint.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Complaints System</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/leave_request.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Leave Requests</a></li>
 <li><a href="<?= $f_link ?: '/WebTechProject/student/attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Attendance Tracking</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/attendance_correction.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Corrections</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/student/gym/my_membership.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/student/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
+<li><a href="<?= $f_link ?: '/WebTechProject/student/laundry/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
 <?php endif; ?>
 </ul>
 </div>
@@ -90,7 +98,7 @@ Personal Identification: Name, Roll Number, Course/Department,
 Contact Details.
 </p>
 <p>
-Hostel Records: Room assignments, attendance logs, fee payment history.
+Hostel Records: Room assignments, attendance logs, gym memberships, fee payment history.
 </p>
 <p>
 Usage Data: Log files, device information, IP addresses for security monitoring.
@@ -176,7 +184,6 @@ shortDiv.style.display = "block";
 }
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <?php include __DIR__ . '/chatbot_ui.php'; ?>
 <?php if (isset($_SESSION['user_id'])): ?>
 <?php $client_timeout = isset($timeout_duration) ? $timeout_duration : 900; ?>

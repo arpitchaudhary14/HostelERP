@@ -22,7 +22,7 @@ $documents = mysqli_query($conn, "SELECT d.*, u.first_name, u.last_name, u.usern
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
     <div class="glass-card-light p-4 reveal" style="min-height: 400px;">
-        <h4 style="font-weight:700; color:#1a1a2e;">Student Documents Verification</h4>
+        <h4 style="font-weight:700; ">Student Documents Verification</h4>
         <div class="table-responsive mt-3">
             <table class="table table-hover">
                 <thead class="table-light">

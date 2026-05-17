@@ -36,7 +36,7 @@ include("../header.php");
 <div class="container mt-4" style="max-width:800px;">
 <a href="manage_students.php" class="btn btn-outline-secondary btn-sm mb-3">← Back to Students</a>
 <div class="glass-card-light mb-4">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;"><?= htmlspecialchars($full_name) ?></h4>
+<h4 class="mb-3" style="font-weight:700; "><?= htmlspecialchars($full_name) ?></h4>
 <div class="row">
 <div class="col-md-6">
     <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
@@ -58,7 +58,7 @@ include("../header.php");
 </div>
 </div>
 <div class="glass-card-light mb-4">
-<h5 class="mb-3" style="font-weight:600; color:#1a1a2e;">Recent Leave Requests</h5>
+<h5 class="mb-3" style="font-weight:600; ">Recent Leave Requests</h5>
 <?php if($leaves): ?>
 <table class="table table-bordered mb-0">
 <thead class="table-dark"><tr><th>From</th><th>To</th><th>Reason</th><th>Status</th></tr></thead>
@@ -78,7 +78,7 @@ include("../header.php");
 <?php endif; ?>
 </div>
 <div class="glass-card-light">
-<h5 class="mb-3" style="font-weight:600; color:#1a1a2e;">Recent Complaints</h5>
+<h5 class="mb-3" style="font-weight:600; ">Recent Complaints</h5>
 <?php if($complaints): ?>
 <table class="table table-bordered mb-0">
 <thead class="table-dark"><tr><th>Subject</th><th>Status</th><th>Date</th></tr></thead>

@@ -18,7 +18,7 @@ $result = mysqli_query($conn,$query);
 include("../header.php");
 ?>
 <div class="container mt-4">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">Room Allocation History</h4>
+<h4 class="mb-3" style="font-weight:700;">Room Allocation History</h4>
 <table class="table table-bordered">
 <tr>
 <th>Student</th>

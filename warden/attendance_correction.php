@@ -46,18 +46,18 @@ include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:600px;">
 <div class="glass-card-light">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">📝 Request Attendance Correction</h4>
-<p style="color:#888; font-size:0.9rem;">Submit a formal request to Admin to correct a past attendance record.</p>
+<h4 class="mb-3" style="font-weight:700; ">📝 Request Attendance Correction</h4>
+<p style="font-size:0.9rem;">Submit a formal request to Admin to correct a past attendance record.</p>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <?php if(isset($error))   echo "<div class='alert alert-danger'>$error</div>"; ?>
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Date</label>
+<label style="font-weight:500; font-size:0.88rem;">Date</label>
 <input type="date" name="correction_date" class="form-input-light" max="<?= date('Y-m-d', strtotime('-1 day')) ?>" value="<?= htmlspecialchars($prefill_date) ?>" required>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Current Status</label>
+<label style="font-weight:500; font-size:0.88rem;">Current Status</label>
 <select name="current_status" class="form-select" required>
 <option value="">Select</option>
 <option value="present" <?= $prefill_current==='present'?'selected':'' ?>>Present</option>
@@ -66,7 +66,7 @@ include("../header.php");
 </select>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Requested Status</label>
+<label style="font-weight:500; font-size:0.88rem;">Requested Status</label>
 <select name="requested_status" class="form-select" required>
 <option value="">Select</option>
 <option value="present">Present</option>
@@ -75,7 +75,7 @@ include("../header.php");
 </select>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Reason for Correction</label>
+<label style="font-weight:500; font-size:0.88rem;">Reason for Correction</label>
 <textarea name="reason" class="form-input-light" rows="3" placeholder="Explain why this attendance needs correction..." required></textarea>
 </div>
 <button type="submit" name="submit_correction" class="btn-gradient">Submit Correction Request</button>

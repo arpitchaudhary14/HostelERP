@@ -22,22 +22,22 @@ include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:700px;">
 <div class="glass-card-light">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">System Settings</h4>
+<h4 class="mb-3" style="font-weight:700;">System Settings</h4>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Hostel Name</label>
+<label style="font-weight:500; font-size:0.88rem;">Hostel Name</label>
 <input type="text" name="hostel_name" class="form-control"
 value="<?php echo htmlspecialchars($settings['hostel_name'] ?? ''); ?>" required>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Contact Email</label>
+<label style="font-weight:500; font-size:0.88rem;">Contact Email</label>
 <input type="email" name="contact_email" class="form-control"
 value="<?php echo htmlspecialchars($settings['contact_email'] ?? ''); ?>" required>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Contact Phone</label>
+<label style="font-weight:500; font-size:0.88rem;">Contact Phone</label>
 <input type="text" name="contact_phone" class="form-control"
 value="<?php echo htmlspecialchars($settings['contact_phone'] ?? ''); ?>" required>
 </div>

@@ -73,8 +73,8 @@ $my_pct = $my_t > 0 ? round(($my_p/$my_t)*100) : 0;
 <?php include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
 <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl) var(--space-xl);">
-    <h3 style="font-weight:700; color:#1a1a2e;">Welcome, <?= htmlspecialchars($full_name) ?> 👋</h3>
-    <p style="color:#666; margin:0;">System analytics overview &mdash; here's what's happening today.</p>
+    <h3 style="font-weight:700; ">Welcome, <?= htmlspecialchars($full_name) ?> 👋</h3>
+    <p style="margin:0;">System analytics overview &mdash; here's what's happening today.</p>
 </div>
 <div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
@@ -99,19 +99,19 @@ $my_pct = $my_t > 0 ? round(($my_p/$my_t)*100) : 0;
 <div class="row g-4 mb-4">
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Fees Collection</h6>
+<h6 class="text-center" style="font-weight:600; ">Fees Collection</h6>
 <canvas id="feesChart"></canvas>
 </div>
 </div>
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Complaint Stats</h6>
+<h6 class="text-center" style="font-weight:600; ">Complaint Stats</h6>
 <canvas id="complaintChart"></canvas>
 </div>
 </div>
 <div class="col-md-4 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 class="text-center" style="font-weight:600; color:#1a1a2e;">Attendance</h6>
+<h6 class="text-center" style="font-weight:600; ">Attendance</h6>
 <canvas id="attendanceChart"></canvas>
 </div>
 </div>
@@ -121,30 +121,30 @@ $my_pct = $my_t > 0 ? round(($my_p/$my_t)*100) : 0;
 <div class="row g-4 mb-4">
 <div class="col-12 reveal">
 <div class="glass-card-light" style="padding:var(--space-lg);">
-<h6 style="font-weight:600; color:#1a1a2e; margin-bottom:16px;">📊 My Attendance</h6>
+<h6 style="font-weight:600; margin-bottom:16px;">📊 My Attendance</h6>
 <div class="row g-3">
 <div class="col-md-3">
     <div class="text-center">
         <span class="badge bg-success" style="font-size:1.5rem; padding:12px 20px;"><?= $my_p ?></span>
-        <p style="color:#666; margin-top:8px; font-size:0.85rem;">Present</p>
+        <p style="margin-top:8px; font-size:0.85rem;">Present</p>
     </div>
 </div>
 <div class="col-md-3">
     <div class="text-center">
         <span class="badge bg-danger" style="font-size:1.5rem; padding:12px 20px;"><?= $my_a ?></span>
-        <p style="color:#666; margin-top:8px; font-size:0.85rem;">Absent</p>
+        <p style="margin-top:8px; font-size:0.85rem;">Absent</p>
     </div>
 </div>
 <div class="col-md-3">
     <div class="text-center">
         <span class="badge bg-warning text-dark" style="font-size:1.5rem; padding:12px 20px;"><?= $my_l ?></span>
-        <p style="color:#666; margin-top:8px; font-size:0.85rem;">On Leave</p>
+        <p style="margin-top:8px; font-size:0.85rem;">On Leave</p>
     </div>
 </div>
 <div class="col-md-3">
     <div class="text-center">
         <span class="badge bg-primary" style="font-size:1.5rem; padding:12px 20px;"><?= $my_pct ?>%</span>
-        <p style="color:#666; margin-top:8px; font-size:0.85rem;">Attendance</p>
+        <p style="margin-top:8px; font-size:0.85rem;">Attendance</p>
     </div>
 </div>
 </div>

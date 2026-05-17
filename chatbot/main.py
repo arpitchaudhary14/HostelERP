@@ -5,6 +5,7 @@ import db.db_queries as db
 app = Flask(__name__)
 CORS(app)
 db.create_chatbot_logs_table()
+db.create_knowledge_table()
 @app.route("/chat", methods=["POST"])
 def chat():
     """

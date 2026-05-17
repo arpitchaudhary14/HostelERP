@@ -89,7 +89,25 @@
                 </a>
             </div>
             <div class="col-md-4 mb-4 reveal">
-                <a href="<?= $link_prefix ?: 'dashboard.php' ?>" style="text-decoration:none;">
+                <a href="<?= $link_prefix ?: 'student/gym/plans.php' ?>" style="text-decoration:none;">
+                <div class="feature-card">
+                    <div class="feature-icon-wrap">🏋️</div>
+                    <h5>MatrixFit Gym</h5>
+                    <p>Access state-of-the-art gym facilities with personalized plans and automated tracking.</p>
+                </div>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4 reveal">
+                <a href="<?= $link_prefix ?: 'student/library/dashboard.php' ?>" style="text-decoration:none;">
+                <div class="feature-card">
+                    <div class="feature-icon-wrap">📚</div>
+                    <h5>Indexia Library</h5>
+                    <p>Digital book catalog, automated fine tracking, and premium reservation system.</p>
+                </div>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4 reveal">
+                <a href="<?= $link_prefix ?: 'chatbot_ui.php' ?>" style="text-decoration:none;">
                 <div class="feature-card">
                     <div class="feature-icon-wrap">🤖</div>
                     <h5>AI Assistant (LEON)</h5>
@@ -103,27 +121,34 @@
 <section class="steps-section about-section reveal">
     <div class="container">
         <h2 class="text-center mb-2 section-heading">How It Works</h2>
-        <p class="text-center mb-5 section-subtext">Get started in three simple steps</p>
+        <p class="text-center mb-5 section-subtext">Get started in four simple steps</p>
         <div class="row">
-            <div class="col-md-4 step-connector reveal">
+            <div class="col-md-3 step-connector reveal">
                 <div class="step-card">
                     <div class="step-number">1</div>
                     <h5>Create Account</h5>
-                    <p>Register as a student, warden, or admin with your institute credentials.</p>
+                    <p>Register as a student or warden with institute credentials.</p>
                 </div>
             </div>
-            <div class="col-md-4 step-connector reveal">
+            <div class="col-md-3 step-connector reveal">
                 <div class="step-card">
                     <div class="step-number">2</div>
-                    <h5>Access Dashboard</h5>
-                    <p>Login to your personalized dashboard with role-based features and analytics.</p>
+                    <h5>Access Hub</h5>
+                    <p>Login to your personalized dashboard with role-based features.</p>
                 </div>
             </div>
-            <div class="col-md-4 step-connector reveal">
+            <div class="col-md-3 step-connector reveal">
                 <div class="step-card">
                     <div class="step-number">3</div>
-                    <h5>Manage Everything</h5>
-                    <p>Handle rooms, complaints, attendance, fees, and notices all in one place.</p>
+                    <h5>Manage Assets</h5>
+                    <p>Handle rooms, attendance, fees, and official notices.</p>
+                </div>
+            </div>
+            <div class="col-md-3 step-connector reveal">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h5>Campus Life</h5>
+                    <p>Join MatrixFit Gym and access Indexia Library services instantly.</p>
                 </div>
             </div>
         </div>
@@ -163,13 +188,13 @@
             </div>
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq2">
-                        Who can use HostelERP?
+                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq-pay">
+                        How can I pay for Library fines or Gym?
                     </button>
                 </h2>
-                <div id="faq2" class="accordion-collapse collapse">
+                <div id="faq-pay" class="accordion-collapse collapse">
                     <div class="accordion-body">
-                        HostelERP supports three roles: Students can manage their profiles, request leaves, and track complaints. Wardens can manage students, rooms, and approve leaves. Administrators have full system access including reporting and settings.
+                        HostelERP integrated <strong>Secure Pay Gateway</strong> supports UPI, Credit/Debit Cards, Net Banking, and even "Cash at Office" options. You can pay fines directly from your Bookshelf or join the gym via the Plans portal.
                     </div>
                 </div>
             </div>
@@ -187,16 +212,16 @@
             </div>
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq4">
-                        Can I access HostelERP on mobile?
+                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq-card">
+                        How do I get my Member Card?
                     </button>
                 </h2>
-                <div id="faq4" class="accordion-collapse collapse">
+                <div id="faq-card" class="accordion-collapse collapse">
                     <div class="accordion-body">
-                        Absolutely! HostelERP is built with a fully responsive design that works beautifully on smartphones, tablets, and desktops.
+                        Every student is automatically issued a <strong>Digital Member Card</strong> for the Library and Gym. You can view, download, or print your card directly from your dashboard to use as a digital ID.
                     </div>
                 </div>
-        </div>
+            </div>
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq5">
@@ -341,6 +366,11 @@ const searchRoutes = [
     { keywords: ["notification", "notifications", "bell"], label: "Notifications", desc: "View your notifications", icon: "🔔", url: "student/notifications.php" },
     { keywords: ["document", "documents", "upload", "certificate"], label: "Documents", desc: "Manage your documents", icon: "📄", url: "student/documents.php" },
     { keywords: ["forgot", "forgot password", "reset password", "password"], label: "Forgot Password", desc: "Reset your password", icon: "🔒", url: "forgot_password.php" },
+    { keywords: ["gym", "matrixfit", "workout", "fitness", "exercise", "membership", "plan", "membership status", "gym card", "gym pass"], label: "MatrixFit Gym", desc: "Manage gym membership and attendance", icon: "🏋️", url: "student/gym/plans.php" },
+    { keywords: ["library", "indexia", "books", "catalog", "borrow", "shelf", "bookshelf", "library card", "fine", "reservation"], label: "Indexia Library", desc: "Browse books, pay fines, and view your card", icon: "📚", url: "student/library/dashboard.php" },
+    { keywords: ["cleanly", "laundry", "wash", "clothes", "clean", "iron", "dry clean", "laundry pass", "laundry plan"], label: "Cleanly Laundry", desc: "Manage laundry subscriptions, digital pass, and wash requests", icon: "🧼", url: "student/laundry/dashboard.php" },
+    { keywords: ["lib card", "library card", "member card", "id card"], label: "Library Member Card", desc: "View your digital library ID", icon: "🪪", url: "student/library/member_card.php" },
+    { keywords: ["gym card", "gym pass", "member card"], label: "Gym Member Card", desc: "View your digital gym pass", icon: "💪", url: "student/gym/member_card.php" },
     { keywords: ["chatbot", "leon", "ai", "chat", "bot", "assistant"], label: "LEON Chatbot", desc: "Ask the AI assistant", icon: "🤖", url: "chatbot_ui.php" }
 ];
 const searchInput  = document.getElementById("globalSearch");

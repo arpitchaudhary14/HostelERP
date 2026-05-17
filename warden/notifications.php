@@ -26,7 +26,7 @@ $sent_notifications = mysqli_query($conn, "SELECT * FROM notifications WHERE sen
     <div class="row">
         <div class="col-md-4">
             <div class="glass-card-light p-4 reveal">
-                <h4 style="font-weight:700; color:#1a1a2e;">Send to Students</h4>
+                <h4 style="font-weight:700; ">Send to Students</h4>
                 <?php if($msg) echo "<div class='alert alert-success'>$msg</div>"; ?>
                 <?php if($error) echo "<div class='alert alert-danger'>$error</div>"; ?>
                 <form method="POST">
@@ -40,7 +40,7 @@ $sent_notifications = mysqli_query($conn, "SELECT * FROM notifications WHERE sen
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Broadcast to Students</button>
                 </form>          
-                <h5 class="mt-4" style="font-weight:700; color:#1a1a2e;">Sent History</h5>
+                <h5 class="mt-4" style="font-weight:700; ">Sent History</h5>
                 <ul class="list-group mt-3">
                     <?php while($srow = mysqli_fetch_assoc($sent_notifications)): ?>
                     <li class="list-group-item">
@@ -53,7 +53,7 @@ $sent_notifications = mysqli_query($conn, "SELECT * FROM notifications WHERE sen
         </div>
         <div class="col-md-8">
             <div class="glass-card-light p-4 reveal" style="min-height: 400px;">
-                <h4 style="font-weight:700; color:#1a1a2e;">My Notifications</h4>
+                <h4 style="font-weight:700; ">My Notifications</h4>
                 <div class="mt-4">
                     <?php while($row = mysqli_fetch_assoc($my_notifications)): ?>
                     <div class="card mb-3 border-0 shadow-sm">

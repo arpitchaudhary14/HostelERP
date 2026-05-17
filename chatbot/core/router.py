@@ -1,19 +1,16 @@
 import db.db_queries as db
-from rag.rag_engine import answer_info_query, answer_data_query
+from rag.rag_engine import answer_info_query, answer_data_query, answer_system_data_query
 from agent.leon_agent import process_action
 def classify_intent(query):
     """
     Implement rule-based classifier:
     - Keywords -> classify:
       - "policy", "rules", "timings", "menu" -> info
-      - "my", "fees", "room", "attendance" -> data
+      - "my", "fees", "room", "attendance" -> user data
+      - "price", "cost", "available", "staff", "trainer", "book" -> system data
       - "apply", "submit", "register", "request" -> action
     """
     query_lower = query.lower()
-    question_phrases = ["how to", "how do i", "how can i", "what is", "where is", "can you tell me", "can i", "do i"]
-    for qp in question_phrases:
-        if qp in query_lower:
-            return "INFO"
     action_keywords = [
         "apply", "submit", "register", "request", "create", 
         "post", "verify", "assign", "collect", "delete", 
@@ -21,14 +18,19 @@ def classify_intent(query):
     ]
     data_keywords = [
         "my", "fees", "room", "attendance", "profile", "complaints", 
-        "leave status", "history", "records", "documents", "picture", "logs", "correction", "corrections"
+        "leave status", "history", "records", "documents", "picture", "logs", "correction", "corrections",
+        "laundry", "cleanly", "wash request", "clothes count", "wash pass"
+    ]
+    system_data_keywords = [
+        "price", "cost", "how much", "available", "stock", "trainer", "coach", "staff", "gym plan", "books by", "find book",
+        "laundry plan", "laundry plan cost", "laundry price"
     ]
     info_keywords = [
         "policy", "rules", "timings", "menu", "curfew", "warden", 
         "who", "google", "microsoft", "login", "2fa", "captcha", 
         "otp", "privacy", "terms", "cookies", "security", "notice", 
         "visitor", "parcel", "document", "hostel", "wing", "caretaker",
-        "kennedy", "grace", "leon"
+        "kennedy", "grace", "leon", "laundry policy", "laundry timings", "laundry rules"
     ]
     for kw in action_keywords:
         if kw in query_lower:
@@ -36,6 +38,9 @@ def classify_intent(query):
     for kw in data_keywords:
         if kw in query_lower:
             return "USER DATA"
+    for kw in system_data_keywords:
+        if kw in query_lower:
+            return "SYSTEM DATA"
     for kw in info_keywords:
         if kw in query_lower:
             return "INFO"
@@ -45,7 +50,8 @@ def route_query(user_id, query):
     Route logic based on Intent Classifier
     1. INFO -> RAG -> Gemini -> Response
     2. USER DATA -> MySQL -> Gemini -> Response
-    3. ACTION -> Gemini -> AGNO Agent -> DB -> Response
+    3. SYSTEM DATA -> Text-to-SQL -> Response
+    4. ACTION -> Gemini -> AGNO Agent -> DB -> Response
     """
     intent = classify_intent(query)
     print(f"Detected Intent: {intent} for query: {query}")
@@ -56,6 +62,8 @@ def route_query(user_id, query):
             return "I need to know who you are to check your personal data. Please log in first."
         user_data = db.get_user_data(user_id)
         return answer_data_query(query, user_data)
+    elif intent == "SYSTEM DATA":
+        return answer_system_data_query(query)
     elif intent == "ACTION":
         if not user_id:
             return "You need to be logged in to perform actions like submitting a leave or complaint."

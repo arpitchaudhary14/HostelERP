@@ -19,10 +19,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
 }
 $documents = mysqli_query($conn, "SELECT d.*, u.first_name, u.last_name, u.username, v.first_name as v_fn, v.last_name as v_ln FROM documents d JOIN users u ON d.user_id = u.id LEFT JOIN users v ON d.verified_by = v.id ORDER BY d.uploaded_at DESC");
 ?>
-<?php include("../header.php"); ?
-<div class="container mt-4 pagede-in">
+<?php include("../header.php"); ?>
+<div class="container mt-4 page-fade-in">
 <div class="glass-card-light p-4 reveal" style="min-height: 400px;">
-        <h4 style="fontweight:700; color:#1a1a2e;">Global Documents Verification</h4>
+        <h4 style="font-weight:700;">Global Documents Verification</h4>
         <div class="table-responsive mt-3">
             <table class="table table-hover">
                 <thead class="table-light">

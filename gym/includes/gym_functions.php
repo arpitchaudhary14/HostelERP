@@ -1,0 +1,114 @@
+<?php
+function get_active_membership($conn, $user_id) {
+    $stmt = mysqli_prepare($conn, "SELECT s.*, p.name as plan_name, p.duration_months 
+                                   FROM gym_subscriptions s 
+                                   JOIN gym_plans p ON s.plan_id = p.id 
+                                   WHERE s.user_id = ? AND s.status = 'active' 
+                                   ORDER BY s.end_date DESC LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    return mysqli_fetch_assoc($result);
+}
+function get_membership_history($conn, $user_id) {
+    $stmt = mysqli_prepare($conn, "SELECT s.*, p.name as plan_name 
+                                   FROM gym_subscriptions s 
+                                   JOIN gym_plans p ON s.plan_id = p.id 
+                                   WHERE s.user_id = ? 
+                                   ORDER BY s.created_at DESC");
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+function get_gym_plans($conn) {
+    return mysqli_query($conn, "SELECT * FROM gym_plans ORDER BY price ASC");
+}
+function get_gym_stats($conn) {
+    $stats = [];
+    $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM gym_subscriptions WHERE status = 'active'");
+    $stats['active_members'] = mysqli_fetch_assoc($res)['total'] ?? 0;
+    $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM gym_attendance WHERE date = CURDATE()");
+    $stats['today_checkins'] = mysqli_fetch_assoc($res)['total'] ?? 0;
+    $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM gym_subscriptions WHERE status = 'active' AND end_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)");
+    $stats['expiring_soon'] = mysqli_fetch_assoc($res)['total'] ?? 0;
+    $res = mysqli_query($conn, "SELECT SUM(amount) as total FROM gym_payments WHERE status = 'completed'");
+    $stats['total_revenue'] = mysqli_fetch_assoc($res)['total'] ?? 0;
+    $res = mysqli_query($conn, "SELECT 
+                                SUM(status='available') as available,
+                                SUM(status='under_maintenance') as maintenance,
+                                SUM(status='out_of_order') as broken
+                                FROM gym_equipment");
+    $stats['equipment'] = mysqli_fetch_assoc($res);
+    return $stats;
+}
+function process_subscription($conn, $user_id, $plan_id) {
+    $stmt = mysqli_prepare($conn, "SELECT duration_months, price FROM gym_plans WHERE id = ?");
+    mysqli_stmt_bind_param($stmt, "i", $plan_id);
+    mysqli_stmt_execute($stmt);
+    $plan = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    if (!$plan) return false;
+    $start_date = date('Y-m-d');
+    $end_date = date('Y-m-d', strtotime("+" . $plan['duration_months'] . " months"));
+    $stmt = mysqli_prepare($conn, "UPDATE gym_subscriptions SET status = 'expired' WHERE user_id = ? AND status = 'active'");
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $stmt = mysqli_prepare($conn, "INSERT INTO gym_subscriptions (user_id, plan_id, start_date, end_date, status, payment_status) VALUES (?, ?, ?, ?, 'active', 'paid')");
+    mysqli_stmt_bind_param($stmt, "iiss", $user_id, $plan_id, $start_date, $end_date);
+    if (mysqli_stmt_execute($stmt)) {
+        $sub_id = mysqli_insert_id($conn);
+        $stmt = mysqli_prepare($conn, "INSERT INTO gym_payments (subscription_id, amount, payment_date, status, payment_method) VALUES (?, ?, ?, 'completed', 'Internal ERP')");
+        mysqli_stmt_bind_param($stmt, "ids", $sub_id, $plan['price'], $start_date);
+        mysqli_stmt_execute($stmt);
+        return true;
+    }
+    return false;
+}
+function get_gym_trainers($conn) {
+    return mysqli_query($conn, "SELECT * FROM gym_trainers ORDER BY full_name ASC");
+}
+function get_gym_equipment($conn) {
+    return mysqli_query($conn, "SELECT * FROM gym_equipment ORDER BY name ASC");
+}
+function get_user_workout_stats($conn, $user_id) {
+    $stats = [
+        'total_sessions' => 0,
+        'total_hours' => 0,
+        'avg_session_min' => 0,
+        'streak' => 0
+    ];
+    $res = mysqli_query($conn, "SELECT COUNT(*) as total, 
+                               SUM(TIMESTAMPDIFF(MINUTE, check_in_time, IFNULL(check_out_time, check_in_time))) as total_min 
+                               FROM gym_attendance 
+                               WHERE user_id = $user_id");
+    $row = mysqli_fetch_assoc($res);
+    $stats['total_sessions'] = $row['total'] ?? 0;
+    $total_min = $row['total_min'] ?? 0;
+    $stats['total_hours'] = round($total_min / 60, 1);
+    if ($stats['total_sessions'] > 0) {
+        $stats['avg_session_min'] = round($total_min / $stats['total_sessions']);
+    }
+    $res = mysqli_query($conn, "SELECT date FROM gym_attendance WHERE user_id = $user_id GROUP BY date ORDER BY date DESC");
+    $dates = [];
+    while($row = mysqli_fetch_assoc($res)) $dates[] = $row['date'];
+    $streak = 0;
+    $current_date = date('Y-m-d');
+    if (!empty($dates)) {
+        $last_date = $dates[0];
+        $diff = (strtotime($current_date) - strtotime($last_date)) / (60 * 60 * 24);
+        if ($diff <= 1) {
+            $streak = 1;
+            for ($i = 0; $i < count($dates) - 1; $i++) {
+                $d1 = strtotime($dates[$i]);
+                $d2 = strtotime($dates[$i+1]);
+                if (($d1 - $d2) / (60 * 60 * 24) == 1) {
+                    $streak++;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    $stats['streak'] = $streak;
+    return $stats;
+}
+?>

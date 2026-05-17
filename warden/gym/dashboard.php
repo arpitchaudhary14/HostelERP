@@ -1,0 +1,81 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'warden') {
+    header("Location: /WebTechProject/login.php");
+    exit();
+}
+require_once "../../db.php";
+require_once "../../gym/includes/gym_functions.php";
+$stats = get_gym_stats($conn);
+$recent_checkins = mysqli_query($conn, "SELECT a.*, u.full_name, u.role 
+                                        FROM gym_attendance a 
+                                        JOIN users u ON a.user_id = u.id 
+                                        WHERE a.date = CURDATE() 
+                                        ORDER BY a.check_in_time DESC LIMIT 10");
+?>
+<?php include("../../header.php"); ?>
+<div class="container mt-4 page-fade-in">
+    <div class="glass-card-light mb-4 reveal">
+        <div class="d-flex align-items-center">
+            <img src="/WebTechProject/assets/images/MatrixFit_Logo.jpeg" height="40" class="me-3" style="border-radius: 8px;">
+            <div>
+                <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">Warden Gym Oversight</h3>
+                <p class="text-muted" style="margin:0;">Monitoring MatrixFit activities and attendance.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4 reveal">
+            <div class="stat-card stat-primary">
+                <h5>Active Members</h5>
+                <h2 class="text-gradient"><?= $stats['active_members'] ?></h2>
+                <small class="text-muted">Total registered in gym</small>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="stat-card stat-success">
+                <h5>Today's Check-ins</h5>
+                <h2 style="color:var(--accent-secondary);"><?= $stats['today_checkins'] ?></h2>
+                <small class="text-muted">Members active today</small>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="stat-card stat-warning">
+                <h5>Maintenance</h5>
+                <h2 style="color:var(--accent-warning);"><?= $stats['equipment']['maintenance'] ?? 0 ?></h2>
+                <small class="text-muted">Equipment under repair</small>
+            </div>
+        </div>
+    </div>
+    <div class="glass-card-light reveal">
+        <h5 class="mb-4 fw-bold">Recent Activity (Today)</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Role</th>
+                        <th>Check In</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($row = mysqli_fetch_assoc($recent_checkins)){ ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['full_name']) ?></td>
+                        <td><span class="badge bg-light text-dark"><?= ucfirst($row['role']) ?></span></td>
+                        <td><?= date('h:i A', strtotime($row['check_in_time'])) ?></td>
+                        <td>
+                            <?= $row['check_out_time'] ? '<span class="text-muted small">Checked Out</span>' : '<span class="text-success fw-bold">Currently In</span>' ?>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                    <?php if(mysqli_num_rows($recent_checkins) == 0){ ?>
+                        <tr><td colspan="4" class="text-center text-muted py-4">No gym activity recorded today.</td></tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php include("../../footer.php"); ?>

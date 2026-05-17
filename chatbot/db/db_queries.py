@@ -6,11 +6,11 @@ def get_db_connection():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST", "localhost"),
         user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASS", ""),
+        password="Arpit@123",
         database=os.getenv("DB_NAME", "hostelerp_db")
     )
 def get_user_data(user_id):
-    """Fetch all user-related generic information (fees, complaints, room, attendance)"""
+    """Fetch all user-related generic information (fees, complaints, room, attendance, laundry)"""
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     data = {}
@@ -40,6 +40,24 @@ def get_user_data(user_id):
     data['attendance'] = cursor.fetchall()
     cursor.execute("SELECT date, current_status, requested_status, status FROM attendance_corrections WHERE user_id = %s ORDER BY created_at DESC LIMIT 3", (user_id,))
     data['corrections'] = cursor.fetchall()
+    try:
+        cursor.execute("""
+            SELECT ls.start_date, ls.end_date, ls.remaining_clothes, ls.status, lp.name as plan_name 
+            FROM laundry_subscriptions ls 
+            JOIN laundry_plans lp ON ls.plan_id = lp.id 
+            WHERE ls.user_id = %s AND ls.status = 'Active'
+            LIMIT 1
+        """, (user_id,))
+        data['laundry_subscription'] = cursor.fetchone()
+        cursor.execute("""
+            SELECT clothes_count, service_type, status, created_at 
+            FROM laundry_requests 
+            WHERE user_id = %s 
+            ORDER BY created_at DESC LIMIT 3
+        """, (user_id,))
+        data['laundry_requests'] = cursor.fetchall()
+    except Exception as e:
+        print("Error fetching laundry data for chatbot:", e)
     cursor.close()
     conn.close()
     return data
@@ -144,6 +162,78 @@ def create_chatbot_logs_table():
     finally:
         cursor.close()
         conn.close()
+def create_knowledge_table():
+    """Create the chatbot_knowledge table to store manual/guidelines"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chatbot_knowledge (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                category VARCHAR(100) NOT NULL,
+                content TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+    except Exception as e:
+        print("Error creating knowledge table:", e)
+    finally:
+        cursor.close()
+        conn.close()
+def get_knowledge_content():
+    """Fetch all knowledge entries as a single string (similar to data.txt)"""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT category, content FROM chatbot_knowledge ORDER BY id ASC")
+        rows = cursor.fetchall()
+        full_text = ""
+        for row in rows:
+            full_text += f"## {row['category']}\n{row['content']}\n\n"
+        return full_text
+    except Exception as e:
+        print("Error fetching knowledge:", e)
+        return ""
+    finally:
+        cursor.close()
+        conn.close()
+def create_knowledge_table():
+    """Create the chatbot_knowledge table to store manual/guidelines"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chatbot_knowledge (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                category VARCHAR(100) NOT NULL,
+                content TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+    except Exception as e:
+        print("Error creating knowledge table:", e)
+    finally:
+        cursor.close()
+        conn.close()
+def get_knowledge_content():
+    """Fetch all knowledge entries as a single string (similar to data.txt)"""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT category, content FROM chatbot_knowledge ORDER BY id ASC")
+        rows = cursor.fetchall()
+        full_text = ""
+        for row in rows:
+            full_text += f"## {row['category']}\n{row['content']}\n\n"
+        return full_text
+    except Exception as e:
+        print("Error fetching knowledge:", e)
+        return ""
+    finally:
+        cursor.close()
+        conn.close()
 def save_chat_message(user_id, role, content, conversation_id=None):
     """Save a chat message to DB"""
     if not user_id:
@@ -227,6 +317,56 @@ def get_chat_history(conversation_id):
     except Exception as e:
         print("Error getting chat history:", e)
         return []
+    finally:
+        cursor.close()
+        conn.close()
+def get_dynamic_schema():
+    """Dynamically discover table structures for allowed tables"""
+    excluded_tables = ["USERS", "OTP_CODES", "OTP_RATE_LIMITS", "CHATBOT_LOGS", "CHATBOT_CONVERSATIONS", "ACTIVITY_LOGS", "LOGIN_HISTORY", "SYSTEM_SETTINGS"]
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("SHOW TABLES")
+        tables = [list(row.values())[0] for row in cursor.fetchall()]
+        schema_text = "Database Schema (Live):\n"
+        allowed_list = []
+        for table in tables:
+            if table.upper() in excluded_tables:
+                continue
+            allowed_list.append(table.upper())
+            cursor.execute(f"DESCRIBE {table}")
+            columns = cursor.fetchall()
+            col_names = [col['Field'] for col in columns]
+            schema_text += f"- {table}: {', '.join(col_names)}\n"
+        return schema_text, allowed_list
+    except Exception as e:
+        print("Schema Discovery Error:", e)
+        return "Error discovering schema.", []
+    finally:
+        cursor.close()
+        conn.close()
+def execute_system_query(sql_query):
+    """Safely execute a dynamically generated SELECT query with dynamic whitelist"""
+    sql_clean = sql_query.strip().upper()
+    check_sql = sql_clean.rstrip(";")
+    if not check_sql.startswith("SELECT") or ";" in check_sql:
+        return "ERROR: Unauthorized query attempt."
+    _, allowed_tables = get_dynamic_schema()
+    table_found = False
+    for table in allowed_tables:
+        if table in check_sql:
+            table_found = True
+            break
+    if not table_found:
+        return "ERROR: Query targets restricted or unknown data."
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(sql_query)
+        return cursor.fetchall()
+    except Exception as e:
+        print("SQL Agent Error:", e)
+        return f"ERROR: {str(e)}"
     finally:
         cursor.close()
         conn.close()

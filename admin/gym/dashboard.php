@@ -1,0 +1,189 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: /WebTechProject/login.php");
+    exit();
+}
+require_once "../../db.php";
+require_once "../../gym/includes/gym_functions.php";
+$stats = get_gym_stats($conn);
+$recent_subs = mysqli_query($conn, "SELECT s.*, u.full_name, p.name as plan_name 
+                                    FROM gym_subscriptions s 
+                                    JOIN users u ON s.user_id = u.id 
+                                    JOIN gym_plans p ON s.plan_id = p.id 
+                                    ORDER BY s.created_at DESC LIMIT 5");
+$recent_checkins = mysqli_query($conn, "SELECT a.*, u.full_name 
+                                        FROM gym_attendance a 
+                                        JOIN users u ON a.user_id = u.id 
+                                        WHERE a.date = CURDATE() 
+                                        ORDER BY a.check_in_time DESC LIMIT 5");
+?>
+<?php include("../../header.php"); ?>
+<div class="container mt-4 page-fade-in">
+    <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);">
+        <div class="d-flex align-items-center mb-2">
+            <img src="/WebTechProject/assets/images/MatrixFit_Logo.jpeg" height="40" class="me-3" style="border-radius: 8px;">
+            <div>
+                <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">MatrixFit Dashboard</h3>
+                <p class="text-muted" style="margin:0;">Real-time gym management and analytics.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 reveal">
+            <div class="stat-card stat-primary">
+                <h5>Active Members</h5>
+                <h2 class="text-gradient"><?= $stats['active_members'] ?></h2>
+                <small class="text-muted">Total registered memberships</small>
+            </div>
+        </div>
+        <div class="col-md-3 reveal">
+            <div class="stat-card stat-success">
+                <h5>Today's Check-ins</h5>
+                <h2 style="color:var(--accent-secondary);"><?= $stats['today_checkins'] ?></h2>
+                <small class="text-muted">Members currently in gym</small>
+            </div>
+        </div>
+        <div class="col-md-3 reveal">
+            <div class="stat-card stat-danger">
+                <h5>Expiring Soon</h5>
+                <h2 style="color:var(--accent-danger);"><?= $stats['expiring_soon'] ?></h2>
+                <small class="text-muted">Memberships ending in 7 days</small>
+            </div>
+        </div>
+        <div class="col-md-3 reveal">
+            <div class="stat-card stat-info">
+                <h5>Total Revenue</h5>
+                <h2 style="color:var(--accent-info);">₹<?= number_format($stats['total_revenue'], 2) ?></h2>
+                <small class="text-muted">Lifetime gym earnings</small>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-8 reveal">
+            <div class="glass-card-light h-100">
+                <h5 class="mb-4" style="font-weight:600;">Recent Memberships</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Plan</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($row = mysqli_fetch_assoc($recent_subs)){ ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['full_name']) ?></td>
+                                <td><?= htmlspecialchars($row['plan_name']) ?></td>
+                                <td><?= date('d M, Y', strtotime($row['end_date'])) ?></td>
+                                <td>
+                                    <span class="badge bg-<?= ($row['status']=='active'?'success':'secondary') ?>">
+                                        <?= ucfirst($row['status']) ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end mt-3">
+                    <a href="subscriptions.php" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="glass-card-light h-100">
+                <h5 class="mb-4" style="font-weight:600;">Equipment Status</h5>
+                <canvas id="equipmentChart" style="max-height: 200px;"></canvas>
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Available</span>
+                        <span class="fw-bold"><?= $stats['equipment']['available'] ?? 0 ?></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>In Maintenance</span>
+                        <span class="fw-bold"><?= $stats['equipment']['maintenance'] ?? 0 ?></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Out of Order</span>
+                        <span class="fw-bold text-danger"><?= $stats['equipment']['broken'] ?? 0 ?></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6 reveal">
+            <div class="glass-card-light">
+                <h5 class="mb-4" style="font-weight:600;">Today's Check-ins</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(mysqli_num_rows($recent_checkins) > 0){ ?>
+                                <?php while($row = mysqli_fetch_assoc($recent_checkins)){ ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['full_name']) ?></td>
+                                    <td><?= date('h:i A', strtotime($row['check_in_time'])) ?></td>
+                                </tr>
+                                <?php } ?>
+                            <?php } else { ?>
+                                <tr><td colspan="2" class="text-center text-muted">No check-ins today yet</td></tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 reveal">
+            <div class="glass-card-light">
+                <h5 class="mb-4" style="font-weight:600;">Quick Actions</h5>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="members.php" class="btn btn-gradient w-100">Add Member</a>
+                    </div>
+                    <div class="col-6">
+                        <a href="attendance.php" class="btn btn-outline-primary w-100">Attendance</a>
+                    </div>
+                    <div class="col-6">
+                        <a href="subscriptions.php" class="btn btn-outline-info w-100">New Subscription</a>
+                    </div>
+                    <div class="col-6">
+                        <a href="equipment.php" class="btn btn-outline-warning w-100">Equipment</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('equipmentChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Available', 'Maintenance', 'Broken'],
+        datasets: [{
+            data: [
+                <?= $stats['equipment']['available'] ?? 0 ?>,
+                <?= $stats['equipment']['maintenance'] ?? 0 ?>,
+                <?= $stats['equipment']['broken'] ?? 0 ?>
+            ],
+            backgroundColor: ['#00e676', '#ffab40', '#ff5252'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        cutout: '70%'
+    }
+});
+</script>
+<?php include("../../footer.php"); ?>

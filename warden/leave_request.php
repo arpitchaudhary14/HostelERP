@@ -31,21 +31,21 @@ include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:600px;">
 <div class="glass-card-light">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">📅 Request Leave</h4>
+<h4 class="mb-3" style="font-weight:700; ">📅 Request Leave</h4>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <?php if(isset($error))   echo "<div class='alert alert-danger'>$error</div>"; ?>
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">From Date</label>
+<label style="font-weight:500; font-size:0.88rem;">From Date</label>
 <input type="date" name="from_date" class="form-input-light" min="<?= date('Y-m-d') ?>" required>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">To Date</label>
+<label style="font-weight:500; font-size:0.88rem;">To Date</label>
 <input type="date" name="to_date" class="form-input-light" min="<?= date('Y-m-d') ?>" required>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555; font-size:0.88rem;">Reason</label>
+<label style="font-weight:500; font-size:0.88rem;">Reason</label>
 <textarea name="reason" class="form-input-light" rows="3" required></textarea>
 </div>
 <button type="submit" name="submit_leave" class="btn-gradient">Submit Request</button>

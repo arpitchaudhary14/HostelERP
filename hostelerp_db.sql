@@ -225,3 +225,140 @@ CREATE TABLE IF NOT EXISTS login_history (
     login_type ENUM('normal', 'google', 'microsoft') DEFAULT 'normal',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS gym_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    duration_months INT NOT NULL,
+    features TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS gym_subscriptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    plan_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status ENUM('active', 'expired', 'cancelled', 'pending') DEFAULT 'pending',
+    payment_status ENUM('paid', 'unpaid', 'partial') DEFAULT 'unpaid',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (plan_id) REFERENCES gym_plans(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS gym_trainers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(15),
+    specialization VARCHAR(255),
+    schedule TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS gym_attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    date DATE NOT NULL,
+    check_in_time TIME,
+    check_out_time TIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS gym_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    subscription_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_date DATE NOT NULL,
+    status ENUM('completed', 'pending', 'failed') DEFAULT 'completed',
+    payment_method VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (subscription_id) REFERENCES gym_subscriptions(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS gym_equipment (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    status ENUM('available', 'under_maintenance', 'out_of_order') DEFAULT 'available',
+    last_maintenance DATE,
+    next_maintenance DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+INSERT INTO gym_plans (name, price, duration_months, features) 
+SELECT 'Monthly Basic', 500.00, 1, 'Access to all equipment, Locker access'
+WHERE NOT EXISTS (SELECT 1 FROM gym_plans WHERE name = 'Monthly Basic');
+INSERT INTO gym_plans (name, price, duration_months, features) 
+SELECT 'Quarterly Pro', 1200.00, 3, 'Access to all equipment, Locker access, 1 Trainer Session/Month'
+WHERE NOT EXISTS (SELECT 1 FROM gym_plans WHERE name = 'Quarterly Pro');
+INSERT INTO gym_plans (name, price, duration_months, features) 
+SELECT 'Yearly Elite', 4000.00, 12, 'Access to all equipment, Locker access, Personal Trainer, Diet Plan'
+WHERE NOT EXISTS (SELECT 1 FROM gym_plans WHERE name = 'Yearly Elite');
+CREATE TABLE IF NOT EXISTS library_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS library_books (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(100) NOT NULL,
+    isbn VARCHAR(20) UNIQUE,
+    category_id INT,
+    total_copies INT DEFAULT 1,
+    available_copies INT DEFAULT 1,
+    location VARCHAR(100),
+    description TEXT DEFAULT NULL,
+    condition_status ENUM('good', 'damaged', 'missing') DEFAULT 'good',
+    cover_image VARCHAR(255) DEFAULT 'default_book.png',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES library_categories(id) ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS library_suggestions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(100),
+    reason TEXT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS library_reading_goals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    books_goal INT DEFAULT 1,
+    current_progress INT DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS library_subscriptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    status ENUM('active', 'expired', 'suspended') DEFAULT 'active',
+    expiry_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS library_borrows (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    user_id INT NOT NULL,
+    borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    due_date DATE NOT NULL,
+    return_date TIMESTAMP NULL,
+    status ENUM('pending', 'borrowed', 'returned', 'overdue', 'rejected') DEFAULT 'pending',
+    fine_amount DECIMAL(10,2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (book_id) REFERENCES library_books(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+INSERT INTO library_categories (name) VALUES 
+('Academics'), ('Fiction'), ('Technology'), ('Self-Help'), ('Biography')
+ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO library_books (title, author, isbn, category_id, total_copies, available_copies, location) VALUES 
+('Advanced Web Technologies', 'Dr. Arpit Chaudhary', '978-0123456789', 1, 5, 5, 'Shelf A1'),
+('The Great Gatsby', 'F. Scott Fitzgerald', '978-0743273565', 2, 3, 3, 'Shelf B2'),
+('Atomic Habits', 'James Clear', '978-0735211292', 4, 10, 10, 'Shelf C1'),
+('Data Structures in C++', 'E. Balagurusamy', '978-9385965333', 1, 8, 8, 'Shelf A3'),
+('Wings of Fire', 'A.P.J. Abdul Kalam', '978-8173711466', 5, 4, 4, 'Shelf D1')
+ON DUPLICATE KEY UPDATE title=title;
+ALTER TABLE library_books 
+ADD COLUMN description TEXT DEFAULT NULL AFTER location;
+DESC library_books;
+ALTER TABLE gym_trainers ADD COLUMN bio TEXT DEFAULT NULL AFTER schedule;

@@ -1,0 +1,76 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'warden') {
+    header("Location: /WebTechProject/login.php");
+    exit();
+}
+require_once "../../db.php";
+require_once "../../library/includes/library_functions.php";
+$stats = get_library_stats($conn);
+$active_borrows = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username 
+                                        FROM library_borrows b 
+                                        JOIN library_books bk ON b.book_id = bk.id 
+                                        JOIN users u ON b.user_id = u.id 
+                                        WHERE b.status IN ('borrowed', 'overdue') 
+                                        ORDER BY b.due_date ASC LIMIT 10");
+include("../../header.php");
+?>
+<div class="container mt-4 page-fade-in">
+    <div class="glass-card-light mb-4 reveal">
+        <h2 class="fw-bold text-gradient mb-0">Library Oversight</h2>
+        <p class="text-muted mb-0">Monitor student library activities and inventory stats.</p>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4 reveal">
+            <div class="glass-card-light text-center p-4">
+                <h3 class="fw-bold mb-0 text-primary"><?= $stats['total_books'] ?></h3>
+                <small class="text-muted text-uppercase">Total Catalog</small>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="glass-card-light text-center p-4">
+                <h3 class="fw-bold mb-0 text-success"><?= $stats['active_borrows'] ?></h3>
+                <small class="text-muted text-uppercase">Books with Students</small>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="glass-card-light text-center p-4">
+                <h3 class="fw-bold mb-0 text-danger">₹<?= number_format($stats['total_fines'], 2) ?></h3>
+                <small class="text-muted text-uppercase">Total Outstanding Fines</small>
+            </div>
+        </div>
+    </div>
+    <div class="glass-card-light reveal">
+        <h5 class="fw-bold mb-4">Active Borrowings (Recent)</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Book</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($b = mysqli_fetch_assoc($active_borrows)): ?>
+                    <tr>
+                        <td>
+                            <div class="fw-bold"><?= htmlspecialchars($b['full_name']) ?></div>
+                            <small class="text-muted">@<?= htmlspecialchars($b['username']) ?></small>
+                        </td>
+                        <td><?= htmlspecialchars($b['title']) ?></td>
+                        <td><?= date('d M, Y', strtotime($b['due_date'])) ?></td>
+                        <td>
+                            <span class="badge <?= $b['status'] == 'overdue' ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-3">
+                                <?= ucfirst($b['status']) ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php include("../../footer.php"); ?>

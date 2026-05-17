@@ -46,6 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($user['status']) && $user['status'] === 'banned') {
             $error = "Your account has been suspended. Please contact the administrator.";
         } else {
+            if (isset($_POST['remember_me'])) {
+                setcookie('hostelerp_username', $username, time() + (30 * 24 * 60 * 60), "/");
+                setcookie('hostelerp_password', $password, time() + (30 * 24 * 60 * 60), "/");
+            } else {
+                setcookie('hostelerp_username', '', time() - 3600, "/");
+                setcookie('hostelerp_password', '', time() - 3600, "/");
+            }
             if (isset($user['two_factor_enabled']) && $user['two_factor_enabled'] == 1) {
                 $_SESSION['pending_2fa_user_id'] = $user['id'];
                 header("Location: 2fa_verification.php");
@@ -113,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="glass-card card-enter" id="credentialsCard">
         <div class="auth-divider">or sign in with username</div>
-        <form method="POST" id="loginForm" autocomplete="off">
+        <form method="POST" id="loginForm">
             <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <div class="field-group">
                 <label for="loginUsername">Username</label>
@@ -124,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         id="loginUsername"
                         class="form-input-modern"
                         placeholder="Enter your username"
+                        value="<?= htmlspecialchars($_COOKIE['hostelerp_username'] ?? '') ?>"
                         required
                         autocomplete="username"
                     >
@@ -140,6 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         id="loginPassword"
                         class="form-input-modern"
                         placeholder="Enter your password"
+                        value="<?= htmlspecialchars($_COOKIE['hostelerp_password'] ?? '') ?>"
                         required
                         autocomplete="current-password"
                     >
@@ -150,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <input class="form-check-input" type="checkbox" name="remember_me" id="rememberMe" <?= isset($_COOKIE['hostelerp_username']) ? 'checked' : '' ?>>
                     <label class="form-check-label" for="rememberMe" style="font-size: 0.9rem; color: var(--text-muted-light);">
                         Remember Me
                     </label>
@@ -208,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginBtn.disabled = !(usernameIn.value.trim().length >= 3 && passwordIn.value.length >= 1);
     };
     loginForm.addEventListener('input', checkBtn);
+    checkBtn(); 
     const autofillTimer = setInterval(() => {
         if (usernameIn.value.length > 0 && passwordIn.value.length > 0) {
             loginBtn.disabled = false;

@@ -28,8 +28,8 @@ include("../header.php");
 ?>
 <div class="container mt-4">
 <div class="glass-card-light" style="max-width:700px; margin:0 auto;">
-<h3 class="mb-3" style="font-weight:700; color:#1a1a2e;">📋 Mark Warden Attendance</h3>
-<p style="color:#666;">Date: <strong><?= date("d M Y") ?></strong></p>
+<h3 class="mb-3" style="font-weight:700;">📋 Mark Warden Attendance</h3>
+<p >Date: <strong><?= date("d M Y") ?></strong></p>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">

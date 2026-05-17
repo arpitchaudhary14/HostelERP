@@ -5,68 +5,347 @@ if($_SESSION['role'] != 'warden'){
     header("Location: ../dashboard.php");
     exit();
 }
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
+$check_rooms = mysqli_query($conn, "SHOW COLUMNS FROM rooms LIKE 'room_type'");
+if(mysqli_num_rows($check_rooms) == 0) {
+    mysqli_query($conn, "ALTER TABLE rooms ADD COLUMN room_type VARCHAR(20) DEFAULT '2-Seater'");
+    mysqli_query($conn, "ALTER TABLE rooms ADD COLUMN comfort_tier VARCHAR(20) DEFAULT 'AC'");
+    mysqli_query($conn, "UPDATE rooms SET room_type = IF(id % 2 = 0, '3-Seater', '2-Seater'), comfort_tier = IF(id % 3 = 0, 'AC', IF(id % 3 = 1, 'Air-Cooled', 'Non-AC'))");
+}
+$check_alloc = mysqli_query($conn, "SHOW COLUMNS FROM room_allocations LIKE 'expires_at'");
+if(mysqli_num_rows($check_alloc) == 0) {
+    mysqli_query($conn, "ALTER TABLE room_allocations ADD COLUMN expires_at TIMESTAMP NULL");
+    mysqli_query($conn, "ALTER TABLE room_allocations ADD COLUMN is_verified TINYINT DEFAULT 1");
+}
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS roommate_invites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+)");
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_swaps (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+)");
+$msg = "";
+$msg_type = "success";
+if($_SERVER['REQUEST_METHOD'] == 'POST') {
     validate_csrf();
-    $student_id = intval($_POST['student_id']);
-    $room_id    = intval($_POST['room_id']);
-    $stmt = mysqli_prepare($conn, "INSERT INTO room_allocations (user_id, room_id, status, allocated_at) VALUES (?,?,'active',NOW())");
-    mysqli_stmt_bind_param($stmt, "ii", $student_id, $room_id);
-    mysqli_stmt_execute($stmt);
-    $stmt2 = mysqli_prepare($conn, "UPDATE rooms SET current_occupancy = current_occupancy + 1 WHERE id=?");
-    mysqli_stmt_bind_param($stmt2, "i", $room_id);
-    mysqli_stmt_execute($stmt2);
-    header("Location: assign_rooms.php");
-    exit();
+    $action = $_POST['action'] ?? '';
+    if($action == 'assign_room') {
+        $student_id = intval($_POST['student_id']);
+        $room_id = intval($_POST['room_id']);
+        $is_provisional = intval($_POST['is_provisional'] ?? 0);
+        $expires_at = $is_provisional ? date('Y-m-d H:i:s', strtotime('+24 hours')) : null;
+        $is_verified = $is_provisional ? 0 : 1;
+        mysqli_query($conn, "UPDATE room_allocations SET status='vacated', vacated_at=NOW() WHERE user_id = $student_id AND status='active'");
+        $exp_val = $expires_at ? "'$expires_at'" : "NULL";
+        mysqli_query($conn, "INSERT INTO room_allocations (user_id, room_id, status, allocated_at, expires_at, is_verified) VALUES ($student_id, $room_id, 'active', NOW(), $exp_val, $is_verified)");   
+        mysqli_query($conn, "UPDATE rooms SET current_occupancy = (SELECT COUNT(*) FROM room_allocations WHERE room_id = $room_id AND status = 'active') WHERE id = $room_id");
+        $msg = "Room Allotted Successfully!";
+    }
+    if($action == 'run_matchmaker') {
+        $unassigned_res = mysqli_query($conn, "
+            SELECT u.id, (SELECT ROUND((SUM(status='present')/COUNT(*))*100) FROM attendance WHERE user_id = u.id) as attendance_pct
+            FROM users u
+            WHERE u.role='student' AND u.id NOT IN (SELECT user_id FROM room_allocations WHERE status='active')
+            ORDER BY COALESCE(attendance_pct, 0) DESC
+        ");
+        $students_to_allot = [];
+        while($s = mysqli_fetch_assoc($unassigned_res)) {
+            $students_to_allot[] = intval($s['id']);
+        }
+        $rooms_res = mysqli_query($conn, "SELECT id, capacity, current_occupancy FROM rooms WHERE current_occupancy < capacity ORDER BY room_number");
+        $allotted_count = 0;
+        foreach($students_to_allot as $student_id) {
+            if($r = mysqli_fetch_assoc($rooms_res)) {
+                $room_id = intval($r['id']);
+                $expires_at = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                mysqli_query($conn, "INSERT INTO room_allocations (user_id, room_id, status, allocated_at, expires_at, is_verified) VALUES ($student_id, $room_id, 'active', NOW(), '$expires_at', 0)");
+                mysqli_query($conn, "UPDATE rooms SET current_occupancy = current_occupancy + 1 WHERE id = $room_id");
+                $allotted_count++;
+                $updated_occ = intval($r['current_occupancy']) + 1;
+                if($updated_occ >= intval($r['capacity'])) {
+                    $rooms_res = mysqli_query($conn, "SELECT id, capacity, current_occupancy FROM rooms WHERE current_occupancy < capacity ORDER BY room_number");
+                }
+            } else {
+                break;
+            }
+        }
+        $msg = "Auto-Matchmaker executed! Provisonally allotted $allotted_count solo students based on attendance priority.";
+    }
+    if($action == 'approve_swap') {
+        $swap_id = intval($_POST['swap_id']);
+        $swap_res = mysqli_query($conn, "SELECT sender_id, receiver_id FROM room_swaps WHERE id = $swap_id LIMIT 1");
+        if($sw = mysqli_fetch_assoc($swap_res)) {
+            $sender = intval($sw['sender_id']);
+            $receiver = intval($sw['receiver_id']);
+            $send_alloc = mysqli_fetch_assoc(mysqli_query($conn, "SELECT room_id FROM room_allocations WHERE user_id=$sender AND status='active' LIMIT 1"));
+            $recv_alloc = mysqli_fetch_assoc(mysqli_query($conn, "SELECT room_id FROM room_allocations WHERE user_id=$receiver AND status='active' LIMIT 1"));
+            if($send_alloc && $recv_alloc) {
+                $room_send = intval($send_alloc['room_id']);
+                $room_recv = intval($recv_alloc['room_id']);
+                mysqli_query($conn, "UPDATE room_allocations SET room_id = $room_recv WHERE user_id=$sender AND status='active'");
+                mysqli_query($conn, "UPDATE room_allocations SET room_id = $room_send WHERE user_id=$receiver AND status='active'");
+                mysqli_query($conn, "UPDATE room_swaps SET status='approved' WHERE id=$swap_id");            
+                $msg = "Roommate Swap Request Approved! Rooms updated dynamically in database.";
+            } else {
+                $msg = "Fatal error: Both users must have active room allocations to swap.";
+                $msg_type = "danger";
+            }
+        }
+    }
+    if($action == 'reject_swap') {
+        $swap_id = intval($_POST['swap_id']);
+        mysqli_query($conn, "UPDATE room_swaps SET status='rejected' WHERE id=$swap_id");
+        $msg = "Roommate Swap Request Declined / Rejected.";
+        $msg_type = "warning";
+    }
+    if($action == 'cancel_allocation') {
+        $alloc_id = intval($_POST['alloc_id']);       
+        $alloc_res = mysqli_query($conn, "SELECT room_id FROM room_allocations WHERE id=$alloc_id LIMIT 1");
+        if($row = mysqli_fetch_assoc($alloc_res)) {
+            $room_id = intval($row['room_id']);
+            mysqli_query($conn, "DELETE FROM room_allocations WHERE id=$alloc_id");
+            mysqli_query($conn, "UPDATE rooms SET current_occupancy = (SELECT COUNT(*) FROM room_allocations WHERE room_id = $room_id AND status = 'active') WHERE id = $room_id");
+            $msg = "Allotment cancelled successfully. Slot freed up in public pool.";
+        }
+    }
 }
-$search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
-$student_query = "SELECT id, CONCAT(first_name,' ',COALESCE(last_name,'')) as full_name FROM users WHERE role='student'";
-if(!empty($search)){
-    $student_query .= " AND CONCAT(first_name,' ',COALESCE(last_name,'')) LIKE '%$search%'";
+$student_query = "
+    SELECT u.id, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as full_name, u.email,
+           (SELECT ROUND((SUM(status='present')/COUNT(*))*100) FROM attendance WHERE user_id = u.id) as attendance_pct
+    FROM users u 
+    WHERE u.role='student' AND u.id NOT IN (SELECT user_id FROM room_allocations WHERE status='active')
+    ORDER BY COALESCE(attendance_pct, 0) DESC
+";
+$students = mysqli_query($conn, $student_query);
+$rooms = mysqli_query($conn, "SELECT * FROM rooms ORDER BY room_number");
+$pending_swaps = [];
+$swap_res = mysqli_query($conn, "
+    SELECT rs.id, rs.created_at, 
+           CONCAT(u1.first_name, ' ', COALESCE(u1.last_name, '')) as sender_name, u1.email as sender_email,
+           CONCAT(u2.first_name, ' ', COALESCE(u2.last_name, '')) as receiver_name, u2.email as receiver_email
+    FROM room_swaps rs
+    JOIN users u1 ON rs.sender_id = u1.id
+    JOIN users u2 ON rs.receiver_id = u2.id
+    WHERE rs.status = 'accepted_by_receiver'
+");
+while($row = mysqli_fetch_assoc($swap_res)) {
+    $pending_swaps[] = $row;
 }
-$student_query .= " ORDER BY first_name";
-$students = mysqli_query($conn,$student_query);
-$rooms = mysqli_query($conn,"SELECT * FROM rooms");
+$allocations = [];
+$alloc_res = mysqli_query($conn, "
+    SELECT ra.id, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as student_name, u.email,
+           r.room_number, r.room_type, r.comfort_tier, ra.allocated_at, ra.expires_at, ra.is_verified
+    FROM room_allocations ra
+    JOIN users u ON ra.user_id = u.id
+    JOIN rooms r ON ra.room_id = r.id
+    WHERE ra.status = 'active'
+    ORDER BY r.room_number
+");
+while($row = mysqli_fetch_assoc($alloc_res)) {
+    $allocations[] = $row;
+}
 include("../header.php");
 ?>
-<div class="container mt-4">
-<h3>Assign Rooms</h3>
-<hr>
-<form method="GET">
-<div class="row mb-3">
-<div class="col-md-6">
-<input type="text" name="search" class="form-control"
-placeholder="Search Student"
-value="<?= htmlspecialchars($search) ?>">
+<div class="container mt-4 page-fade-in">
+    <?php if($msg): ?>
+        <div class="alert alert-<?= $msg_type ?> alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> <?= htmlspecialchars($msg) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+    <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h3 style="font-weight:700; margin:0;"><i class="bi bi-door-open-fill text-primary me-2"></i> Smart Room Allotment Dashboard</h3>
+                <p class="text-muted mb-0 mt-1">Manage roommate groupings, assign comfort tier quarters, and automate solo student matchmaking.</p>
+            </div>
+            <div class="mt-2 mt-md-0">
+                <form method="POST" class="d-inline" onsubmit="return confirm('Execute Auto-Matchmaker solver for all unallotted students based on college attendance criteria?');">
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                    <input type="hidden" name="action" value="run_matchmaker">
+                    <button type="submit" class="btn btn-primary fw-bold"><i class="bi bi-cpu-fill me-1"></i> Auto-Match Solo Seekers</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-5 reveal">
+            <div class="glass-card-light h-100" style="border-top: 4px solid var(--bs-primary);">
+                <h5 class="fw-bold text-primary mb-3"><i class="bi bi-plus-circle me-2"></i> Allot Quarters Manually</h5>
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                    <input type="hidden" name="action" value="assign_room">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Select Student (Sorted by Attendance Score %)</label>
+                        <select name="student_id" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">-- Select Student --</option>
+                            <?php while($s = mysqli_fetch_assoc($students)){ ?>
+                                <option value="<?= $s['id'] ?>">
+                                    <?= htmlspecialchars($s['full_name']) ?> (Roll <?= $s['id'] ?>) - Att: <?= intval($s['attendance_pct'] ?? 0) ?>%
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Select Available Room</label>
+                        <select name="room_id" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">-- Select Room --</option>
+                            <?php while($r = mysqli_fetch_assoc($rooms)){ ?>
+                                <option value="<?= $r['id'] ?>" <?= (intval($r['current_occupancy']) >= intval($r['capacity'])) ? 'disabled class="text-muted"' : '' ?>>
+                                    Room <?= htmlspecialchars($r['room_number']) ?> (<?= htmlspecialchars($r['room_type']) ?> - <?= htmlspecialchars($r['comfort_tier']) ?>) [<?= intval($r['current_occupancy']) ?>/<?= intval($r['capacity']) ?>]
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Allocation Authority Tier</label>
+                        <select name="is_provisional" class="form-select bg-dark text-white border-secondary">
+                            <option value="1" selected>Provisional (Requires 24h Student Verify)</option>
+                            <option value="0">Immediate / Permanent Allotment</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-2"><i class="bi bi-check-lg"></i> Issue Allocation Order</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-7 reveal">
+            <div class="glass-card-light h-100" style="border-top: 4px solid var(--bs-warning);">
+                <h5 class="fw-bold text-warning mb-3"><i class="bi bi-arrow-left-right me-2"></i> Roommate Swap desk (Mediator Panel)</h5>
+                <?php if(count($pending_swaps) > 0): ?>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle small mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Student 1 (Sender)</th>
+                                    <th>Student 2 (Receiver)</th>
+                                    <th>Allotment Swap Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($pending_swaps as $ps): ?>
+                                    <tr>
+                                        <td>
+                                            <strong><?= htmlspecialchars($ps['sender_name']) ?></strong><br>
+                                            <small class="text-muted"><?= htmlspecialchars($ps['sender_email']) ?></small>
+                                        </td>
+                                        <td>
+                                            <strong><?= htmlspecialchars($ps['receiver_name']) ?></strong><br>
+                                            <small class="text-muted"><?= htmlspecialchars($ps['receiver_email']) ?></small>
+                                        </td>
+                                        <td>
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                                <input type="hidden" name="swap_id" value="<?= $ps['id'] ?>">
+                                                <input type="hidden" name="action" value="approve_swap">
+                                                <button type="submit" class="btn btn-xs btn-success me-1">Approve</button>
+                                            </form>
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                                <input type="hidden" name="swap_id" value="<?= $ps['id'] ?>">
+                                                <input type="hidden" name="action" value="reject_swap">
+                                                <button type="submit" class="btn btn-xs btn-danger">Reject</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="text-center py-5">
+                        <i class="bi bi-check-circle text-muted fs-2 mb-2 d-block"></i>
+                        <p class="text-muted small mb-0">No pending roommate swap requests awaiting authorization.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <div class="glass-card-light mb-4 reveal" style="border-top: 4px solid var(--bs-success);">
+        <h5 class="fw-bold mb-3"><i class="bi bi-card-list text-success me-2"></i> Current Quarter Allocations</h5>
+        <?php if(count($allocations) > 0): ?>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Quarters</th>
+                            <th>Tier</th>
+                            <th>Issued At</th>
+                            <th>Status / Expiry</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($allocations as $al): ?>
+                            <tr>
+                                <td>
+                                    <strong><?= htmlspecialchars($al['student_name']) ?></strong><br>
+                                    <small class="text-muted"><?= htmlspecialchars($al['email']) ?></small>
+                                </td>
+                                <td>Room <?= htmlspecialchars($al['room_number']) ?></td>
+                                <td><?= htmlspecialchars($al['room_type']) ?> (<?= htmlspecialchars($al['comfort_tier']) ?>)</td>
+                                <td><?= htmlspecialchars($al['allocated_at']) ?></td>
+                                <td>
+                                    <?php if($al['is_verified'] == 1): ?>
+                                        <span class="badge bg-success"><i class="bi bi-shield-fill-check"></i> Verified</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning text-dark expires-tracker" data-expiry="<?= $al['expires_at'] ?>">Provisional Allotment</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <form method="POST" onsubmit="return confirm('Cancel this student\'s allocation? This will instantly free up their slot.');">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                        <input type="hidden" name="alloc_id" value="<?= $al['id'] ?>">
+                                        <input type="hidden" name="action" value="cancel_allocation">
+                                        <button type="submit" class="btn btn-xs btn-outline-danger"><i class="bi bi-trash"></i> Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <p class="text-muted small py-4 text-center">No active room allotments found.</p>
+        <?php endif; ?>
+    </div>
 </div>
-<div class="col-md-2">
-<button class="btn btn-primary">Search</button>
-</div>
-</div>
-</form>
-<form method="POST" class="row g-3">
-<input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-<div class="col-md-6">
-<select name="student_id" class="form-select" required>
-<option value="">Select Student</option>
-<?php while($s = mysqli_fetch_assoc($students)){ ?>
-<option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['full_name']) ?></option>
-<?php } ?>
-</select>
-</div>
-<div class="col-md-6">
-<select name="room_id" class="form-select" required>
-<option value="">Select Room</option>
-<?php while($r = mysqli_fetch_assoc($rooms)){ ?>
-<option value="<?= $r['id'] ?>">
-Room <?= htmlspecialchars($r['room_number']) ?>
-(<?= intval($r['current_occupancy']) ?>/<?= intval($r['capacity']) ?>)
-</option>
-<?php } ?>
-</select>
-</div>
-<div class="col-md-12">
-<button type="submit" class="btn btn-primary">Assign Room</button>
-</div>
-</form>
-</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.expires-tracker').forEach(badge => {
+        let exp = new Date(badge.dataset.expiry).getTime();
+        let timer = setInterval(() => {
+            let now = new Date().getTime();
+            let diff = exp - now;
+            if(diff <= 0) {
+                clearInterval(timer);
+                badge.className = 'badge bg-danger';
+                badge.innerText = 'Expired Allotment';
+            } else {
+                let h = Math.floor(diff / (1000 * 60 * 60));
+                let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                badge.innerHTML = `<i class="bi bi-hourglass-split"></i> Provisional (${h}h ${m}m left)`;
+            }
+        }, 1000 * 60); 
+    });
+});
+</script>
+<style>
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.2rem;
+}
+</style>
 <?php include("../footer.php"); ?>

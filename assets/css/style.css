@@ -154,7 +154,11 @@ body {
 }
 [data-theme="dark"] .glass-card-light p,
 [data-theme="dark"] .glass-card-light span,
+[data-theme="dark"] .glass-card-light li,
 [data-theme="dark"] .glass-card-light label {
+    color: var(--inner-text-muted) !important;
+}
+[data-theme="dark"] .text-muted {
     color: var(--inner-text-muted) !important;
 }
 [data-theme="dark"] .form-input-light {

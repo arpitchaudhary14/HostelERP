@@ -23,24 +23,24 @@ $notices = mysqli_fetch_all(mysqli_query($conn, "SELECT * FROM notices ORDER BY 
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:800px;">
-<h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">Post Notice</h4>
+<h4 class="mb-3" style="font-weight:700;">Post Notice</h4>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <?php if(isset($error))   echo "<div class='alert alert-danger'>$error</div>"; ?>
 <div class="glass-card-light mb-4">
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="mb-3">
-<label style="font-weight:500; color:#555;">Title</label>
+<label style="font-weight:500; ">Title</label>
 <input type="text" name="title" class="form-control" required>
 </div>
 <div class="mb-3">
-<label style="font-weight:500; color:#555;">Message</label>
+<label style="font-weight:500; ">Message</label>
 <textarea name="message" class="form-control" rows="4" required></textarea>
 </div>
 <button type="submit" name="add_notice" class="btn btn-primary">Post Notice</button>
 </form>
 </div>
-<h5 class="mb-3" style="font-weight:600; color:#1a1a2e;">All Notices</h5>
+<h5 class="mb-3" style="font-weight:600;">All Notices</h5>
 <?php foreach($notices as $n): ?>
 <div class="glass-card-light mb-2">
     <div class="d-flex justify-content-between">

@@ -63,15 +63,15 @@ $all_users = mysqli_query($conn, "SELECT id, CONCAT(first_name,' ',COALESCE(last
 include("../header.php");
 ?>
 <div class="container mt-4">
-<h3 class="mb-3" style="font-weight:700; color:#1a1a2e;">👑 Attendance Corrections & Override</h3>
+<h3 class="mb-3" style="font-weight:700;">Attendance Corrections & Override</h3>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
 <?php if(isset($error_msg)) echo "<div class='alert alert-warning'>$error_msg</div>"; ?>
 <div class="glass-card-light mb-4">
-<h5 style="font-weight:600; color:#1a1a2e;">⚡ Direct Override <small style="color:#888; font-weight:400;">(Admin only — edit any record)</small></h5>
+<h5 style="font-weight:600;">⚡ Direct Override <small class="text-muted" style="font-weight:400;">(Admin only — edit any record)</small></h5>
 <form method="POST" class="row g-3 mt-2">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="col-md-3">
-    <label style="font-weight:500; color:#555; font-size:0.88rem;">User</label>
+    <label class="text-muted" style="font-weight:500; font-size:0.88rem;">User</label>
     <select name="override_user" class="form-select form-select-sm" required>
         <option value="">Select User</option>
         <?php while($u = mysqli_fetch_assoc($all_users)): ?>
@@ -80,11 +80,11 @@ include("../header.php");
     </select>
 </div>
 <div class="col-md-3">
-    <label style="font-weight:500; color:#555; font-size:0.88rem;">Date</label>
+    <label class="text-muted" style="font-weight:500; font-size:0.88rem;">Date</label>
     <input type="date" name="override_date" class="form-control form-control-sm" required>
 </div>
 <div class="col-md-3">
-    <label style="font-weight:500; color:#555; font-size:0.88rem;">Set Status</label>
+    <label class="text-muted" style="font-weight:500; font-size:0.88rem;">Set Status</label>
     <select name="override_status" class="form-select form-select-sm" required>
         <option value="present">Present</option>
         <option value="absent">Absent</option>
@@ -97,7 +97,7 @@ include("../header.php");
 </form>
 </div>
 <div class="glass-card-light">
-<h5 class="mb-3" style="font-weight:600; color:#1a1a2e;">📝 Correction Requests</h5>
+<h5 class="mb-3" style="font-weight:600;">📝 Correction Requests</h5>
 <table class="table table-bordered mb-0">
 <thead class="table-dark">
 <tr>

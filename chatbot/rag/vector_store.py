@@ -2,6 +2,7 @@ import os
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import db.db_queries as db_q
 class VectorStore:
     def __init__(self, data_path="rag/data.txt", model_name="all-MiniLM-L6-v2"):
         self.data_path = data_path
@@ -10,15 +11,32 @@ class VectorStore:
         self.chunks = []
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.full_data_path = os.path.join(base_dir, self.data_path)
+        self.last_modified_file = 0
+        self.last_modified_db = None
         self.create_index()
     def create_index(self):
-        """Read data.txt, chunk it and create FAISS index"""
-        if not os.path.exists(self.full_data_path):
-            print(f"Data file not found at {self.full_data_path}")
+        """Read data.txt + DB knowledge, chunk it and create FAISS index"""
+        file_mtime = os.path.getmtime(self.full_data_path) if os.path.exists(self.full_data_path) else 0
+        db_mtime = None
+        try:
+            conn = db_q.get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT MAX(updated_at) FROM chatbot_knowledge")
+            db_mtime = cursor.fetchone()[0]
+            cursor.close()
+            conn.close()
+        except:
+            pass
+        if file_mtime <= self.last_modified_file and db_mtime == self.last_modified_db and self.index is not None:
             return
-        with open(self.full_data_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        raw_chunks = content.split("\n\n")
+        print("🔄 Syncing Knowledge Base (DB + File)...")
+        all_content = ""
+        if os.path.exists(self.full_data_path):
+            with open(self.full_data_path, "r", encoding="utf-8") as f:
+                all_content += f.read() + "\n\n"
+        db_content = db_q.get_knowledge_content()
+        all_content += db_content
+        raw_chunks = all_content.split("\n\n")
         self.chunks = [chunk.strip() for chunk in raw_chunks if len(chunk.strip()) > 10]
         if not self.chunks:
             return
@@ -26,8 +44,11 @@ class VectorStore:
         dimension = embeddings.shape[1]
         self.index = faiss.IndexFlatL2(dimension)
         self.index.add(np.array(embeddings).astype("float32"))
+        self.last_modified_file = file_mtime
+        self.last_modified_db = db_mtime
     def search(self, query, top_k=2):
-        """Search similar chunks"""
+        """Search similar chunks (with auto-reload check)"""
+        self.create_index()
         if self.index is None or not self.chunks:
             return ""
         query_vector = self.model.encode([query])
