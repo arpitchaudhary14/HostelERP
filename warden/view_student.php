@@ -1,9 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'warden'){
-    header("Location: ../dashboard.php");
-    exit;
+if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit;
 }
 $student_id = intval($_GET['id'] ?? 0);
 if(!$student_id){ header("Location: manage_students.php"); exit; }
@@ -26,11 +24,7 @@ $comp_stmt = mysqli_prepare($conn, "SELECT * FROM complaints WHERE student_id=? 
 mysqli_stmt_bind_param($comp_stmt, "i", $student_id);
 mysqli_stmt_execute($comp_stmt);
 $complaints = mysqli_fetch_all(mysqli_stmt_get_result($comp_stmt), MYSQLI_ASSOC);
-$att = mysqli_fetch_assoc(mysqli_query($conn, "SELECT
-    SUM(status='present') as present,
-    SUM(status='absent') as absent,
-    COUNT(*) as total
-    FROM attendance WHERE user_id=$student_id"));
+$att = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(status='present') as present, SUM(status='absent') as absent, COUNT(*) as total FROM attendance WHERE user_id=$student_id"));
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:800px;">
@@ -38,30 +32,17 @@ include("../header.php");
 <div class="glass-card-light mb-4">
 <h4 class="mb-3" style="font-weight:700; "><?= htmlspecialchars($full_name) ?></h4>
 <div class="row">
-<div class="col-md-6">
-    <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
-    <p><strong>Phone:</strong> <?= htmlspecialchars($student['phone'] ?? '—') ?></p>
-    <p><strong>Role:</strong> <?= ucfirst($student['role']) ?></p>
-    <p><strong>Joined:</strong> <?= htmlspecialchars($student['created_at'] ?? '—') ?></p>
+<div class="col-md-6"> <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p> <p><strong>Phone:</strong> <?= htmlspecialchars($student['phone'] ?? '—') ?></p> <p><strong>Role:</strong> <?= ucfirst($student['role']) ?></p> <p><strong>Joined:</strong> <?= htmlspecialchars($student['created_at'] ?? '—') ?></p>
 </div>
-<div class="col-md-6">
-    <p><strong>Room:</strong> <?= $room ? htmlspecialchars($room['room_number']) : 'Not assigned' ?></p>
-    <p><strong>Attendance:</strong>
-        <?php
-        $total = intval($att['total'] ?? 0);
-        $pres  = intval($att['present'] ?? 0);
-        echo "$pres / $total days";
-        if($total > 0) echo " (" . round($pres/$total*100) . "%)";
-        ?>
-    </p>
+<div class="col-md-6"> <p><strong>Room:</strong> <?= $room ? htmlspecialchars($room['room_number']) : 'Not assigned' ?></p> <p><strong>Attendance:</strong> <?php $total = intval($att['total'] ?? 0); $pres = intval($att['present'] ?? 0); echo "$pres / $total days"; if($total > 0) echo " (" . round($pres/$total*100) . "%)"; ?> </p>
 </div>
 </div>
 </div>
 <div class="glass-card-light mb-4">
 <h5 class="mb-3" style="font-weight:600; ">Recent Leave Requests</h5>
 <?php if($leaves): ?>
-<table class="table table-bordered mb-0">
-<thead class="table-dark"><tr><th>From</th><th>To</th><th>Reason</th><th>Status</th></tr></thead>
+<table class="table table-bordered mb-0 table-sticky">
+<thead class=""><tr><th>From</th><th>To</th><th>Reason</th><th>Status</th></tr></thead>
 <tbody>
 <?php foreach($leaves as $l): ?>
 <tr>
@@ -80,8 +61,8 @@ include("../header.php");
 <div class="glass-card-light">
 <h5 class="mb-3" style="font-weight:600; ">Recent Complaints</h5>
 <?php if($complaints): ?>
-<table class="table table-bordered mb-0">
-<thead class="table-dark"><tr><th>Subject</th><th>Status</th><th>Date</th></tr></thead>
+<table class="table table-bordered mb-0 table-sticky">
+<thead class=""><tr><th>Subject</th><th>Status</th><th>Date</th></tr></thead>
 <tbody>
 <?php foreach($complaints as $c): ?>
 <tr>

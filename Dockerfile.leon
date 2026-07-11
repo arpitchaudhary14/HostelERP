@@ -1,0 +1,49 @@
+FROM python:3.11-slim-bookworm
+
+LABEL maintainer="HostelERP Team"
+LABEL description="LEON AI Chatbot Backend API"
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN set -eux; \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN set -eux; \
+    useradd -u 1001 -m -d /nonexistent -s /usr/sbin/nologin leon
+
+WORKDIR /app
+
+
+
+COPY --chown=leon:leon requirements.txt .
+
+RUN set -eux; \
+    pip install --no-cache-dir -r requirements.txt
+
+
+
+COPY --chown=leon:leon chatbot/ .
+
+
+USER leon
+
+
+EXPOSE 5000
+
+
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f -X POST http://localhost:5000/chat \
+        -H "Content-Type: application/json" \
+        -d '{"message":"ping","user_id":null}' || exit 1
+
+
+CMD ["python", "main.py"]

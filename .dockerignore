@@ -1,0 +1,109 @@
+# ============================================================================
+# .dockerignore for HostelERP Project
+# ============================================================================
+# Files and directories excluded from Docker build context
+# Speeds up build, reduces image size, excludes unnecessary files
+# ============================================================================
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Version control
+.hg
+.svn
+
+# IDE and Editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.settings
+*.sublime-project
+*.sublime-workspace
+.env.local
+.env.*.local
+
+# Node.js (if frontend build exists)
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Python (if any local dev scripts)
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.pytest_cache
+.venv
+venv
+
+# Docker files (don't copy during build)
+Dockerfile
+Dockerfile.leon
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# Documentation and project files (keep out of image)
+README.md
+LICENSE
+*.md
+.github
+
+# Build artifacts and temporary files
+build
+dist
+*.log
+logs
+.cache
+tmp
+temp
+
+# System and OS files
+Thumbs.db
+.directory
+.AppleDouble
+
+# Environment files (security: don't bake into image)
+.env
+.env.production
+.env.local
+secrets.yaml
+
+# Development databases
+*.sqlite
+*.db
+
+# Backups
+*.backup
+*.bak
+*.sql.bak
+
+# CI/CD pipeline files
+.gitlab-ci.yml
+.github/workflows
+.travis.yml
+.circleci
+azure-pipelines.yml
+
+# Testing artifacts
+coverage
+.coverage
+.nyc_output
+
+# Package managers (dev only)
+composer.lock
+vendor/tests
+
+# Large media files
+*.iso
+*.dmg
+*.tar.gz
+*.zip

@@ -1,4 +1,4 @@
-CREATE DATABASE hostelerp_db;
+CREATE DATABASE IF NOT EXISTS hostelerp_db;
 USE hostelerp_db;
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -1,91 +1,15 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'warden') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'warden') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 $message = '';
 $message_type = '';
-if (isset($_POST['update_condition'])) {
-    $book_id = $_POST['book_id'];
-    $status = $_POST['condition_status'];
-    $sql = "UPDATE library_books SET condition_status = '$status' WHERE id = $book_id";
-    if (mysqli_query($conn, $sql)) {
-        $message = "Book condition updated successfully.";
-        $message_type = "success";
-    } else {
-        $message = "Error: " . mysqli_error($conn);
-        $message_type = "danger";
-    }
+if (isset($_POST['update_condition'])) { $book_id = $_POST['book_id']; $status = $_POST['condition_status']; $sql = "UPDATE library_books SET condition_status = '$status' WHERE id = $book_id"; if (mysqli_query($conn, $sql)) { $message = "Book condition updated successfully."; $message_type = "success"; } else { $message = "Error: " . mysqli_error($conn); $message_type = "danger"; }
 }
-$books = mysqli_query($conn, "SELECT b.*, c.name as category_name 
-                               FROM library_books b 
-                               LEFT JOIN library_categories c ON b.category_id = c.id 
-                               ORDER BY b.title ASC");
+$books = mysqli_query($conn, "SELECT b.*, c.name as category_name FROM library_books b LEFT JOIN library_categories c ON b.category_id = c.id ORDER BY b.title ASC");
 include("../../header.php");
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal">
-        <h2 class="fw-bold text-gradient mb-0">Book Health Audit</h2>
-        <p class="text-muted mb-0">Report damaged or missing books to keep the catalog accurate.</p>
-    </div>
-    <?php if($message): ?>
-    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-        <?= $message ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
-    <div class="glass-card-light reveal">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Book Details</th>
-                        <th>Category</th>
-                        <th>Location</th>
-                        <th>Current Condition</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while($b = mysqli_fetch_assoc($books)): ?>
-                    <tr>
-                        <td>
-                            <div class="fw-bold"><?= htmlspecialchars($b['title']) ?></div>
-                            <small class="text-muted d-block">By <?= htmlspecialchars($b['author']) ?></small>
-                            <?php if (!empty($b['description'])): ?>
-                            <small class="text-muted fst-italic mt-1 d-block" style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<?= htmlspecialchars($b['description']) ?>">
-                                📝 <?= htmlspecialchars($b['description']) ?>
-                            </small>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= htmlspecialchars($b['category_name']) ?></td>
-                        <td><?= htmlspecialchars($b['location']) ?></td>
-                        <td>
-                            <?php 
-                            $badge = 'bg-success';
-                            if($b['condition_status'] == 'damaged') $badge = 'bg-warning text-dark';
-                            if($b['condition_status'] == 'missing') $badge = 'bg-danger';
-                            ?>
-                            <span class="badge <?= $badge ?> rounded-pill px-3"><?= ucfirst($b['condition_status']) ?></span>
-                        </td>
-                        <td>
-                            <form method="POST" class="d-flex gap-2">
-                                <input type="hidden" name="book_id" value="<?= $b['id'] ?>">
-                                <select name="condition_status" class="form-select form-select-sm rounded-pill" style="width: 120px;">
-                                    <option value="good" <?= $b['condition_status'] == 'good' ? 'selected' : '' ?>>Good</option>
-                                    <option value="damaged" <?= $b['condition_status'] == 'damaged' ? 'selected' : '' ?>>Damaged</option>
-                                    <option value="missing" <?= $b['condition_status'] == 'missing' ? 'selected' : '' ?>>Missing</option>
-                                </select>
-                                <button type="submit" name="update_condition" class="btn btn-sm btn-primary rounded-pill px-3">Update</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal"> <h2 class="fw-bold text-gradient mb-0">Book Health Audit</h2> <p class="text-muted mb-0">Report damaged or missing books to keep the catalog accurate.</p> </div> <?php if($message): ?> <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert"> <?= $message ?> <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div> <?php endif; ?> <div class="glass-card-light reveal"> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>Book Details</th> <th>Category</th> <th>Location</th> <th>Current Condition</th> <th>Action</th> </tr> </thead> <tbody> <?php while($b = mysqli_fetch_assoc($books)): ?> <tr> <td> <div class="fw-bold"><?= htmlspecialchars($b['title']) ?></div> <small class="text-muted d-block">By <?= htmlspecialchars($b['author']) ?></small> <?php if (!empty($b['description'])): ?> <small class="text-muted fst-italic mt-1 d-block" style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<?= htmlspecialchars($b['description']) ?>"> 📝 <?= htmlspecialchars($b['description']) ?> </small> <?php endif; ?> </td> <td><?= htmlspecialchars($b['category_name']) ?></td> <td><?= htmlspecialchars($b['location']) ?></td> <td> <?php $badge = 'bg-success'; if($b['condition_status'] == 'damaged') $badge = 'bg-warning text-dark'; if($b['condition_status'] == 'missing') $badge = 'bg-danger'; ?> <span class="badge <?= $badge ?> rounded-pill px-3"><?= ucfirst($b['condition_status']) ?></span> </td> <td> <form method="POST" class="d-flex gap-2"> <input type="hidden" name="book_id" value="<?= $b['id'] ?>"> <select name="condition_status" class="form-select form-select-sm rounded-pill" style="width: 120px;"> <option value="good" <?= $b['condition_status'] == 'good' ? 'selected' : '' ?>>Good</option> <option value="damaged" <?= $b['condition_status'] == 'damaged' ? 'selected' : '' ?>>Damaged</option> <option value="missing" <?= $b['condition_status'] == 'missing' ? 'selected' : '' ?>>Missing</option> </select> <button type="submit" name="update_condition" class="btn btn-sm btn-primary rounded-pill px-3">Update</button> </form> </td> </tr> <?php endwhile; ?> </tbody> </table> </div> </div>
 </div>
 <?php include("../../footer.php"); ?>

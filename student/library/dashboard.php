@@ -1,8 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 require_once "../../library/includes/library_functions.php";
@@ -11,173 +9,14 @@ $stats = get_library_stats($conn);
 $my_borrows = get_user_borrows($conn, $user_id);
 include("../../header.php");
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <div class="d-flex align-items-center mb-2">
-                <img src="/WebTechProject/assets/images/Indexia_Logo.jpeg" height="50" class="me-3 rounded-3 shadow-sm">
-                <div>
-                    <h2 class="fw-bold text-gradient mb-0">Indexia Library</h2>
-                    <p class="text-muted mb-0">Welcome back, your bookshelf is waiting.</p>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="catalog.php" class="btn btn-gradient rounded-pill px-4">Browse Catalog</a>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-3 reveal">
-            <div class="glass-card-light text-center p-4 h-100">
-                <div class="stat-icon bg-primary-subtle text-primary mb-3">
-                    <i class="bi bi-journal-bookmark h3"></i>
-                </div>
-                <h3 class="fw-bold mb-0"><?= $stats['total_books'] ?></h3>
-                <small class="text-muted text-uppercase">Total Books</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <?php 
-            $active_count = 0;
-            mysqli_data_seek($my_borrows, 0);
-            while($b = mysqli_fetch_assoc($my_borrows)) if($b['status'] == 'borrowed') $active_count++;
-            ?>
-            <div class="glass-card-light text-center p-4 h-100">
-                <div class="stat-icon bg-success-subtle text-success mb-3">
-                    <i class="bi bi-book-half h3"></i>
-                </div>
-                <h3 class="fw-bold mb-0"><?= $active_count ?></h3>
-                <small class="text-muted text-uppercase">With You</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="glass-card-light text-center p-4 h-100">
-                <div class="stat-icon bg-warning-subtle text-warning mb-3">
-                    <i class="bi bi-clock-history h3"></i>
-                </div>
-                <h3 class="fw-bold mb-0"><?= $stats['pending_requests'] ?></h3>
-                <small class="text-muted text-uppercase">Requests</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="glass-card-light text-center p-4 h-100">
-                <div class="stat-icon bg-danger-subtle text-danger mb-3">
-                    <i class="bi bi-cash-coin h3"></i>
-                </div>
-                <h3 class="fw-bold mb-0">₹<?= number_format($stats['total_fines'], 2) ?></h3>
-                <small class="text-muted text-uppercase">Total Fines</small>
-            </div>
-        </div>
-        <div class="col-12 reveal">
-            <div class="glass-card-light p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">My Reading Journey</h5>
-                    <span class="badge bg-primary rounded-pill">Level: Bookworm</span>
-                </div>
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <div class="progress rounded-pill mb-2" style="height: 15px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-gradient" style="width: 65%"></div>
-                        </div>
-                        <p class="small text-muted mb-0">You've read <strong>4 books</strong> this month. <strong>2 more</strong> to reach your goal!</p>
-                    </div>
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                        <a href="suggest.php" class="btn btn-sm btn-outline-primary rounded-pill px-3">Suggest a Book</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-8 reveal">
-            <div class="glass-card-light h-100">
-                <h5 class="fw-bold mb-4">My Recent Activity</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Book Title</th>
-                                <th>Due Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            mysqli_data_seek($my_borrows, 0);
-                            $count = 0;
-                            while($b = mysqli_fetch_assoc($my_borrows)): 
-                                if($count >= 5) break;
-                                $count++;
-                            ?>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="book-mini-cover me-3" style="background-image: url('/WebTechProject/assets/images/<?= $b['cover_image'] ?>')"></div>
-                                        <div>
-                                            <div class="fw-bold"><?= htmlspecialchars($b['title']) ?></div>
-                                            <small class="text-muted"><?= htmlspecialchars($b['author']) ?></small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><?= date('d M, Y', strtotime($b['due_date'])) ?></td>
-                                <td>
-                                    <?php 
-                                    $badge = 'bg-secondary';
-                                    if($b['status'] == 'borrowed') $badge = 'bg-primary';
-                                    if($b['status'] == 'returned') $badge = 'bg-success';
-                                    if($b['status'] == 'overdue') $badge = 'bg-danger';
-                                    if($b['status'] == 'pending') $badge = 'bg-warning text-dark';
-                                    ?>
-                                    <span class="badge <?= $badge ?> rounded-pill px-3"><?= ucfirst($b['status']) ?></span>
-                                </td>
-                            </tr>
-                            <?php endwhile; ?>
-                            <?php if($count == 0): ?>
-                                <tr><td colspan="3" class="text-center py-4 text-muted">No recent activity. Go find a book!</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100">
-                <h5 class="fw-bold mb-4">Library Rules</h5>
-                <div class="rule-item mb-3 p-3 bg-light rounded-3">
-                    <small class="d-block fw-bold text-primary">BORROWING PERIOD</small>
-                    <p class="small text-muted mb-0">Books can be issued for a maximum of 14 days.</p>
-                </div>
-                <div class="rule-item mb-3 p-3 bg-light rounded-3">
-                    <small class="d-block fw-bold text-danger">LATE FINES</small>
-                    <p class="small text-muted mb-0">₹5.00 per day will be charged after the due date.</p>
-                </div>
-                <div class="rule-item p-3 bg-light rounded-3">
-                    <small class="d-block fw-bold text-success">RENEWALS</small>
-                    <p class="small text-muted mb-0">Books can be renewed once if there are no pending requests.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal"> <div class="d-flex justify-content-between align-items-center flex-wrap"> <div class="d-flex align-items-center mb-2"> <img src="/assets/images/Indexia_Logo.jpeg" height="50" class="me-3 rounded-3 shadow-sm"> <div> <h2 class="fw-bold text-gradient mb-0">Indexia Library</h2> <p class="text-muted mb-0">Welcome back, your bookshelf is waiting.</p> </div> </div> <div class="d-flex gap-2"> <a href="catalog.php" class="btn btn-gradient rounded-pill px-4">Browse Catalog</a> </div> </div> </div> <div class="row g-4"> <div class="col-md-3 reveal"> <div class="glass-card-light text-center p-4 h-100"> <div class="stat-icon bg-primary-subtle text-primary mb-3"> <i class="bi bi-journal-bookmark h3"></i> </div> <h3 class="fw-bold mb-0"><?= $stats['total_books'] ?></h3> <small class="text-muted text-uppercase">Total Books</small> </div> </div> <div class="col-md-3 reveal"> <?php $active_count = 0; mysqli_data_seek($my_borrows, 0); while($b = mysqli_fetch_assoc($my_borrows)) if($b['status'] == 'borrowed') $active_count++; ?> <div class="glass-card-light text-center p-4 h-100"> <div class="stat-icon bg-success-subtle text-success mb-3"> <i class="bi bi-book-half h3"></i> </div> <h3 class="fw-bold mb-0"><?= $active_count ?></h3> <small class="text-muted text-uppercase">With You</small> </div> </div> <div class="col-md-3 reveal"> <div class="glass-card-light text-center p-4 h-100"> <div class="stat-icon bg-warning-subtle text-warning mb-3"> <i class="bi bi-clock-history h3"></i> </div> <h3 class="fw-bold mb-0"><?= $stats['pending_requests'] ?></h3> <small class="text-muted text-uppercase">Requests</small> </div> </div> <div class="col-md-3 reveal"> <div class="glass-card-light text-center p-4 h-100"> <div class="stat-icon bg-danger-subtle text-danger mb-3"> <i class="bi bi-cash-coin h3"></i> </div> <h3 class="fw-bold mb-0">₹<?= number_format($stats['total_fines'], 2) ?></h3> <small class="text-muted text-uppercase">Total Fines</small> </div> </div> <div class="col-12 reveal"> <div class="glass-card-light p-4"> <div class="d-flex justify-content-between align-items-center mb-3"> <h5 class="fw-bold mb-0">My Reading Journey</h5> <span class="badge bg-primary rounded-pill">Level: Bookworm</span> </div> <div class="row align-items-center"> <div class="col-md-8"> <div class="progress rounded-pill mb-2" style="height: 15px;"> <div class="progress-bar progress-bar-striped progress-bar-animated bg-gradient" style="width: 65%"></div> </div> <p class="small text-muted mb-0">You've read <strong>4 books</strong> this month. <strong>2 more</strong> to reach your goal!</p> </div> <div class="col-md-4 text-md-end mt-3 mt-md-0"> <a href="suggest.php" class="btn btn-sm btn-outline-primary rounded-pill px-3">Suggest a Book</a> </div> </div> </div> </div> <div class="col-md-8 reveal"> <div class="glass-card-light h-100"> <h5 class="fw-bold mb-4">My Recent Activity</h5> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>Book Title</th> <th>Due Date</th> <th>Status</th> </tr> </thead> <tbody> <?php mysqli_data_seek($my_borrows, 0); $count = 0; while($b = mysqli_fetch_assoc($my_borrows)): if($count >= 5) break; $count++; ?> <tr> <td> <div class="d-flex align-items-center"> <div class="book-mini-cover me-3" style="background-image: url('/assets/images/<?= $b['cover_image'] ?>')"></div> <div> <div class="fw-bold"><?= htmlspecialchars($b['title']) ?></div> <small class="text-muted"><?= htmlspecialchars($b['author']) ?></small> </div> </div> </td> <td><?= date('d M, Y', strtotime($b['due_date'])) ?></td> <td> <?php $badge = 'bg-secondary'; if($b['status'] == 'borrowed') $badge = 'bg-primary'; if($b['status'] == 'returned') $badge = 'bg-success'; if($b['status'] == 'overdue') $badge = 'bg-danger'; if($b['status'] == 'pending') $badge = 'bg-warning text-dark'; ?> <span class="badge <?= $badge ?> rounded-pill px-3"><?= ucfirst($b['status']) ?></span> </td> </tr> <?php endwhile; ?> <?php if($count == 0): ?> <tr><td colspan="3" class="text-center py-4 text-muted">No recent activity. Go find a book!</td></tr> <?php endif; ?> </tbody> </table> </div> </div> </div> <div class="col-md-4 reveal"> <div class="glass-card-light h-100"> <h5 class="fw-bold mb-4">Library Rules</h5> <div class="rule-item mb-3 p-3 rounded-3"> <small class="d-block fw-bold text-primary">BORROWING PERIOD</small> <p class="small text-muted mb-0">Books can be issued for a maximum of 14 days.</p> </div> <div class="rule-item mb-3 p-3 rounded-3"> <small class="d-block fw-bold text-danger">LATE FINES</small> <p class="small text-muted mb-0">₹5.00 per day will be charged after the due date.</p> </div> <div class="rule-item p-3 rounded-3"> <small class="d-block fw-bold text-success">RENEWALS</small> <p class="small text-muted mb-0">Books can be renewed once if there are no pending requests.</p> </div> </div> </div> </div>
 </div>
 <style>
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.stat-icon { width: 60px; height: 60px; margin: 0 auto; border-radius: 15px; display: flex; align-items: center; justify-content: center;
 }
-.book-mini-cover {
-    width: 40px;
-    height: 55px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    background-color: #eee;
+.book-mini-cover { width: 40px; height: 55px; background-size: cover; background-position: center; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background-color: #eee;
 }
-.rule-item:hover {
-    transform: translateX(5px);
+.rule-item:hover { transform: translateX(5px);
 }
 </style>
 <?php include("../../footer.php"); ?>

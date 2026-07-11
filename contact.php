@@ -8,8 +8,7 @@ feel free to contact our team.
 <div class="row mt-4 reveal-stagger">
 <div class="col-md-6 mb-3 reveal">
 <div class="glass-card-light">
-<h5 style="font-weight:600;">
-    <span style="font-size:1.3rem; margin-right:8px;">🛠️</span> Technical Support
+<h5 style="font-weight:600;"> <span style="font-size:1.3rem; margin-right:8px;">🛠️</span> Technical Support
 </h5>
 <p class="text-muted" style="margin:4px 0;">Email: support@hostelerp.com</p>
 <p class="text-muted" style="margin:0;">Phone: +91 9876543210</p>
@@ -17,8 +16,7 @@ feel free to contact our team.
 </div>
 <div class="col-md-6 mb-3 reveal">
 <div class="glass-card-light">
-<h5 style="font-weight:600;">
-    <span style="font-size:1.3rem; margin-right:8px;">💬</span> General Queries
+<h5 style="font-weight:600;"> <span style="font-size:1.3rem; margin-right:8px;">💬</span> General Queries
 </h5>
 <p class="text-muted" style="margin:4px 0;">Email: info@hostelerp.com</p>
 <p class="text-muted" style="margin:0;">Phone: +91 9123456780</p>
@@ -26,8 +24,7 @@ feel free to contact our team.
 </div>
 <div class="col-md-6 mb-3 reveal">
 <div class="glass-card-light">
-<h5 style="font-weight:600;">
-    <span style="font-size:1.3rem; margin-right:8px;">🏛️</span> Administration
+<h5 style="font-weight:600;"> <span style="font-size:1.3rem; margin-right:8px;">🏛️</span> Administration
 </h5>
 <p class="text-muted" style="margin:4px 0;">Email: admin@hostelerp.com</p>
 <p class="text-muted" style="margin:0;">Phone: +91 9988776655</p>
@@ -35,8 +32,7 @@ feel free to contact our team.
 </div>
 <div class="col-md-6 mb-3 reveal">
 <div class="glass-card-light">
-<h5 style="font-weight:600;">
-    <span style="font-size:1.3rem; margin-right:8px;">👨‍💻</span> Developer Contact
+<h5 style="font-weight:600;"> <span style="font-size:1.3rem; margin-right:8px;">👨‍💻</span> Developer Contact
 </h5>
 <p class="text-muted" style="margin:4px 0;">Email: developer@hostelerp.com</p>
 <p class="text-muted" style="margin:0;">Phone: +91 9001122334</p>
@@ -44,8 +40,7 @@ feel free to contact our team.
 </div>
 </div>
 <div class="glass-card-light mt-3 reveal">
-<h5 style="font-weight:600;">
-    <span style="font-size:1.3rem; margin-right:8px;">📍</span> Office Address
+<h5 style="font-weight:600;"> <span style="font-size:1.3rem; margin-right:8px;">📍</span> Office Address
 </h5>
 <p class="text-muted" style="margin:0;">
 HostelERP Development Team<br>

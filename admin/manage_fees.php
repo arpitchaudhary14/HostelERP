@@ -1,36 +1,16 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
-if(isset($_POST['assign_fee'])){
-    validate_csrf();
-    $student_id = intval($_POST['student_id'] ?? 0);
-    $amount     = floatval($_POST['amount'] ?? 0);
-    $due_date   = $_POST['due_date'] ?? '';
-    $stmt = mysqli_prepare($conn, "INSERT INTO fees (student_id, amount, due_date, status) VALUES (?, ?, ?, 'Pending')");
-    mysqli_stmt_bind_param($stmt, "ids", $student_id, $amount, $due_date);
-    mysqli_stmt_execute($stmt);
+if(isset($_POST['assign_fee'])){ validate_csrf(); $student_id = intval($_POST['student_id'] ?? 0); $amount = floatval($_POST['amount'] ?? 0); $due_date = $_POST['due_date'] ?? ''; $stmt = mysqli_prepare($conn, "INSERT INTO fees (student_id, amount, due_date, status) VALUES (?, ?, ?, 'Pending')"); mysqli_stmt_bind_param($stmt, "ids", $student_id, $amount, $due_date); mysqli_stmt_execute($stmt);
 }
-if(isset($_GET['paid'])){
-    $id = intval($_GET['paid']);
-    mysqli_query($conn,"
-        UPDATE fees SET status='Paid', paid_on=CURDATE()
-        WHERE id='$id'
-    ");
+if(isset($_GET['paid'])){ $id = intval($_GET['paid']); mysqli_query($conn," UPDATE fees SET status='Paid', paid_on=CURDATE() WHERE id='$id' ");
 }
-mysqli_query($conn,"
-    UPDATE fees SET status='Overdue'
-    WHERE due_date < CURDATE() AND status='Pending'
+mysqli_query($conn," UPDATE fees SET status='Overdue' WHERE due_date < CURDATE() AND status='Pending'
 ");
 $students = mysqli_query($conn,"SELECT id, first_name, last_name FROM users WHERE role='student'");
-$fees = mysqli_query($conn,"
-    SELECT fees.*, users.first_name, users.last_name
-    FROM fees
-    JOIN users ON fees.student_id = users.id
-    ORDER BY fees.created_at DESC
+$fees = mysqli_query($conn," SELECT fees.*, users.first_name, users.last_name FROM fees JOIN users ON fees.student_id = users.id ORDER BY fees.created_at DESC
 ");
 include("../header.php");
 ?>
@@ -61,7 +41,7 @@ include("../header.php");
 </form>
 <h4>All Fees</h4>
 <hr>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>Student</th>
 <th>Amount</th>

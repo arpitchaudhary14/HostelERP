@@ -1,32 +1,17 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
-if(isset($_POST['change_role'])){
-    $user_id = intval($_POST['user_id']);
-    $new_role = $_POST['role'];
-    mysqli_query($conn,"UPDATE users SET role='$new_role' WHERE id='$user_id'");
-    mysqli_query($conn,"
-        INSERT INTO activity_logs (user_id, role, action)
-        VALUES ('{$_SESSION['user_id']}','admin',
-        'Changed role of user ID $user_id to $new_role')
-    ");
+if(isset($_POST['change_role'])){ $user_id = intval($_POST['user_id']); $new_role = $_POST['role']; mysqli_query($conn,"UPDATE users SET role='$new_role' WHERE id='$user_id'"); mysqli_query($conn," INSERT INTO activity_logs (user_id, role, action) VALUES ('{$_SESSION['user_id']}','admin', 'Changed role of user ID $user_id to $new_role') ");
 }
-if(isset($_GET['ban'])){
-    $id = intval($_GET['ban']);
-    mysqli_query($conn,"UPDATE users SET status='banned' WHERE id='$id'");
+if(isset($_GET['ban'])){ $id = intval($_GET['ban']); mysqli_query($conn,"UPDATE users SET status='banned' WHERE id='$id'");
 }
-if(isset($_GET['unban'])){
-    $id = intval($_GET['unban']);
-    mysqli_query($conn,"UPDATE users SET status='active' WHERE id='$id'");
+if(isset($_GET['unban'])){ $id = intval($_GET['unban']); mysqli_query($conn,"UPDATE users SET status='active' WHERE id='$id'");
 }
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "SELECT * FROM users";
-if(!empty($search)){
-    $query .= " WHERE full_name LIKE '%$search%' OR CONCAT(first_name,' ',last_name) LIKE '%$search%' OR email LIKE '%$search%'";
+if(!empty($search)){ $query .= " WHERE full_name LIKE '%$search%' OR CONCAT(first_name,' ',last_name) LIKE '%$search%' OR email LIKE '%$search%'";
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
@@ -38,8 +23,7 @@ include("../header.php");
 <form method="GET">
 <div class="row mb-3">
 <div class="col-md-6">
-<input type="text" name="search" class="form-control" 
-placeholder="Search by name or email"
+<input type="text" name="search" class="form-control" placeholder="Search by name or email"
 value="<?= htmlspecialchars($search) ?>">
 </div>
 <div class="col-md-2">
@@ -50,7 +34,7 @@ value="<?= htmlspecialchars($search) ?>">
 </div>
 </div>
 </form>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>Name</th>
 <th>Email</th>

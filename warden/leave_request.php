@@ -1,31 +1,10 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'warden'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit();
 }
 $user_id = $_SESSION['user_id'];
-if(isset($_POST['submit_leave'])){
-    validate_csrf();
-    $from   = $_POST['from_date'];
-    $to     = $_POST['to_date'];
-    $reason = trim($_POST['reason']);
-    if(empty($from) || empty($to)){
-        $error = "Please select both From and To dates.";
-    } elseif(strtotime($from) < strtotime(date('Y-m-d'))){
-        $error = "From date cannot be in the past.";
-    } elseif(strtotime($to) < strtotime($from)){
-        $error = "To date cannot be before From date.";
-    } else {
-        $stmt = mysqli_prepare($conn, "INSERT INTO warden_leave_requests (warden_id, from_date, to_date, reason) VALUES (?,?,?,?)");
-        mysqli_stmt_bind_param($stmt, "isss", $user_id, $from, $to, $reason);
-        if(mysqli_stmt_execute($stmt)){
-            $success = "Leave request submitted successfully. Awaiting Admin approval.";
-        } else {
-            $error = "Something went wrong. Please try again.";
-        }
-    }
+if(isset($_POST['submit_leave'])){ validate_csrf(); $from = $_POST['from_date']; $to = $_POST['to_date']; $reason = trim($_POST['reason']); if(empty($from) || empty($to)){ $error = "Please select both From and To dates."; } elseif(strtotime($from) < strtotime(date('Y-m-d'))){ $error = "From date cannot be in the past."; } elseif(strtotime($to) < strtotime($from)){ $error = "To date cannot be before From date."; } else { $stmt = mysqli_prepare($conn, "INSERT INTO warden_leave_requests (warden_id, from_date, to_date, reason) VALUES (?,?,?,?)"); mysqli_stmt_bind_param($stmt, "isss", $user_id, $from, $to, $reason); if(mysqli_stmt_execute($stmt)){ $success = "Leave request submitted successfully. Awaiting Admin approval."; } else { $error = "Something went wrong. Please try again."; } }
 }
 include("../header.php");
 ?>
@@ -33,7 +12,7 @@ include("../header.php");
 <div class="glass-card-light">
 <h4 class="mb-3" style="font-weight:700; ">📅 Request Leave</h4>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
-<?php if(isset($error))   echo "<div class='alert alert-danger'>$error</div>"; ?>
+<?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="mb-3">

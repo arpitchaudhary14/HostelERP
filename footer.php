@@ -12,44 +12,42 @@ through a centralized digital platform.
 <div class="col-md-2 mb-4">
 <h6>Quick Links</h6>
 <ul class="list-unstyled">
-<li><a href="/WebTechProject/index.php">Home</a></li>
-<li><a href="/WebTechProject/login.php">Login</a></li>
-<li><a href="/WebTechProject/register.php">Register</a></li>
-<li><a href="/WebTechProject/contact.php">Contact</a></li>
+<li><a href="/index.php">Home</a></li>
+<li><a href="/login.php">Login</a></li>
+<li><a href="/register.php">Register</a></li>
+<li><a href="/contact.php">Contact</a></li>
 </ul>
 </div>
 <div class="col-md-3 mb-4">
 <h6>Features</h6>
 <ul class="list-unstyled" style="color: var(--text-muted-light);">
-<?php 
-$f_link = isset($_SESSION['user_id']) ? '' : '/WebTechProject/login.php'; 
-$f_role = $_SESSION['role'] ?? 'guest';
+<?php $f_link = isset($_SESSION['user_id']) ? '' : '/login.php'; $f_role = $_SESSION['role'] ?? 'guest';
 ?>
 <?php if ($f_role === 'warden'): ?>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/my_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Attendance</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/mark_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Mark Attendance</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/attendance_correction.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Corrections</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/my_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Leaves</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/gym/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/warden/laundry/requests.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
+<li><a href="<?= $f_link ?: '/warden/my_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Attendance</a></li>
+<li><a href="<?= $f_link ?: '/warden/mark_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Mark Attendance</a></li>
+<li><a href="<?= $f_link ?: '/warden/attendance_correction.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Corrections</a></li>
+<li><a href="<?= $f_link ?: '/warden/my_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">My Leaves</a></li>
+<li><a href="<?= $f_link ?: '/warden/gym/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
+<li><a href="<?= $f_link ?: '/warden/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
+<li><a href="<?= $f_link ?: '/warden/laundry/requests.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
 <?php elseif ($f_role === 'admin'): ?>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/warden_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Warden Attendance</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_warden_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Leaves</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_corrections.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Corrections</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/manage_users.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">User Management</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/gym/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/laundry/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/admin/chatbot/knowledge.php' ?>" style="color:var(--text-muted-light); text-decoration:none; font-weight: 600;"><i class="bi bi-cpu-fill me-1 text-info"></i> LEON AI Registry</a></li>
+<li><a href="<?= $f_link ?: '/admin/warden_attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Warden Attendance</a></li>
+<li><a href="<?= $f_link ?: '/admin/manage_warden_leaves.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Leaves</a></li>
+<li><a href="<?= $f_link ?: '/admin/manage_corrections.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Manage Corrections</a></li>
+<li><a href="<?= $f_link ?: '/admin/manage_users.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">User Management</a></li>
+<li><a href="<?= $f_link ?: '/admin/gym/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
+<li><a href="<?= $f_link ?: '/admin/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
+<li><a href="<?= $f_link ?: '/admin/laundry/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
+<li><a href="<?= $f_link ?: '/admin/chatbot/knowledge.php' ?>" style="color:var(--text-muted-light); text-decoration:none; font-weight: 600;"><i class="bi bi-cpu-fill me-1 text-info"></i> LEON AI Registry</a></li>
 <?php else: ?>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/my_room.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Room Management</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/submit_complaint.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Complaints System</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/leave_request.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Leave Requests</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Attendance Tracking</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/gym/my_membership.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
-<li><a href="<?= $f_link ?: '/WebTechProject/student/laundry/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
+<li><a href="<?= $f_link ?: '/student/my_room.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Room Management</a></li>
+<li><a href="<?= $f_link ?: '/student/submit_complaint.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Complaints System</a></li>
+<li><a href="<?= $f_link ?: '/student/leave_request.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Leave Requests</a></li>
+<li><a href="<?= $f_link ?: '/student/attendance.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Attendance Tracking</a></li>
+<li><a href="<?= $f_link ?: '/student/gym/my_membership.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">MatrixFit Gym</a></li>
+<li><a href="<?= $f_link ?: '/student/library/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Indexia Library</a></li>
+<li><a href="<?= $f_link ?: '/student/laundry/dashboard.php' ?>" style="color:var(--text-muted-light); text-decoration:none;">Cleanly Laundry</a></li>
 <?php endif; ?>
 </ul>
 </div>
@@ -159,7 +157,7 @@ Accounts may be suspended for policy violations.
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo '/WebTechProject/'; ?>assets/js/app.js"></script>
+<script src="<?php echo '/'; ?>assets/js/app.js"></script>
 <script>
 function togglePrivacy(){
 var shortDiv = document.getElementById("privacyShort");
@@ -188,19 +186,7 @@ shortDiv.style.display = "block";
 <?php if (isset($_SESSION['user_id'])): ?>
 <?php $client_timeout = isset($timeout_duration) ? $timeout_duration : 900; ?>
 <script>
-(function() {
-    let timeoutDuration = <?= $client_timeout ?> * 1000;
-    let timeoutTimer;
-    function resetTimer() {
-        clearTimeout(timeoutTimer);
-        timeoutTimer = setTimeout(function() {
-            window.location.href = '/WebTechProject/login.php?session=expired';
-        }, timeoutDuration);
-    }
-    resetTimer();
-    ['mousemove', 'keypress', 'click', 'scroll'].forEach(evt => 
-        document.addEventListener(evt, resetTimer, {passive: true})
-    );
+(function() { let timeoutDuration = <?= $client_timeout ?> * 1000; let timeoutTimer; function resetTimer() { clearTimeout(timeoutTimer); timeoutTimer = setTimeout(function() { window.location.href = '/login.php?session=expired'; }, timeoutDuration); } resetTimer(); ['mousemove', 'keypress', 'click', 'scroll'].forEach(evt => document.addEventListener(evt, resetTimer, {passive: true}) );
 })();
 </script>
 <?php endif; ?>

@@ -3,8 +3,7 @@ include("../session_check.php");
 include("../db.php");
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "SELECT * FROM notices";
-if(!empty($search)){
-    $query .= " WHERE title LIKE '%$search%'";
+if(!empty($search)){ $query .= " WHERE title LIKE '%$search%'";
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);

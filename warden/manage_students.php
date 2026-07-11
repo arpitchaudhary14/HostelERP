@@ -1,14 +1,11 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'warden'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit();
 }
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "SELECT * FROM users WHERE role='student'";
-if(!empty($search)){
-    $query .= " AND (first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR CONCAT(first_name,' ',last_name) LIKE '%$search%')";
+if(!empty($search)){ $query .= " AND (first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR CONCAT(first_name,' ',last_name) LIKE '%$search%')";
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
@@ -32,7 +29,7 @@ value="<?= htmlspecialchars($search) ?>">
 </div>
 </div>
 </form>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>Name</th>
 <th>Email</th>
@@ -45,8 +42,7 @@ value="<?= htmlspecialchars($search) ?>">
 <td><?= $row['email'] ?></td>
 <td><?= $row['phone'] ?></td>
 <td>
-<a href="view_student.php?id=<?= $row['id'] ?>" 
-class="btn btn-info btn-sm">View</a>
+<a href="view_student.php?id=<?= $row['id'] ?>" class="btn btn-info btn-sm">View</a>
 </td>
 </tr>
 <?php } ?>

@@ -1,0 +1,37 @@
+HOSTELERP PROPRIETARY SOFTWARE LICENSE
+======================================
+
+Copyright (c) 2026 Arpit Chaudhary. All rights reserved.
+
+This license governs the use, modification, and distribution of the HostelERP 
+software (the "Software"). 
+
+1. RESTRICTIONS ON USE
+The Software is provided exclusively for private educational and internal 
+demonstration purposes. You are NOT authorized to deploy this Software 
+for commercial use, public hosting, or direct financial gain without explicit 
+written permission from the copyright holder.
+
+2. PROPRIETARY COMPONENTS
+Certain core modules within this Software, including but not limited to the 
+room allocation algorithms, automated billing calculations, and student 
+record schemas, are proprietary. Reverse engineering or replicating these 
+specific modules for competing software is strictly prohibited.
+
+3. REDISTRIBUTION
+Redistribution of the Software, in whole or in part, is permitted only if 
+this license file remains unmodified and is included in all copies. You may 
+not claim ownership or authorship of any original code provided within 
+this repository.
+
+4. DISCLAIMER OF WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+By accessing or using the Software, you acknowledge that you have read, 
+understood, and agree to be bound by these terms.

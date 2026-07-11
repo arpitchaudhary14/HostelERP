@@ -1,9 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "
@@ -11,8 +9,7 @@ SELECT activity_logs.*, CONCAT(users.first_name,' ',COALESCE(users.last_name,'')
 FROM activity_logs
 LEFT JOIN users ON activity_logs.user_id = users.id
 ";
-if(!empty($search)){
-    $query .= " WHERE activity_logs.action LIKE '%$search%'";
+if(!empty($search)){ $query .= " WHERE activity_logs.action LIKE '%$search%'";
 }
 $query .= " ORDER BY activity_logs.created_at DESC";
 $result = mysqli_query($conn,$query);
@@ -24,8 +21,7 @@ include("../header.php");
 <form method="GET">
 <div class="row mb-3">
 <div class="col-md-6">
-<input type="text" name="search" class="form-control" 
-placeholder="Search by Action"
+<input type="text" name="search" class="form-control" placeholder="Search by Action"
 value="<?= htmlspecialchars($search) ?>">
 </div>
 <div class="col-md-2">
@@ -33,7 +29,7 @@ value="<?= htmlspecialchars($search) ?>">
 </div>
 </div>
 </form>
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped table-sticky">
 <tr>
 <th>User</th>
 <th>Action</th>

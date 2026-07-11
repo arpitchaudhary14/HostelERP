@@ -1,169 +1,17 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 require_once "../../library/includes/library_functions.php";
 $message = '';
 $message_type = '';
-if (isset($_POST['action'])) {
-    $borrow_id = $_POST['borrow_id'];
-    $action = $_POST['action'];
-    if ($action == 'approve') {
-        $res = mysqli_query($conn, "SELECT book_id FROM library_borrows WHERE id = $borrow_id");
-        $b = mysqli_fetch_assoc($res);
-        $book_id = $b['book_id'];
-        mysqli_begin_transaction($conn);
-        try {
-            mysqli_query($conn, "UPDATE library_borrows SET status = 'borrowed', borrow_date = CURRENT_TIMESTAMP WHERE id = $borrow_id");
-            mysqli_query($conn, "UPDATE library_books SET available_copies = available_copies - 1 WHERE id = $book_id");
-            mysqli_commit($conn);
-            $message = "Request approved successfully!";
-            $message_type = "success";
-        } catch (Exception $e) {
-            mysqli_rollback($conn);
-            $message = "Error: " . $e->getMessage();
-            $message_type = "danger";
-        }
-    } elseif ($action == 'return') {
-        $res = mysqli_query($conn, "SELECT book_id FROM library_borrows WHERE id = $borrow_id");
-        $b = mysqli_fetch_assoc($res);
-        $book_id = $b['book_id'];
-        mysqli_begin_transaction($conn);
-        try {
-            mysqli_query($conn, "UPDATE library_borrows SET status = 'returned', return_date = CURRENT_TIMESTAMP WHERE id = $borrow_id");
-            mysqli_query($conn, "UPDATE library_books SET available_copies = available_copies + 1 WHERE id = $book_id");
-            mysqli_commit($conn);
-            $message = "Book marked as returned!";
-            $message_type = "success";
-        } catch (Exception $e) {
-            mysqli_rollback($conn);
-            $message = "Error: " . $e->getMessage();
-            $message_type = "danger";
-        }
-    } elseif ($action == 'reject') {
-        mysqli_query($conn, "UPDATE library_borrows SET status = 'rejected' WHERE id = $borrow_id");
-        $message = "Request rejected.";
-        $message_type = "info";
-    }
+if (isset($_POST['action'])) { $borrow_id = $_POST['borrow_id']; $action = $_POST['action']; if ($action == 'approve') { $res = mysqli_query($conn, "SELECT book_id FROM library_borrows WHERE id = $borrow_id"); $b = mysqli_fetch_assoc($res); $book_id = $b['book_id']; mysqli_begin_transaction($conn); try { mysqli_query($conn, "UPDATE library_borrows SET status = 'borrowed', borrow_date = CURRENT_TIMESTAMP WHERE id = $borrow_id"); mysqli_query($conn, "UPDATE library_books SET available_copies = available_copies - 1 WHERE id = $book_id"); mysqli_commit($conn); $message = "Request approved successfully!"; $message_type = "success"; } catch (Exception $e) { mysqli_rollback($conn); $message = "Error: " . $e->getMessage(); $message_type = "danger"; } } elseif ($action == 'return') { $res = mysqli_query($conn, "SELECT book_id FROM library_borrows WHERE id = $borrow_id"); $b = mysqli_fetch_assoc($res); $book_id = $b['book_id']; mysqli_begin_transaction($conn); try { mysqli_query($conn, "UPDATE library_borrows SET status = 'returned', return_date = CURRENT_TIMESTAMP WHERE id = $borrow_id"); mysqli_query($conn, "UPDATE library_books SET available_copies = available_copies + 1 WHERE id = $book_id"); mysqli_commit($conn); $message = "Book marked as returned!"; $message_type = "success"; } catch (Exception $e) { mysqli_rollback($conn); $message = "Error: " . $e->getMessage(); $message_type = "danger"; } } elseif ($action == 'reject') { mysqli_query($conn, "UPDATE library_borrows SET status = 'rejected' WHERE id = $borrow_id"); $message = "Request rejected."; $message_type = "info"; }
 }
-$pending_requests = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username 
-                                          FROM library_borrows b 
-                                          JOIN library_books bk ON b.book_id = bk.id 
-                                          JOIN users u ON b.user_id = u.id 
-                                          WHERE b.status = 'pending' 
-                                          ORDER BY b.created_at ASC");
-$active_borrows = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username 
-                                        FROM library_borrows b 
-                                        JOIN library_books bk ON b.book_id = bk.id 
-                                        JOIN users u ON b.user_id = u.id 
-                                        WHERE b.status IN ('borrowed', 'overdue') 
-                                        ORDER BY b.due_date ASC");
+$pending_requests = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username FROM library_borrows b JOIN library_books bk ON b.book_id = bk.id JOIN users u ON b.user_id = u.id WHERE b.status = 'pending' ORDER BY b.created_at ASC");
+$active_borrows = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username FROM library_borrows b JOIN library_books bk ON b.book_id = bk.id JOIN users u ON b.user_id = u.id WHERE b.status IN ('borrowed', 'overdue') ORDER BY b.due_date ASC");
 include("../../header.php");
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal">
-        <h2 class="fw-bold text-gradient mb-0">Circulation Desk</h2>
-        <p class="text-muted mb-0">Approve borrow requests and process book returns.</p>
-    </div>
-    <?php if($message): ?>
-    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-        <?= $message ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
-    <div class="row g-4">
-        <div class="col-12 reveal">
-            <div class="glass-card-light">
-                <h5 class="fw-bold mb-4 text-warning">Pending Requests</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Book Title</th>
-                                <th>Request Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while($r = mysqli_fetch_assoc($pending_requests)): ?>
-                            <tr>
-                                <td>
-                                    <div class="fw-bold"><?= htmlspecialchars($r['full_name']) ?></div>
-                                    <small class="text-muted">@<?= htmlspecialchars($r['username']) ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($r['title']) ?></td>
-                                <td><?= date('d M, Y H:i', strtotime($r['created_at'])) ?></td>
-                                <td>
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="borrow_id" value="<?= $r['id'] ?>">
-                                        <button type="submit" name="action" value="approve" class="btn btn-sm btn-success rounded-pill px-3 me-1">Approve</button>
-                                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php endwhile; ?>
-                            <?php if(mysqli_num_rows($pending_requests) == 0): ?>
-                            <tr><td colspan="4" class="text-center py-4 text-muted">No pending requests.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 reveal">
-            <div class="glass-card-light">
-                <h5 class="fw-bold mb-4 text-primary">Active Borrows / Overdue</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Book Title</th>
-                                <th>Due Date</th>
-                                <th>Fine</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while($b = mysqli_fetch_assoc($active_borrows)): ?>
-                            <tr>
-                                <td>
-                                    <div class="fw-bold"><?= htmlspecialchars($b['full_name']) ?></div>
-                                    <small class="text-muted">@<?= htmlspecialchars($b['username']) ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($b['title']) ?></td>
-                                <td>
-                                    <span class="<?= (strtotime($b['due_date']) < time()) ? 'text-danger fw-bold' : '' ?>">
-                                        <?= date('d M, Y', strtotime($b['due_date'])) ?>
-                                    </span>
-                                </td>
-                                <td><span class="fw-bold text-danger">₹<?= number_format($b['fine_amount'], 2) ?></span></td>
-                                <td>
-                                    <span class="badge <?= $b['status'] == 'overdue' ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-3">
-                                        <?= ucfirst($b['status']) ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="borrow_id" value="<?= $b['id'] ?>">
-                                        <button type="submit" name="action" value="return" class="btn btn-sm btn-outline-success rounded-pill px-3">Mark Returned</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php endwhile; ?>
-                            <?php if(mysqli_num_rows($active_borrows) == 0): ?>
-                            <tr><td colspan="6" class="text-center py-4 text-muted">No active borrows.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal"> <h2 class="fw-bold text-gradient mb-0">Circulation Desk</h2> <p class="text-muted mb-0">Approve borrow requests and process book returns.</p> </div> <?php if($message): ?> <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert"> <?= $message ?> <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div> <?php endif; ?> <div class="row g-4"> <div class="col-12 reveal"> <div class="glass-card-light"> <h5 class="fw-bold mb-4 text-warning">Pending Requests</h5> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>Student</th> <th>Book Title</th> <th>Request Date</th> <th>Actions</th> </tr> </thead> <tbody> <?php while($r = mysqli_fetch_assoc($pending_requests)): ?> <tr> <td> <div class="fw-bold"><?= htmlspecialchars($r['full_name']) ?></div> <small class="text-muted">@<?= htmlspecialchars($r['username']) ?></small> </td> <td><?= htmlspecialchars($r['title']) ?></td> <td><?= date('d M, Y H:i', strtotime($r['created_at'])) ?></td> <td> <form method="POST" class="d-inline"> <input type="hidden" name="borrow_id" value="<?= $r['id'] ?>"> <button type="submit" name="action" value="approve" class="btn btn-sm btn-success rounded-pill px-3 me-1">Approve</button> <button type="submit" name="action" value="reject" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</button> </form> </td> </tr> <?php endwhile; ?> <?php if(mysqli_num_rows($pending_requests) == 0): ?> <tr><td colspan="4" class="text-center py-4 text-muted">No pending requests.</td></tr> <?php endif; ?> </tbody> </table> </div> </div> </div> <div class="col-12 reveal"> <div class="glass-card-light"> <h5 class="fw-bold mb-4 text-primary">Active Borrows / Overdue</h5> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>Student</th> <th>Book Title</th> <th>Due Date</th> <th>Fine</th> <th>Status</th> <th>Actions</th> </tr> </thead> <tbody> <?php while($b = mysqli_fetch_assoc($active_borrows)): ?> <tr> <td> <div class="fw-bold"><?= htmlspecialchars($b['full_name']) ?></div> <small class="text-muted">@<?= htmlspecialchars($b['username']) ?></small> </td> <td><?= htmlspecialchars($b['title']) ?></td> <td> <span class="<?= (strtotime($b['due_date']) < time()) ? 'text-danger fw-bold' : '' ?>"> <?= date('d M, Y', strtotime($b['due_date'])) ?> </span> </td> <td><span class="fw-bold text-danger">₹<?= number_format($b['fine_amount'], 2) ?></span></td> <td> <span class="badge <?= $b['status'] == 'overdue' ? 'bg-danger' : 'bg-primary' ?> rounded-pill px-3"> <?= ucfirst($b['status']) ?> </span> </td> <td> <form method="POST" class="d-inline"> <input type="hidden" name="borrow_id" value="<?= $b['id'] ?>"> <button type="submit" name="action" value="return" class="btn btn-sm btn-outline-success rounded-pill px-3">Mark Returned</button> </form> </td> </tr> <?php endwhile; ?> <?php if(mysqli_num_rows($active_borrows) == 0): ?> <tr><td colspan="6" class="text-center py-4 text-muted">No active borrows.</td></tr> <?php endif; ?> </tbody> </table> </div> </div> </div> </div>
 </div>
 <?php include("../../footer.php"); ?>

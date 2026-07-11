@@ -1,13 +1,10 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
 $query = "
-SELECT room_history.*, 
-users.first_name, users.last_name,
+SELECT room_history.*, users.first_name, users.last_name,
 rooms.room_number
 FROM room_history
 JOIN users ON room_history.student_id = users.id
@@ -19,7 +16,7 @@ include("../header.php");
 ?>
 <div class="container mt-4">
 <h4 class="mb-3" style="font-weight:700;">Room Allocation History</h4>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>Student</th>
 <th>Room</th>

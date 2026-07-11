@@ -1,219 +1,24 @@
 <?php
 session_start();
-$role = basename(dirname(dirname($_SERVER['PHP_SELF']))); 
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['warden', 'admin'])) {
-    header("Location: ../../login.php");
-    exit();
+$role = basename(dirname(dirname($_SERVER['PHP_SELF']))); if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['warden', 'admin'])) { header("Location: ../../login.php"); exit();
 }
 include '../../header.php';
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);">
-        <div class="d-flex align-items-center mb-2">
-            <h3 style="font-weight:700; margin:0;"><i class="bi bi-gear-wide-connected text-primary me-2"></i> Machine Monitor</h3>
-        </div>
-        <p class="text-muted" style="margin:0;">Real-time IoT telemetry from hostel laundry appliances.</p>
-    </div>
-    <div class="row g-4 mb-4">
-        <?php
-        $machines = [
-            ['id' => 'WM-01', 'type' => 'Washer', 'status' => 'In Use', 'time_left' => '12m', 'health' => 'Good'],
-            ['id' => 'WM-02', 'type' => 'Washer', 'status' => 'Available', 'time_left' => '--', 'health' => 'Good'],
-            ['id' => 'WM-03', 'type' => 'Washer', 'status' => 'Maintenance', 'time_left' => '--', 'health' => 'Error 404'],
-            ['id' => 'DR-01', 'type' => 'Dryer', 'status' => 'In Use', 'time_left' => '25m', 'health' => 'Good'],
-            ['id' => 'DR-02', 'type' => 'Dryer', 'status' => 'Available', 'time_left' => '--', 'health' => 'Good'],
-        ];
-        foreach($machines as $m):
-            $bg = $m['status'] == 'Available' ? 'border-success' : ($m['status'] == 'In Use' ? 'border-primary' : 'border-danger');
-            $text = $m['status'] == 'Available' ? 'text-success' : ($m['status'] == 'In Use' ? 'text-primary' : 'text-danger');
-        ?>
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100 d-flex flex-column" id="card-<?= $m['id'] ?>" style="border-top: 4px solid var(--bs-<?= $m['status'] == 'Available'?'success':($m['status'] == 'In Use'?'primary':'danger') ?>);">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><?= $m['id'] ?> <small class="text-muted fw-normal ms-1">(<?= $m['type'] ?>)</small></h5>
-                    <span class="badge machine-status-badge bg-<?= $m['status'] == 'Available'?'success':($m['status'] == 'In Use'?'primary':'danger') ?>-subtle <?= $text ?>" id="badge-<?= $m['id'] ?>"><?= $m['status'] ?></span>
-                </div>
-                <div class="d-flex justify-content-between text-muted small mb-2">
-                    <span>Time Remaining:</span>
-                    <span class="fw-bold machine-time-left <?= $text ?>" id="time-<?= $m['id'] ?>"><?= $m['time_left'] ?></span>
-                </div>
-                <div class="d-flex justify-content-between text-muted small mb-3">
-                    <span>Health Status:</span>
-                    <span class="machine-health fw-semibold" id="health-<?= $m['id'] ?>"><?= $m['health'] ?></span>
-                </div>
-                <div class="mt-auto">
-                    <?php if($m['status'] == 'Maintenance'): ?>
-                        <button class="btn btn-sm btn-outline-danger w-100 repair-btn" id="btn-<?= $m['id'] ?>" onclick="openRepair('<?= $m['id'] ?>')">Request Repair</button>
-                    <?php else: ?>
-                        <button class="btn btn-sm btn-outline-info w-100" onclick="openTelemetry('<?= $m['id'] ?>', '<?= $m['type'] ?>', '<?= $m['status'] ?>', '<?= $m['time_left'] ?>', '<?= $m['health'] ?>')">View Telemetry</button>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);"> <div class="d-flex align-items-center mb-2"> <h3 style="font-weight:700; margin:0;"><i class="bi bi-gear-wide-connected text-primary me-2"></i> Machine Monitor</h3> </div> <p class="text-muted" style="margin:0;">Real-time IoT telemetry from hostel laundry appliances.</p> </div> <div class="row g-4 mb-4"> <?php $machines = [ ['id' => 'WM-01', 'type' => 'Washer', 'status' => 'In Use', 'time_left' => '12m', 'health' => 'Good'], ['id' => 'WM-02', 'type' => 'Washer', 'status' => 'Available', 'time_left' => '--', 'health' => 'Good'], ['id' => 'WM-03', 'type' => 'Washer', 'status' => 'Maintenance', 'time_left' => '--', 'health' => 'Error 404'], ['id' => 'DR-01', 'type' => 'Dryer', 'status' => 'In Use', 'time_left' => '25m', 'health' => 'Good'], ['id' => 'DR-02', 'type' => 'Dryer', 'status' => 'Available', 'time_left' => '--', 'health' => 'Good'], ]; foreach($machines as $m): $bg = $m['status'] == 'Available' ? 'border-success' : ($m['status'] == 'In Use' ? 'border-primary' : 'border-danger'); $text = $m['status'] == 'Available' ? 'text-success' : ($m['status'] == 'In Use' ? 'text-primary' : 'text-danger'); ?> <div class="col-md-4 reveal"> <div class="glass-card-light h-100 d-flex flex-column" id="card-<?= $m['id'] ?>" style="border-top: 4px solid var(--bs-<?= $m['status'] == 'Available'?'success':($m['status'] == 'In Use'?'primary':'danger') ?>);"> <div class="d-flex justify-content-between align-items-center mb-3"> <h5 class="fw-bold mb-0"><?= $m['id'] ?> <small class="text-muted fw-normal ms-1">(<?= $m['type'] ?>)</small></h5> <span class="badge machine-status-badge bg-<?= $m['status'] == 'Available'?'success':($m['status'] == 'In Use'?'primary':'danger') ?>-subtle <?= $text ?>" id="badge-<?= $m['id'] ?>"><?= $m['status'] ?></span> </div> <div class="d-flex justify-content-between text-muted small mb-2"> <span>Time Remaining:</span> <span class="fw-bold machine-time-left <?= $text ?>" id="time-<?= $m['id'] ?>"><?= $m['time_left'] ?></span> </div> <div class="d-flex justify-content-between text-muted small mb-3"> <span>Health Status:</span> <span class="machine-health fw-semibold" id="health-<?= $m['id'] ?>"><?= $m['health'] ?></span> </div> <div class="mt-auto"> <?php if($m['status'] == 'Maintenance'): ?> <button class="btn btn-sm btn-outline-danger w-100 repair-btn" id="btn-<?= $m['id'] ?>" onclick="openRepair('<?= $m['id'] ?>')">Request Repair</button> <?php else: ?> <button class="btn btn-sm btn-outline-info w-100" onclick="openTelemetry('<?= $m['id'] ?>', '<?= $m['type'] ?>', '<?= $m['status'] ?>', '<?= $m['time_left'] ?>', '<?= $m['health'] ?>')">View Telemetry</button> <?php endif; ?> </div> </div> </div> <?php endforeach; ?> </div>
 </div>
-<div class="modal fade" id="telemetryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title fw-bold" id="telemetryTitle"><i class="bi bi-cpu text-info me-2"></i> IoT Telemetry</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="telemetryBody">
-            </div>
-        </div>
-    </div>
+<div class="modal fade" id="telemetryModal" tabindex="-1" aria-hidden="true"> <div class="modal-dialog modal-dialog-centered"> <div class="modal-content border-secondary"> <div class="modal-header border-bottom border-secondary"> <h5 class="modal-title fw-bold" id="telemetryTitle"><i class="bi bi-cpu text-info me-2"></i> IoT Telemetry</h5> <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button> </div> <div class="modal-body" id="telemetryBody"> </div> </div> </div>
 </div>
-<div class="modal fade" id="repairModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-tools me-2"></i> Submit Dispatch Request</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="repairForm">
-                    <input type="hidden" id="repairMachineId">
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Appliance ID</label>
-                        <input type="text" id="repairMachineLabel" class="form-control bg-dark border-secondary text-white" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Priority Level</label>
-                        <select class="form-select bg-dark border-secondary text-white" required>
-                            <option value="High" selected>High - Immediate Dispatch</option>
-                            <option value="Medium">Medium - Standard Repair</option>
-                            <option value="Low">Low - Scheduled Check</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Telemetry Diagnostic Notes</label>
-                        <textarea class="form-control bg-dark border-secondary text-white" id="repairNotes" rows="3" placeholder="Motor coil failure detected. Diagnostics: Error 404." required></textarea>
-                    </div>
-                    <button type="button" class="btn btn-danger w-100 fw-bold" onclick="submitRepair()">Dispatch Engineering Team</button>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="modal fade" id="repairModal" tabindex="-1" aria-hidden="true"> <div class="modal-dialog modal-dialog-centered"> <div class="modal-content border-secondary"> <div class="modal-header border-bottom border-secondary"> <h5 class="modal-title fw-bold text-danger"><i class="bi bi-tools me-2"></i> Submit Dispatch Request</h5> <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button> </div> <div class="modal-body"> <form id="repairForm"> <input type="hidden" id="repairMachineId"> <div class="mb-3"> <label class="form-label text-muted small">Appliance ID</label> <input type="text" id="repairMachineLabel" class="form-control border-secondary" readonly> </div> <div class="mb-3"> <label class="form-label text-muted small">Priority Level</label> <select class="form-select border-secondary" required> <option value="High" selected>High - Immediate Dispatch</option> <option value="Medium">Medium - Standard Repair</option> <option value="Low">Low - Scheduled Check</option> </select> </div> <div class="mb-3"> <label class="form-label text-muted small">Telemetry Diagnostic Notes</label> <textarea class="form-control border-secondary" id="repairNotes" rows="3" placeholder="Motor coil failure detected. Diagnostics: Error 404." required></textarea> </div> <button type="button" class="btn btn-danger w-100 fw-bold" onclick="submitRepair()">Dispatch Engineering Team</button> </form> </div> </div> </div>
 </div>
 <script>
 let telemetryModal, repairModal;
-document.addEventListener('DOMContentLoaded', () => {
-    telemetryModal = new bootstrap.Modal(document.getElementById('telemetryModal'));
-    repairModal = new bootstrap.Modal(document.getElementById('repairModal'));
-    document.querySelectorAll('.repair-btn').forEach(btn => {
-        let mId = btn.id.replace('btn-', '');
-        let isRepaired = localStorage.getItem('laundry-repair-' + mId);
-        if (isRepaired === 'Requested') {
-            btn.innerHTML = '<i class="bi bi-clock-history"></i> Dispatch Sent';
-            btn.className = 'btn btn-sm btn-secondary w-100';
-            btn.disabled = true;
-            let badge = document.getElementById('badge-' + mId);
-            if (badge) {
-                badge.className = 'badge bg-warning-subtle text-warning';
-                badge.innerText = 'Pending Repair';
-            }
-            let health = document.getElementById('health-' + mId);
-            if (health) {
-                health.innerText = 'Queued';
-                health.className = 'machine-health fw-semibold text-warning';
-            }
-        }
-    });
+document.addEventListener('DOMContentLoaded', () => { telemetryModal = new bootstrap.Modal(document.getElementById('telemetryModal')); repairModal = new bootstrap.Modal(document.getElementById('repairModal')); document.querySelectorAll('.repair-btn').forEach(btn => { let mId = btn.id.replace('btn-', ''); let isRepaired = localStorage.getItem('laundry-repair-' + mId); if (isRepaired === 'Requested') { btn.innerHTML = '<i class="bi bi-clock-history"></i> Dispatch Sent'; btn.className = 'btn btn-sm btn-secondary w-100'; btn.disabled = true; let badge = document.getElementById('badge-' + mId); if (badge) { badge.className = 'badge bg-warning-subtle text-warning'; badge.innerText = 'Pending Repair'; } let health = document.getElementById('health-' + mId); if (health) { health.innerText = 'Queued'; health.className = 'machine-health fw-semibold text-warning'; } } });
 });
-function openTelemetry(id, type, status, timeLeft, health) {
-    let title = document.getElementById('telemetryTitle');
-    let body = document.getElementById('telemetryBody');
-    title.innerHTML = `<i class="bi bi-cpu text-info me-2"></i> IoT Telemetry: ${id}`;
-    if (status === 'Available') {
-        body.innerHTML = `
-            <div class="text-center py-4">
-                <i class="bi bi-check-circle-fill text-success fs-1 mb-3 d-block"></i>
-                <h5 class="fw-bold text-success">${type} is Available</h5>
-                <p class="text-muted small px-3">Standard diagnostic check passed. Cycle efficiency is at 98.7%. Ready for the next load.</p>
-                <hr class="border-secondary">
-                <div class="row text-start mt-3">
-                    <div class="col-6 text-muted small">Last Cycle Time:</div>
-                    <div class="col-6 fw-semibold text-end">32m (Quick Wash)</div>
-                    <div class="col-6 text-muted small mt-2">Power Mode:</div>
-                    <div class="col-6 fw-semibold text-end text-info">Eco-Save</div>
-                </div>
-            </div>`;
-    } else {
-        let pct = id.startsWith('WM') ? 70 : 45;
-        let temp = id.startsWith('WM') ? '40°C' : '65°C';
-        let speed = id.startsWith('WM') ? '1200 RPM' : 'Cycle: Cotton Extra';
-        body.innerHTML = `
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold text-info"><i class="bi bi-play-circle-fill me-1"></i> Active ${type} Cycle</span>
-                    <span class="badge bg-primary">${timeLeft} remaining</span>
-                </div>
-                <div class="progress bg-secondary mb-4" style="height: 10px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: ${pct}%;"></div>
-                </div>
-                <h6 class="fw-bold mb-3">Live Telemetry Diagnostics</h6>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="p-3 bg-secondary bg-opacity-25 rounded text-center">
-                            <span class="text-muted small d-block mb-1">Temperature</span>
-                            <span class="fw-bold text-white fs-5">${temp}</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 bg-secondary bg-opacity-25 rounded text-center">
-                            <span class="text-muted small d-block mb-1">Drum Metrics</span>
-                            <span class="fw-bold text-white fs-5">${speed}</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 bg-secondary bg-opacity-25 rounded text-center">
-                            <span class="text-muted small d-block mb-1">Current State</span>
-                            <span class="fw-bold text-success fs-5">Optimal</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 bg-secondary bg-opacity-25 rounded text-center">
-                            <span class="text-muted small d-block mb-1">Water Pressure</span>
-                            <span class="fw-bold text-info fs-5">Active</span>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-    }
-    telemetryModal.show();
+function openTelemetry(id, type, status, timeLeft, health) { let title = document.getElementById('telemetryTitle'); let body = document.getElementById('telemetryBody'); title.innerHTML = `<i class="bi bi-cpu text-info me-2"></i> IoT Telemetry: ${id}`; if (status === 'Available') { body.innerHTML = ` <div class="text-center py-4"> <i class="bi bi-check-circle-fill text-success fs-1 mb-3 d-block"></i> <h5 class="fw-bold text-success">${type} is Available</h5> <p class="text-muted small px-3">Standard diagnostic check passed. Cycle efficiency is at 98.7%. Ready for the next load.</p> <hr class="border-secondary"> <div class="row text-start mt-3"> <div class="col-6 text-muted small">Last Cycle Time:</div> <div class="col-6 fw-semibold text-end">32m (Quick Wash)</div> <div class="col-6 text-muted small mt-2">Power Mode:</div> <div class="col-6 fw-semibold text-end text-info">Eco-Save</div> </div> </div>`; } else { let pct = id.startsWith('WM') ? 70 : 45; let temp = id.startsWith('WM') ? '40°C' : '65°C'; let speed = id.startsWith('WM') ? '1200 RPM' : 'Cycle: Cotton Extra'; body.innerHTML = ` <div> <div class="d-flex justify-content-between align-items-center mb-2"> <span class="fw-bold text-info"><i class="bi bi-play-circle-fill me-1"></i> Active ${type} Cycle</span> <span class="badge bg-primary">${timeLeft} remaining</span> </div> <div class="progress bg-secondary mb-4" style="height: 10px;"> <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: ${pct}%;"></div> </div> <h6 class="fw-bold mb-3">Live Telemetry Diagnostics</h6> <div class="row g-3"> <div class="col-6"> <div class="p-3 bg-secondary bg-opacity-25 rounded text-center"> <span class="text-muted small d-block mb-1">Temperature</span> <span class="fw-bold fs-5">${temp}</span> </div> </div> <div class="col-6"> <div class="p-3 bg-secondary bg-opacity-25 rounded text-center"> <span class="text-muted small d-block mb-1">Drum Metrics</span> <span class="fw-bold fs-5">${speed}</span> </div> </div> <div class="col-6"> <div class="p-3 bg-secondary bg-opacity-25 rounded text-center"> <span class="text-muted small d-block mb-1">Current State</span> <span class="fw-bold text-success fs-5">Optimal</span> </div> </div> <div class="col-6"> <div class="p-3 bg-secondary bg-opacity-25 rounded text-center"> <span class="text-muted small d-block mb-1">Water Pressure</span> <span class="fw-bold text-info fs-5">Active</span> </div> </div> </div> </div>`; } telemetryModal.show();
 }
-function openRepair(id) {
-    document.getElementById('repairMachineId').value = id;
-    document.getElementById('repairMachineLabel').value = id + ' (Washer appliance under maintenance)';
-    repairModal.show();
+function openRepair(id) { document.getElementById('repairMachineId').value = id; document.getElementById('repairMachineLabel').value = id + ' (Washer appliance under maintenance)'; repairModal.show();
 }
-function submitRepair() {
-    let id = document.getElementById('repairMachineId').value;
-    let notes = document.getElementById('repairNotes').value.trim();
-    if (!notes) {
-        alert('Please fill out diagnostic notes.');
-        return;
-    }
-    localStorage.setItem('laundry-repair-' + id, 'Requested');
-    repairModal.hide();
-    let btn = document.getElementById('btn-' + id);
-    if (btn) {
-        btn.innerHTML = '<i class="bi bi-clock-history"></i> Dispatch Sent';
-        btn.className = 'btn btn-sm btn-secondary w-100';
-        btn.disabled = true;
-    }
-    let badge = document.getElementById('badge-' + id);
-    if (badge) {
-        badge.className = 'badge bg-warning-subtle text-warning';
-        badge.innerText = 'Pending Repair';
-    }
-    let health = document.getElementById('health-' + id);
-    if (health) {
-        health.innerText = 'Queued';
-        health.className = 'machine-health fw-semibold text-warning';
-    }
+function submitRepair() { let id = document.getElementById('repairMachineId').value; let notes = document.getElementById('repairNotes').value.trim(); if (!notes) { alert('Please fill out diagnostic notes.'); return; } localStorage.setItem('laundry-repair-' + id, 'Requested'); repairModal.hide(); let btn = document.getElementById('btn-' + id); if (btn) { btn.innerHTML = '<i class="bi bi-clock-history"></i> Dispatch Sent'; btn.className = 'btn btn-sm btn-secondary w-100'; btn.disabled = true; } let badge = document.getElementById('badge-' + id); if (badge) { badge.className = 'badge bg-warning-subtle text-warning'; badge.innerText = 'Pending Repair'; } let health = document.getElementById('health-' + id); if (health) { health.innerText = 'Queued'; health.className = 'machine-health fw-semibold text-warning'; }
 }
 </script>
 <?php include '../../footer.php'; ?>

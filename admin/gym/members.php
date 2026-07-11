@@ -1,82 +1,14 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 require_once "../../gym/includes/gym_functions.php";
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : "";
-$query = "SELECT u.id, u.full_name, u.email, u.role, u.profile_pic,
-          s.status as membership_status, p.name as plan_name, s.end_date
-          FROM users u
-          LEFT JOIN gym_subscriptions s ON u.id = s.user_id AND s.status = 'active'
-          LEFT JOIN gym_plans p ON s.plan_id = p.id
-          WHERE (u.full_name LIKE '%$search%' OR u.email LIKE '%$search%')
-          ORDER BY u.full_name ASC";
+$query = "SELECT u.id, u.full_name, u.email, u.role, u.profile_pic, s.status as membership_status, p.name as plan_name, s.end_date FROM users u LEFT JOIN gym_subscriptions s ON u.id = s.user_id AND s.status = 'active' LEFT JOIN gym_plans p ON s.plan_id = p.id WHERE (u.full_name LIKE '%$search%' OR u.email LIKE '%$search%') ORDER BY u.full_name ASC";
 $users = mysqli_query($conn, $query);
 ?>
 <?php include("../../header.php"); ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <h3 style="font-weight:700; margin:0;">MatrixFit Members</h3>
-                <p style="margin:0;">Manage gym memberships for all users.</p>
-            </div>
-            <form class="d-flex gap-2" method="GET">
-                <input type="text" name="search" class="form-control" placeholder="Search members..." value="<?= htmlspecialchars($search) ?>">
-                <button type="submit" class="btn btn-gradient px-4">Search</button>
-            </form>
-        </div>
-    </div>
-    <div class="glass-card-light reveal">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th>Membership</th>
-                        <th>Expiry</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while($row = mysqli_fetch_assoc($users)){ ?>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <img src="/WebTechProject/assets/images/<?= $row['profile_pic'] ?>" width="35" height="35" class="rounded-circle me-3" style="object-fit: cover;" onerror="this.src='/WebTechProject/assets/images/default.png'">
-                                <div>
-                                    <div class="fw-bold"><?= htmlspecialchars($row['full_name']) ?></div>
-                                    <small class="text-muted"><?= htmlspecialchars($row['email']) ?></small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-<?= ($row['role']=='admin'?'primary':($row['role']=='warden'?'info':'secondary')) ?> opacity-75">
-                                <?= ucfirst($row['role']) ?>
-                            </span>
-                        </td>
-                        <td>
-                            <?php if($row['membership_status'] == 'active'){ ?>
-                                <span class="badge bg-success"><?= htmlspecialchars($row['plan_name']) ?></span>
-                            <?php } else { ?>
-                                <span class="badge bg-light text-muted">No Active Plan</span>
-                            <?php } ?>
-                        </td>
-                        <td>
-                            <?= $row['end_date'] ? date('d M, Y', strtotime($row['end_date'])) : '-' ?>
-                        </td>
-                        <td>
-                            <a href="subscriptions.php?user_id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary">Manage</a>
-                        </td>
-                    </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal"> <div class="d-flex justify-content-between align-items-center flex-wrap gap-3"> <div> <h3 style="font-weight:700; margin:0;">MatrixFit Members</h3> <p style="margin:0;">Manage gym memberships for all users.</p> </div> <form class="d-flex gap-2" method="GET"> <input type="text" name="search" class="form-control" placeholder="Search members..." value="<?= htmlspecialchars($search) ?>"> <button type="submit" class="btn btn-gradient px-4">Search</button> </form> </div> </div> <div class="glass-card-light reveal"> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>User</th> <th>Role</th> <th>Membership</th> <th>Expiry</th> <th>Action</th> </tr> </thead> <tbody> <?php while($row = mysqli_fetch_assoc($users)){ ?> <tr> <td> <div class="d-flex align-items-center"> <img src="/assets/images/<?= $row['profile_pic'] ?>" width="35" height="35" class="rounded-circle me-3" style="object-fit: cover;" onerror="this.src='/assets/images/default.png'"> <div> <div class="fw-bold"><?= htmlspecialchars($row['full_name']) ?></div> <small class="text-muted"><?= htmlspecialchars($row['email']) ?></small> </div> </div> </td> <td> <span class="badge bg-<?= ($row['role']=='admin'?'primary':($row['role']=='warden'?'info':'secondary')) ?> opacity-75"> <?= ucfirst($row['role']) ?> </span> </td> <td> <?php if($row['membership_status'] == 'active'){ ?> <span class="badge bg-success"><?= htmlspecialchars($row['plan_name']) ?></span> <?php } else { ?> <span class="badge text-muted">No Active Plan</span> <?php } ?> </td> <td> <?= $row['end_date'] ? date('d M, Y', strtotime($row['end_date'])) : '-' ?> </td> <td> <a href="subscriptions.php?user_id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary">Manage</a> </td> </tr> <?php } ?> </tbody> </table> </div> </div>
 </div>
 <?php include("../../footer.php"); ?>

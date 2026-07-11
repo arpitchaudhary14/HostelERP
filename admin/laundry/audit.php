@@ -1,88 +1,14 @@
 <?php
 session_start();
 $role = basename(dirname(dirname($_SERVER['PHP_SELF'])));
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== $role) {
-    header("Location: ../../login.php");
-    exit();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== $role) { header("Location: ../../login.php"); exit();
 }
 include '../../header.php';
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);">
-        <div class="d-flex align-items-center mb-2">
-            <h3 style="font-weight:700; margin:0;"><i class="bi bi-clipboard-data text-primary me-2"></i> Quality Audit</h3>
-        </div>
-        <p class="text-muted" style="margin:0;">Track service delays, reported damages, and operational anomalies.</p>
-    </div>
-    <div class="glass-card-light reveal">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>Order Ref</th>
-                        <th>Issue Type</th>
-                        <th>Severity</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><?= date('Y-m-d') ?></td>
-                        <td>#CL-1042</td>
-                        <td>Missing Sock</td>
-                        <td><span class="badge bg-warning text-dark">Low</span></td>
-                        <td><span class="badge bg-warning text-dark status-badge">Investigating</span></td>
-                        <td><button class="btn btn-sm btn-outline-primary resolve-btn">Resolve</button></td>
-                    </tr>
-                    <tr>
-                        <td><?= date('Y-m-d', strtotime('-1 days')) ?></td>
-                        <td>#CL-1029</td>
-                        <td>Delayed Delivery (&gt; 48h)</td>
-                        <td><span class="badge bg-danger">High</span></td>
-                        <td><span class="badge bg-danger status-badge">Escalated</span></td>
-                        <td><button class="btn btn-sm btn-outline-primary resolve-btn">Resolve</button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);"> <div class="d-flex align-items-center mb-2"> <h3 style="font-weight:700; margin:0;"><i class="bi bi-clipboard-data text-primary me-2"></i> Quality Audit</h3> </div> <p class="text-muted" style="margin:0;">Track service delays, reported damages, and operational anomalies.</p> </div> <div class="glass-card-light reveal"> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead class=""> <tr> <th>Date</th> <th>Order Ref</th> <th>Issue Type</th> <th>Severity</th> <th>Status</th> <th>Action</th> </tr> </thead> <tbody> <tr> <td><?= date('Y-m-d') ?></td> <td>#CL-1042</td> <td>Missing Sock</td> <td><span class="badge bg-warning text-dark">Low</span></td> <td><span class="badge bg-warning text-dark status-badge">Investigating</span></td> <td><button class="btn btn-sm btn-outline-primary resolve-btn">Resolve</button></td> </tr> <tr> <td><?= date('Y-m-d', strtotime('-1 days')) ?></td> <td>#CL-1029</td> <td>Delayed Delivery (&gt; 48h)</td> <td><span class="badge bg-danger">High</span></td> <td><span class="badge bg-danger status-badge">Escalated</span></td> <td><button class="btn btn-sm btn-outline-primary resolve-btn">Resolve</button></td> </tr> </tbody> </table> </div> </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('tbody tr').forEach(row => {
-        let orderRefEl = row.querySelector('td:nth-child(2)');
-        if (!orderRefEl) return;
-        let orderRef = orderRefEl.innerText.trim();
-        let savedState = localStorage.getItem('laundry-audit-' + orderRef);
-        if (savedState === 'Resolved') {
-            let btn = row.querySelector('.resolve-btn');
-            if (btn) {
-                btn.innerHTML = '<i class="bi bi-check-lg"></i> Resolved';
-                btn.className = 'btn btn-sm btn-success resolve-btn';
-                btn.disabled = true;
-            }
-            let statusBadge = row.querySelector('.status-badge');
-            if (statusBadge) {
-                statusBadge.className = 'badge bg-success status-badge';
-                statusBadge.innerText = 'Resolved';
-            }
-        }
-    });
-    document.querySelectorAll('.resolve-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            let row = this.closest('tr');
-            let orderRef = row.querySelector('td:nth-child(2)').innerText.trim();
-            localStorage.setItem('laundry-audit-' + orderRef, 'Resolved');
-            this.innerHTML = '<i class="bi bi-check-lg"></i> Resolved';
-            this.className = 'btn btn-sm btn-success resolve-btn';
-            this.disabled = true;
-            let statusBadge = row.querySelector('.status-badge');
-            statusBadge.className = 'badge bg-success status-badge';
-            statusBadge.innerText = 'Resolved';
-        });
-    });
+document.addEventListener('DOMContentLoaded', () => { document.querySelectorAll('tbody tr').forEach(row => { let orderRefEl = row.querySelector('td:nth-child(2)'); if (!orderRefEl) return; let orderRef = orderRefEl.innerText.trim(); let savedState = localStorage.getItem('laundry-audit-' + orderRef); if (savedState === 'Resolved') { let btn = row.querySelector('.resolve-btn'); if (btn) { btn.innerHTML = '<i class="bi bi-check-lg"></i> Resolved'; btn.className = 'btn btn-sm btn-success resolve-btn'; btn.disabled = true; } let statusBadge = row.querySelector('.status-badge'); if (statusBadge) { statusBadge.className = 'badge bg-success status-badge'; statusBadge.innerText = 'Resolved'; } } }); document.querySelectorAll('.resolve-btn').forEach(btn => { btn.addEventListener('click', function() { let row = this.closest('tr'); let orderRef = row.querySelector('td:nth-child(2)').innerText.trim(); localStorage.setItem('laundry-audit-' + orderRef, 'Resolved'); this.innerHTML = '<i class="bi bi-check-lg"></i> Resolved'; this.className = 'btn btn-sm btn-success resolve-btn'; this.disabled = true; let statusBadge = row.querySelector('.status-badge'); statusBadge.className = 'badge bg-success status-badge'; statusBadge.innerText = 'Resolved'; }); });
 });
 </script>
 <?php include '../../footer.php'; ?>

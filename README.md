@@ -45,11 +45,20 @@ The project features a context-aware AI bot called **LEON**, which uses:
 *   **RAG (Retrieval-Augmented Generation)**: This allows the AI to answer questions based on the hostel's specific manual.
 *   **FAISS (Vector Search)**: Used for fast similarity search over stored knowledge.
 *   **Agentic Behavior**: The AI is programmed to perform actions for the user, such as filing leave requests or complaints.
+## Docker Images
+
+Access Docker images here:
+- **PHP Application**: [`arpit00011/hostelerp-app`](https://hub.docker.com/r/arpit00011/hostelerp-app)
+- **LEON AI API**: [`arpit00011/hostelerp-leon`](https://hub.docker.com/r/arpit00011/hostelerp-leon)
+
+Both images include version tags (1.0.0) and latest.
+
 ## Quick Setup
 1.  **Environment**: Rename `.env.example` to `.env` and add your API keys and DB credentials.
 2.  **Database**: Import `hostelerp_db.sql` into your MySQL server.
-3.  **Python Setup**: Navigate to the `chatbot/` folder and run `pip install -r requirements.txt`.
+3.  **Python Setup**: Run `pip install -r requirements.txt` from the root directory to install AI dependencies.
 4.  **Run**: Start your XAMPP server (Apache/MySQL) and run `python main.py` inside the `chatbot/` directory.
+5.  **Docker**: Alternatively, use `docker-compose.prod.yml` to deploy both services with MySQL in containers.
 ---
 ### Admin Panel
 User management with role control, warden attendance tracking, and attendance correction overrides (God Mode).

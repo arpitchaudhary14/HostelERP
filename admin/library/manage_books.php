@@ -1,330 +1,46 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 require_once "../../library/includes/library_functions.php";
 $message = '';
 $message_type = '';
-if (isset($_POST['add_book'])) {
-    $title       = mysqli_real_escape_string($conn, $_POST['title']);
-    $author      = mysqli_real_escape_string($conn, $_POST['author']);
-    $isbn        = mysqli_real_escape_string($conn, $_POST['isbn']);
-    $category_id = intval($_POST['category_id']);
-    $total_copies= intval($_POST['total_copies']);
-    $location    = mysqli_real_escape_string($conn, $_POST['location']);
-    $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
-    $sql = "INSERT INTO library_books (title, author, isbn, category_id, total_copies, available_copies, location, description) 
-            VALUES ('$title', '$author', '$isbn', $category_id, $total_copies, $total_copies, '$location', '$description')";
-    if (mysqli_query($conn, $sql)) {
-        $message = "✅ Book added successfully!";
-        $message_type = "success";
-    } else {
-        $message = "Error: " . mysqli_error($conn);
-        $message_type = "danger";
-    }
+if (isset($_POST['add_book'])) { $title = mysqli_real_escape_string($conn, $_POST['title']); $author = mysqli_real_escape_string($conn, $_POST['author']); $isbn = mysqli_real_escape_string($conn, $_POST['isbn']); $category_id = intval($_POST['category_id']); $total_copies= intval($_POST['total_copies']); $location = mysqli_real_escape_string($conn, $_POST['location']); $description = mysqli_real_escape_string($conn, $_POST['description'] ?? ''); $sql = "INSERT INTO library_books (title, author, isbn, category_id, total_copies, available_copies, location, description) VALUES ('$title', '$author', '$isbn', $category_id, $total_copies, $total_copies, '$location', '$description')"; if (mysqli_query($conn, $sql)) { $message = "✅ Book added successfully!"; $message_type = "success"; } else { $message = "Error: " . mysqli_error($conn); $message_type = "danger"; }
 }
-if (isset($_POST['edit_book'])) {
-    $id          = intval($_POST['book_id']);
-    $title       = mysqli_real_escape_string($conn, $_POST['title']);
-    $author      = mysqli_real_escape_string($conn, $_POST['author']);
-    $isbn        = mysqli_real_escape_string($conn, $_POST['isbn']);
-    $category_id = intval($_POST['category_id']);
-    $total_copies= intval($_POST['total_copies']);
-    $location    = mysqli_real_escape_string($conn, $_POST['location']);
-    $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
-    $sql = "UPDATE library_books SET 
-                title='$title', author='$author', isbn='$isbn', 
-                category_id=$category_id, total_copies=$total_copies, 
-                location='$location', description='$description'
-            WHERE id=$id";
-    if (mysqli_query($conn, $sql)) {
-        $message = "✅ Book updated successfully!";
-        $message_type = "success";
-    } else {
-        $message = "Error: " . mysqli_error($conn);
-        $message_type = "danger";
-    }
+if (isset($_POST['edit_book'])) { $id = intval($_POST['book_id']); $title = mysqli_real_escape_string($conn, $_POST['title']); $author = mysqli_real_escape_string($conn, $_POST['author']); $isbn = mysqli_real_escape_string($conn, $_POST['isbn']); $category_id = intval($_POST['category_id']); $total_copies= intval($_POST['total_copies']); $location = mysqli_real_escape_string($conn, $_POST['location']); $description = mysqli_real_escape_string($conn, $_POST['description'] ?? ''); $sql = "UPDATE library_books SET title='$title', author='$author', isbn='$isbn', category_id=$category_id, total_copies=$total_copies, location='$location', description='$description' WHERE id=$id"; if (mysqli_query($conn, $sql)) { $message = "✅ Book updated successfully!"; $message_type = "success"; } else { $message = "Error: " . mysqli_error($conn); $message_type = "danger"; }
 }
-if (isset($_POST['delete_book'])) {
-    $id = intval($_POST['book_id']);
-    if (mysqli_query($conn, "DELETE FROM library_books WHERE id=$id")) {
-        $message = "🗑️ Book deleted successfully!";
-        $message_type = "warning";
-    } else {
-        $message = "Error: " . mysqli_error($conn);
-        $message_type = "danger";
-    }
+if (isset($_POST['delete_book'])) { $id = intval($_POST['book_id']); if (mysqli_query($conn, "DELETE FROM library_books WHERE id=$id")) { $message = "🗑️ Book deleted successfully!"; $message_type = "warning"; } else { $message = "Error: " . mysqli_error($conn); $message_type = "danger"; }
 }
-$books      = get_library_books($conn);
+$books = get_library_books($conn);
 $categories = get_library_categories($conn);
 $cats_array = [];
-while ($cat = mysqli_fetch_assoc($categories)) {
-    $cats_array[] = $cat;
+while ($cat = mysqli_fetch_assoc($categories)) { $cats_array[] = $cat;
 }
 include("../../header.php");
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-                <h2 class="fw-bold text-gradient mb-0">Manage Inventory</h2>
-                <p class="text-muted mb-0">Add, edit, or remove books from the library catalog.</p>
-            </div>
-            <button class="btn btn-gradient rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addBookModal">
-                <i class="bi bi-plus-lg me-2"></i>Add New Book
-            </button>
-        </div>
-    </div>
-    <?php if($message): ?>
-    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-        <?= $message ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
-    <div class="glass-card-light reveal">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Book Details</th>
-                        <th>Category</th>
-                        <th>Availability</th>
-                        <th>Location</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while($b = mysqli_fetch_assoc($books)): ?>
-                    <tr>
-                        <td>
-                            <div class="fw-bold"><?= htmlspecialchars($b['title']) ?></div>
-                            <small class="text-muted">By <?= htmlspecialchars($b['author']) ?> | ISBN: <?= htmlspecialchars($b['isbn']) ?></small>
-                            <?php if (!empty($b['description'])): ?>
-                            <div class="small text-muted fst-italic mt-1" style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<?= htmlspecialchars($b['description']) ?>">
-                                📝 <?= htmlspecialchars($b['description']) ?>
-                            </div>
-                            <?php endif; ?>
-                        </td>
-                        <td><span class="badge bg-light text-dark border rounded-pill px-3"><?= htmlspecialchars($b['category_name']) ?></span></td>
-                        <td>
-                            <div class="progress" style="height: 10px; width: 100px;">
-                                <div class="progress-bar bg-primary" style="width: <?= ($b['available_copies'] / max($b['total_copies'],1)) * 100 ?>%"></div>
-                            </div>
-                            <small class="text-muted"><?= $b['available_copies'] ?> / <?= $b['total_copies'] ?> Left</small>
-                        </td>
-                        <td><?= htmlspecialchars($b['location'] ?: 'Not Assigned') ?></td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="action-btn action-btn-edit btn-edit-book"
-                                    data-id="<?= $b['id'] ?>"
-                                    data-title="<?= htmlspecialchars($b['title'], ENT_QUOTES) ?>"
-                                    data-author="<?= htmlspecialchars($b['author'], ENT_QUOTES) ?>"
-                                    data-isbn="<?= htmlspecialchars($b['isbn'], ENT_QUOTES) ?>"
-                                    data-category="<?= intval($b['category_id']) ?>"
-                                    data-copies="<?= intval($b['total_copies']) ?>"
-                                    data-location="<?= htmlspecialchars($b['location'] ?? '', ENT_QUOTES) ?>"
-                                    data-description="<?= htmlspecialchars($b['description'] ?? '', ENT_QUOTES) ?>"
-                                    title="Edit Book">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </button>
-                                <button class="action-btn action-btn-delete btn-delete-book"
-                                    data-id="<?= $b['id'] ?>"
-                                    data-title="<?= htmlspecialchars($b['title'], ENT_QUOTES) ?>"
-                                    title="Delete Book">
-                                    <i class="bi bi-trash3"></i> Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal"> <div class="d-flex justify-content-between align-items-center flex-wrap"> <div> <h2 class="fw-bold text-gradient mb-0">Manage Inventory</h2> <p class="text-muted mb-0">Add, edit, or remove books from the library catalog.</p> </div> <button class="btn btn-gradient rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addBookModal"> <i class="bi bi-plus-lg me-2"></i>Add New Book </button> </div> </div> <?php if($message): ?> <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert"> <?= $message ?> <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div> <?php endif; ?> <div class="glass-card-light reveal"> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>Book Details</th> <th>Category</th> <th>Availability</th> <th>Location</th> <th>Actions</th> </tr> </thead> <tbody> <?php while($b = mysqli_fetch_assoc($books)): ?> <tr> <td> <div class="fw-bold"><?= htmlspecialchars($b['title']) ?></div> <small class="text-muted">By <?= htmlspecialchars($b['author']) ?> | ISBN: <?= htmlspecialchars($b['isbn']) ?></small> <?php if (!empty($b['description'])): ?> <div class="small text-muted fst-italic mt-1" style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<?= htmlspecialchars($b['description']) ?>"> 📝 <?= htmlspecialchars($b['description']) ?> </div> <?php endif; ?> </td> <td><span class="badge border rounded-pill px-3"><?= htmlspecialchars($b['category_name']) ?></span></td> <td> <div class="progress" style="height: 10px; width: 100px;"> <div class="progress-bar bg-primary" style="width: <?= ($b['available_copies'] / max($b['total_copies'],1)) * 100 ?>%"></div> </div> <small class="text-muted"><?= $b['available_copies'] ?> / <?= $b['total_copies'] ?> Left</small> </td> <td><?= htmlspecialchars($b['location'] ?: 'Not Assigned') ?></td> <td> <div class="d-flex gap-2"> <button class="action-btn action-btn-edit btn-edit-book" data-id="<?= $b['id'] ?>" data-title="<?= htmlspecialchars($b['title'], ENT_QUOTES) ?>" data-author="<?= htmlspecialchars($b['author'], ENT_QUOTES) ?>" data-isbn="<?= htmlspecialchars($b['isbn'], ENT_QUOTES) ?>" data-category="<?= intval($b['category_id']) ?>" data-copies="<?= intval($b['total_copies']) ?>" data-location="<?= htmlspecialchars($b['location'] ?? '', ENT_QUOTES) ?>" data-description="<?= htmlspecialchars($b['description'] ?? '', ENT_QUOTES) ?>" title="Edit Book"> <i class="bi bi-pencil-square"></i> Edit </button> <button class="action-btn action-btn-delete btn-delete-book" data-id="<?= $b['id'] ?>" data-title="<?= htmlspecialchars($b['title'], ENT_QUOTES) ?>" title="Delete Book"> <i class="bi bi-trash3"></i> Delete </button> </div> </td> </tr> <?php endwhile; ?> </tbody> </table> </div> </div>
 </div>
 <style>
-.action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
+.action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
 }
-.action-btn-edit {
-    background: linear-gradient(135deg, #4f8ef7, #6c63ff);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(108, 99, 255, 0.35);
+.action-btn-edit { background: linear-gradient(135deg, #4f8ef7, #6c63ff); box-shadow: 0 2px 8px rgba(108, 99, 255, 0.35);
 }
-.action-btn-edit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(108, 99, 255, 0.5);
-    background: linear-gradient(135deg, #6c63ff, #4f8ef7);
-    color: #fff;
+.action-btn-edit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108, 99, 255, 0.5); background: linear-gradient(135deg, #6c63ff, #4f8ef7); }
+.action-btn-delete { background: linear-gradient(135deg, #ff5252, #ff1744); box-shadow: 0 2px 8px rgba(255, 82, 82, 0.35);
 }
-.action-btn-delete {
-    background: linear-gradient(135deg, #ff5252, #ff1744);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(255, 82, 82, 0.35);
-}
-.action-btn-delete:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 23, 68, 0.5);
-    background: linear-gradient(135deg, #ff1744, #ff5252);
-    color: #fff;
-}
-.action-btn:active {
-    transform: scale(0.96);
+.action-btn-delete:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 23, 68, 0.5); background: linear-gradient(135deg, #ff1744, #ff5252); }
+.action-btn:active { transform: scale(0.96);
 }
 </style>
-<div class="modal fade" id="addBookModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="glass-card modal-content border-0 p-4">
-            <h4 class="fw-bold mb-4">➕ Add New Book</h4>
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Book Title</label>
-                    <input type="text" name="title" class="form-control rounded-3" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Author</label>
-                        <input type="text" name="author" class="form-control rounded-3" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">ISBN</label>
-                        <input type="text" name="isbn" class="form-control rounded-3">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Category</label>
-                        <select name="category_id" class="form-select rounded-3">
-                            <?php foreach($cats_array as $cat): ?>
-                            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Total Copies</label>
-                        <input type="number" name="total_copies" class="form-control rounded-3" value="1" min="1">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Library Location (Shelf/Rack)</label>
-                    <input type="text" name="location" class="form-control rounded-3" placeholder="e.g. Shelf A-12">
-                </div>
-                <div class="mb-4">
-                    <label class="form-label small fw-bold">Book Description <span class="text-muted fw-normal">(optional)</span></label>
-                    <textarea name="description" class="form-control rounded-3" rows="3" placeholder="A short blurb about this book..."></textarea>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" name="add_book" class="btn btn-gradient rounded-pill py-2">Save Book</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="addBookModal" tabindex="-1" aria-hidden="true"> <div class="modal-dialog modal-dialog-centered"> <div class="glass-card modal-content border-0 p-4"> <h4 class="fw-bold mb-4">➕ Add New Book</h4> <form method="POST"> <div class="mb-3"> <label class="form-label small fw-bold">Book Title</label> <input type="text" name="title" class="form-control rounded-3" required> </div> <div class="row"> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Author</label> <input type="text" name="author" class="form-control rounded-3" required> </div> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">ISBN</label> <input type="text" name="isbn" class="form-control rounded-3"> </div> </div> <div class="row"> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Category</label> <select name="category_id" class="form-select rounded-3"> <?php foreach($cats_array as $cat): ?> <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option> <?php endforeach; ?> </select> </div> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Total Copies</label> <input type="number" name="total_copies" class="form-control rounded-3" value="1" min="1"> </div> </div> <div class="mb-3"> <label class="form-label small fw-bold">Library Location (Shelf/Rack)</label> <input type="text" name="location" class="form-control rounded-3" placeholder="e.g. Shelf A-12"> </div> <div class="mb-4"> <label class="form-label small fw-bold">Book Description <span class="text-muted fw-normal">(optional)</span></label> <textarea name="description" class="form-control rounded-3" rows="3" placeholder="A short blurb about this book..."></textarea> </div> <div class="d-grid"> <button type="submit" name="add_book" class="btn btn-gradient rounded-pill py-2">Save Book</button> </div> </form> </div> </div>
 </div>
-<div class="modal fade" id="editBookModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="glass-card modal-content border-0 p-4">
-            <h4 class="fw-bold mb-4">✏️ Edit Book</h4>
-            <form method="POST">
-                <input type="hidden" name="book_id" id="edit_book_id">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Book Title</label>
-                    <input type="text" name="title" id="edit_title" class="form-control rounded-3" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Author</label>
-                        <input type="text" name="author" id="edit_author" class="form-control rounded-3" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">ISBN</label>
-                        <input type="text" name="isbn" id="edit_isbn" class="form-control rounded-3">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Category</label>
-                        <select name="category_id" id="edit_category_id" class="form-select rounded-3">
-                            <?php foreach($cats_array as $cat): ?>
-                            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Total Copies</label>
-                        <input type="number" name="total_copies" id="edit_total_copies" class="form-control rounded-3" min="1">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Library Location (Shelf/Rack)</label>
-                    <input type="text" name="location" id="edit_location" class="form-control rounded-3">
-                </div>
-                <div class="mb-4">
-                    <label class="form-label small fw-bold">Book Description <span class="text-muted fw-normal">(optional)</span></label>
-                    <textarea name="description" id="edit_description" class="form-control rounded-3" rows="3" placeholder="A short blurb about this book..."></textarea>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" name="edit_book" class="btn btn-gradient rounded-pill py-2">Update Book</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="editBookModal" tabindex="-1" aria-hidden="true"> <div class="modal-dialog modal-dialog-centered"> <div class="glass-card modal-content border-0 p-4"> <h4 class="fw-bold mb-4">✏️ Edit Book</h4> <form method="POST"> <input type="hidden" name="book_id" id="edit_book_id"> <div class="mb-3"> <label class="form-label small fw-bold">Book Title</label> <input type="text" name="title" id="edit_title" class="form-control rounded-3" required> </div> <div class="row"> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Author</label> <input type="text" name="author" id="edit_author" class="form-control rounded-3" required> </div> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">ISBN</label> <input type="text" name="isbn" id="edit_isbn" class="form-control rounded-3"> </div> </div> <div class="row"> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Category</label> <select name="category_id" id="edit_category_id" class="form-select rounded-3"> <?php foreach($cats_array as $cat): ?> <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option> <?php endforeach; ?> </select> </div> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Total Copies</label> <input type="number" name="total_copies" id="edit_total_copies" class="form-control rounded-3" min="1"> </div> </div> <div class="mb-3"> <label class="form-label small fw-bold">Library Location (Shelf/Rack)</label> <input type="text" name="location" id="edit_location" class="form-control rounded-3"> </div> <div class="mb-4"> <label class="form-label small fw-bold">Book Description <span class="text-muted fw-normal">(optional)</span></label> <textarea name="description" id="edit_description" class="form-control rounded-3" rows="3" placeholder="A short blurb about this book..."></textarea> </div> <div class="d-grid"> <button type="submit" name="edit_book" class="btn btn-gradient rounded-pill py-2">Update Book</button> </div> </form> </div> </div>
 </div>
-<div class="modal fade" id="deleteBookModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="glass-card modal-content border-0 p-4 text-center">
-            <div style="font-size:3rem;">🗑️</div>
-            <h5 class="fw-bold mt-2">Delete Book?</h5>
-            <p class="text-muted small" id="delete_book_name"></p>
-            <p class="text-danger small">This action cannot be undone. All borrow records for this book will also be removed.</p>
-            <form method="POST">
-                <input type="hidden" name="book_id" id="delete_book_id">
-                <div class="d-flex gap-2 justify-content-center mt-3">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="delete_book" class="btn btn-danger rounded-pill px-4">Delete</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="deleteBookModal" tabindex="-1" aria-hidden="true"> <div class="modal-dialog modal-dialog-centered modal-sm"> <div class="glass-card modal-content border-0 p-4 text-center"> <div style="font-size:3rem;">🗑️</div> <h5 class="fw-bold mt-2">Delete Book?</h5> <p class="text-muted small" id="delete_book_name"></p> <p class="text-danger small">This action cannot be undone. All borrow records for this book will also be removed.</p> <form method="POST"> <input type="hidden" name="book_id" id="delete_book_id"> <div class="d-flex gap-2 justify-content-center mt-3"> <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button> <button type="submit" name="delete_book" class="btn btn-danger rounded-pill px-4">Delete</button> </div> </form> </div> </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.btn-edit-book').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('edit_book_id').value      = this.dataset.id;
-            document.getElementById('edit_title').value        = this.dataset.title;
-            document.getElementById('edit_author').value       = this.dataset.author;
-            document.getElementById('edit_isbn').value         = this.dataset.isbn;
-            document.getElementById('edit_total_copies').value = this.dataset.copies;
-            document.getElementById('edit_location').value     = this.dataset.location;
-            document.getElementById('edit_description').value  = this.dataset.description;
-            const sel = document.getElementById('edit_category_id');
-            const catId = parseInt(this.dataset.category);
-            for (let opt of sel.options) {
-                opt.selected = (parseInt(opt.value) === catId);
-            }
-            new bootstrap.Modal(document.getElementById('editBookModal')).show();
-        });
-    });
-    document.querySelectorAll('.btn-delete-book').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('delete_book_id').value = this.dataset.id;
-            document.getElementById('delete_book_name').textContent = '"' + this.dataset.title + '"';
-            new bootstrap.Modal(document.getElementById('deleteBookModal')).show();
-        });
-    });
+document.addEventListener('DOMContentLoaded', function () { document.querySelectorAll('.btn-edit-book').forEach(function(btn) { btn.addEventListener('click', function() { document.getElementById('edit_book_id').value = this.dataset.id; document.getElementById('edit_title').value = this.dataset.title; document.getElementById('edit_author').value = this.dataset.author; document.getElementById('edit_isbn').value = this.dataset.isbn; document.getElementById('edit_total_copies').value = this.dataset.copies; document.getElementById('edit_location').value = this.dataset.location; document.getElementById('edit_description').value = this.dataset.description; const sel = document.getElementById('edit_category_id'); const catId = parseInt(this.dataset.category); for (let opt of sel.options) { opt.selected = (parseInt(opt.value) === catId); } new bootstrap.Modal(document.getElementById('editBookModal')).show(); }); }); document.querySelectorAll('.btn-delete-book').forEach(function(btn) { btn.addEventListener('click', function() { document.getElementById('delete_book_id').value = this.dataset.id; document.getElementById('delete_book_name').textContent = '"' + this.dataset.title + '"'; new bootstrap.Modal(document.getElementById('deleteBookModal')).show(); }); });
 });
 </script>
 <?php include("../../footer.php"); ?>

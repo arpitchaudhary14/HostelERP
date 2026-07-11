@@ -1,216 +1,40 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 $message = "";
 $message_type = "success";
-if (isset($_POST['add_plan'])) {
-    $name     = mysqli_real_escape_string($conn, $_POST['name']);
-    $price    = floatval($_POST['price']);
-    $duration = intval($_POST['duration_months']);
-    $features = mysqli_real_escape_string($conn, $_POST['features']);
-    if (mysqli_query($conn, "INSERT INTO gym_plans (name, price, duration_months, features) VALUES ('$name', $price, $duration, '$features')")) {
-        $message = "✅ Plan added successfully!";
-    } else {
-        $message = "Error: " . mysqli_error($conn);
-        $message_type = "danger";
-    }
+if (isset($_POST['add_plan'])) { $name = mysqli_real_escape_string($conn, $_POST['name']); $price = floatval($_POST['price']); $duration = intval($_POST['duration_months']); $features = mysqli_real_escape_string($conn, $_POST['features']); if (mysqli_query($conn, "INSERT INTO gym_plans (name, price, duration_months, features) VALUES ('$name', $price, $duration, '$features')")) { $message = "✅ Plan added successfully!"; } else { $message = "Error: " . mysqli_error($conn); $message_type = "danger"; }
 }
-if (isset($_POST['edit_plan'])) {
-    $id       = intval($_POST['plan_id']);
-    $name     = mysqli_real_escape_string($conn, $_POST['name']);
-    $price    = floatval($_POST['price']);
-    $duration = intval($_POST['duration_months']);
-    $features = mysqli_real_escape_string($conn, $_POST['features']);
-    if (mysqli_query($conn, "UPDATE gym_plans SET name='$name', price=$price, duration_months=$duration, features='$features' WHERE id=$id")) {
-        $message = "✅ Plan updated successfully!";
-    } else {
-        $message = "Error: " . mysqli_error($conn);
-        $message_type = "danger";
-    }
+if (isset($_POST['edit_plan'])) { $id = intval($_POST['plan_id']); $name = mysqli_real_escape_string($conn, $_POST['name']); $price = floatval($_POST['price']); $duration = intval($_POST['duration_months']); $features = mysqli_real_escape_string($conn, $_POST['features']); if (mysqli_query($conn, "UPDATE gym_plans SET name='$name', price=$price, duration_months=$duration, features='$features' WHERE id=$id")) { $message = "✅ Plan updated successfully!"; } else { $message = "Error: " . mysqli_error($conn); $message_type = "danger"; }
 }
-if (isset($_POST['delete_plan'])) {
-    $id = intval($_POST['plan_id']);
-    if (mysqli_query($conn, "DELETE FROM gym_plans WHERE id=$id")) {
-        $message = "🗑️ Plan deleted.";
-        $message_type = "warning";
-    }
+if (isset($_POST['delete_plan'])) { $id = intval($_POST['plan_id']); if (mysqli_query($conn, "DELETE FROM gym_plans WHERE id=$id")) { $message = "🗑️ Plan deleted."; $message_type = "warning"; }
 }
 $plans = mysqli_query($conn, "SELECT * FROM gym_plans ORDER BY created_at DESC");
 ?>
 <?php include("../../header.php"); ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">MatrixFit Plans</h3>
-                <p class="text-muted mb-0">Define and manage gym membership packages.</p>
-            </div>
-            <button class="btn btn-gradient rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addPlanModal">
-                <i class="bi bi-plus-lg me-2"></i>Add New Plan
-            </button>
-        </div>
-    </div>
-    <?php if($message): ?>
-    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-        <?= $message ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php endif; ?>
-    <div class="row g-4">
-        <?php while($plan = mysqli_fetch_assoc($plans)): ?>
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100">
-                <h4 class="text-gradient mb-2"><?= htmlspecialchars($plan['name']) ?></h4>
-                <div class="mb-3">
-                    <span class="h2 fw-bold">₹<?= number_format($plan['price'], 0) ?></span>
-                    <span class="text-muted"> / <?= $plan['duration_months'] ?> Month(s)</span>
-                </div>
-                <hr>
-                <ul class="list-unstyled mb-4">
-                    <?php foreach(explode(',', $plan['features']) as $f): ?>
-                    <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i><?= htmlspecialchars(trim($f)) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-                <div class="d-flex gap-2 mt-auto pt-2">
-                    <button class="action-btn action-btn-edit btn-edit-plan"
-                        data-id="<?= $plan['id'] ?>"
-                        data-name="<?= htmlspecialchars($plan['name'], ENT_QUOTES) ?>"
-                        data-price="<?= $plan['price'] ?>"
-                        data-duration="<?= $plan['duration_months'] ?>"
-                        data-features="<?= htmlspecialchars($plan['features'], ENT_QUOTES) ?>">
-                        <i class="bi bi-pencil-square"></i> Edit
-                    </button>
-                    <button class="action-btn action-btn-delete btn-delete-plan"
-                        data-id="<?= $plan['id'] ?>"
-                        data-name="<?= htmlspecialchars($plan['name'], ENT_QUOTES) ?>">
-                        <i class="bi bi-trash3"></i> Delete
-                    </button>
-                </div>
-            </div>
-        </div>
-        <?php endwhile; ?>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal"> <div class="d-flex justify-content-between align-items-center"> <div> <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">MatrixFit Plans</h3> <p class="text-muted mb-0">Define and manage gym membership packages.</p> </div> <button class="btn btn-gradient rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addPlanModal"> <i class="bi bi-plus-lg me-2"></i>Add New Plan </button> </div> </div> <?php if($message): ?> <div class="alert alert-<?= $message_type ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert"> <?= $message ?> <button type="button" class="btn-close" data-bs-dismiss="alert"></button> </div> <?php endif; ?> <div class="row g-4"> <?php while($plan = mysqli_fetch_assoc($plans)): ?> <div class="col-md-4 reveal"> <div class="glass-card-light h-100"> <h4 class="text-gradient mb-2"><?= htmlspecialchars($plan['name']) ?></h4> <div class="mb-3"> <span class="h2 fw-bold">₹<?= number_format($plan['price'], 0) ?></span> <span class="text-muted"> / <?= $plan['duration_months'] ?> Month(s)</span> </div> <hr> <ul class="list-unstyled mb-4"> <?php foreach(explode(',', $plan['features']) as $f): ?> <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i><?= htmlspecialchars(trim($f)) ?></li> <?php endforeach; ?> </ul> <div class="d-flex gap-2 mt-auto pt-2"> <button class="action-btn action-btn-edit btn-edit-plan" data-id="<?= $plan['id'] ?>" data-name="<?= htmlspecialchars($plan['name'], ENT_QUOTES) ?>" data-price="<?= $plan['price'] ?>" data-duration="<?= $plan['duration_months'] ?>" data-features="<?= htmlspecialchars($plan['features'], ENT_QUOTES) ?>"> <i class="bi bi-pencil-square"></i> Edit </button> <button class="action-btn action-btn-delete btn-delete-plan" data-id="<?= $plan['id'] ?>" data-name="<?= htmlspecialchars($plan['name'], ENT_QUOTES) ?>"> <i class="bi bi-trash3"></i> Delete </button> </div> </div> </div> <?php endwhile; ?> </div>
 </div>
 <style>
-.action-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 20px; font-size: 0.8rem;
-    font-weight: 600; border: none; cursor: pointer;
-    transition: all 0.2s ease; white-space: nowrap;
+.action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
 }
-.action-btn-edit {
-    background: linear-gradient(135deg, #4f8ef7, #6c63ff);
-    color: #fff; box-shadow: 0 2px 8px rgba(108,99,255,0.35);
+.action-btn-edit { background: linear-gradient(135deg, #4f8ef7, #6c63ff); box-shadow: 0 2px 8px rgba(108,99,255,0.35);
 }
-.action-btn-edit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108,99,255,0.5); color:#fff; }
-.action-btn-delete {
-    background: linear-gradient(135deg, #ff5252, #ff1744);
-    color: #fff; box-shadow: 0 2px 8px rgba(255,82,82,0.35);
+.action-btn-edit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108,99,255,0.5); }
+.action-btn-delete { background: linear-gradient(135deg, #ff5252, #ff1744); box-shadow: 0 2px 8px rgba(255,82,82,0.35);
 }
-.action-btn-delete:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,23,68,0.5); color:#fff; }
+.action-btn-delete:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,23,68,0.5); }
 .action-btn:active { transform: scale(0.96); }
 </style>
-<div class="modal fade" id="addPlanModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-card border-0 p-4">
-            <h4 class="fw-bold mb-4">➕ Add New Plan</h4>
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Plan Name</label>
-                    <input type="text" name="name" class="form-control rounded-3" placeholder="e.g. Monthly Basic" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Price (₹)</label>
-                        <input type="number" name="price" class="form-control rounded-3" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Duration (Months)</label>
-                        <input type="number" name="duration_months" class="form-control rounded-3" required>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label small fw-bold">Features <span class="text-muted fw-normal">(comma separated)</span></label>
-                    <textarea name="features" class="form-control rounded-3" rows="3" placeholder="Access to gym, Locker, Personal Trainer"></textarea>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" name="add_plan" class="btn btn-gradient rounded-pill py-2">Save Plan</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="addPlanModal" tabindex="-1"> <div class="modal-dialog modal-dialog-centered"> <div class="modal-content glass-card border-0 p-4"> <h4 class="fw-bold mb-4">➕ Add New Plan</h4> <form method="POST"> <div class="mb-3"> <label class="form-label small fw-bold">Plan Name</label> <input type="text" name="name" class="form-control rounded-3" placeholder="e.g. Monthly Basic" required> </div> <div class="row"> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Price (₹)</label> <input type="number" name="price" class="form-control rounded-3" required> </div> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Duration (Months)</label> <input type="number" name="duration_months" class="form-control rounded-3" required> </div> </div> <div class="mb-4"> <label class="form-label small fw-bold">Features <span class="text-muted fw-normal">(comma separated)</span></label> <textarea name="features" class="form-control rounded-3" rows="3" placeholder="Access to gym, Locker, Personal Trainer"></textarea> </div> <div class="d-grid"> <button type="submit" name="add_plan" class="btn btn-gradient rounded-pill py-2">Save Plan</button> </div> </form> </div> </div>
 </div>
-<div class="modal fade" id="editPlanModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-card border-0 p-4">
-            <h4 class="fw-bold mb-4">✏️ Edit Plan</h4>
-            <form method="POST">
-                <input type="hidden" name="plan_id" id="edit_plan_id">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Plan Name</label>
-                    <input type="text" name="name" id="edit_plan_name" class="form-control rounded-3" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Price (₹)</label>
-                        <input type="number" name="price" id="edit_plan_price" class="form-control rounded-3" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Duration (Months)</label>
-                        <input type="number" name="duration_months" id="edit_plan_duration" class="form-control rounded-3" required>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label small fw-bold">Features <span class="text-muted fw-normal">(comma separated)</span></label>
-                    <textarea name="features" id="edit_plan_features" class="form-control rounded-3" rows="3"></textarea>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" name="edit_plan" class="btn btn-gradient rounded-pill py-2">Update Plan</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="editPlanModal" tabindex="-1"> <div class="modal-dialog modal-dialog-centered"> <div class="modal-content glass-card border-0 p-4"> <h4 class="fw-bold mb-4">✏️ Edit Plan</h4> <form method="POST"> <input type="hidden" name="plan_id" id="edit_plan_id"> <div class="mb-3"> <label class="form-label small fw-bold">Plan Name</label> <input type="text" name="name" id="edit_plan_name" class="form-control rounded-3" required> </div> <div class="row"> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Price (₹)</label> <input type="number" name="price" id="edit_plan_price" class="form-control rounded-3" required> </div> <div class="col-md-6 mb-3"> <label class="form-label small fw-bold">Duration (Months)</label> <input type="number" name="duration_months" id="edit_plan_duration" class="form-control rounded-3" required> </div> </div> <div class="mb-4"> <label class="form-label small fw-bold">Features <span class="text-muted fw-normal">(comma separated)</span></label> <textarea name="features" id="edit_plan_features" class="form-control rounded-3" rows="3"></textarea> </div> <div class="d-grid"> <button type="submit" name="edit_plan" class="btn btn-gradient rounded-pill py-2">Update Plan</button> </div> </form> </div> </div>
 </div>
-<div class="modal fade" id="deletePlanModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="glass-card modal-content border-0 p-4 text-center">
-            <div style="font-size:3rem;">🗑️</div>
-            <h5 class="fw-bold mt-2">Delete Plan?</h5>
-            <p class="text-muted small" id="delete_plan_name"></p>
-            <p class="text-danger small">This cannot be undone. Active subscriptions may be affected.</p>
-            <form method="POST">
-                <input type="hidden" name="plan_id" id="delete_plan_id">
-                <div class="d-flex gap-2 justify-content-center mt-3">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="delete_plan" class="btn btn-danger rounded-pill px-4">Delete</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="deletePlanModal" tabindex="-1"> <div class="modal-dialog modal-dialog-centered modal-sm"> <div class="glass-card modal-content border-0 p-4 text-center"> <div style="font-size:3rem;">🗑️</div> <h5 class="fw-bold mt-2">Delete Plan?</h5> <p class="text-muted small" id="delete_plan_name"></p> <p class="text-danger small">This cannot be undone. Active subscriptions may be affected.</p> <form method="POST"> <input type="hidden" name="plan_id" id="delete_plan_id"> <div class="d-flex gap-2 justify-content-center mt-3"> <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button> <button type="submit" name="delete_plan" class="btn btn-danger rounded-pill px-4">Delete</button> </div> </form> </div> </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.btn-edit-plan').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('edit_plan_id').value       = this.dataset.id;
-            document.getElementById('edit_plan_name').value     = this.dataset.name;
-            document.getElementById('edit_plan_price').value    = this.dataset.price;
-            document.getElementById('edit_plan_duration').value = this.dataset.duration;
-            document.getElementById('edit_plan_features').value = this.dataset.features;
-            new bootstrap.Modal(document.getElementById('editPlanModal')).show();
-        });
-    });
-    document.querySelectorAll('.btn-delete-plan').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('delete_plan_id').value = this.dataset.id;
-            document.getElementById('delete_plan_name').textContent = '"' + this.dataset.name + '"';
-            new bootstrap.Modal(document.getElementById('deletePlanModal')).show();
-        });
-    });
+document.addEventListener('DOMContentLoaded', function () { document.querySelectorAll('.btn-edit-plan').forEach(function(btn) { btn.addEventListener('click', function() { document.getElementById('edit_plan_id').value = this.dataset.id; document.getElementById('edit_plan_name').value = this.dataset.name; document.getElementById('edit_plan_price').value = this.dataset.price; document.getElementById('edit_plan_duration').value = this.dataset.duration; document.getElementById('edit_plan_features').value = this.dataset.features; new bootstrap.Modal(document.getElementById('editPlanModal')).show(); }); }); document.querySelectorAll('.btn-delete-plan').forEach(function(btn) { btn.addEventListener('click', function() { document.getElementById('delete_plan_id').value = this.dataset.id; document.getElementById('delete_plan_name').textContent = '"' + this.dataset.name + '"'; new bootstrap.Modal(document.getElementById('deletePlanModal')).show(); }); });
 });
 </script>
 <?php include("../../footer.php"); ?>

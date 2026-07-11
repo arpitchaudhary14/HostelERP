@@ -1,9 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'warden'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit();
 }
 $user_id = $_SESSION['user_id'];
 $stmt = mysqli_prepare($conn, "SELECT * FROM warden_leave_requests WHERE warden_id=? ORDER BY created_at DESC");
@@ -15,14 +13,9 @@ include("../header.php");
 <div class="container mt-4">
 <h4 class="mb-3" style="font-weight:700; ">📋 My Leave Requests</h4>
 <div class="glass-card-light">
-<table class="table table-bordered mb-0">
-<thead class="table-dark">
-<tr>
-    <th>From</th>
-    <th>To</th>
-    <th>Reason</th>
-    <th>Status</th>
-    <th>Submitted</th>
+<table class="table table-bordered mb-0 table-sticky">
+<thead class="">
+<tr> <th>From</th> <th>To</th> <th>Reason</th> <th>Status</th> <th>Submitted</th>
 </tr>
 </thead>
 <tbody>

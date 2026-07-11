@@ -1,9 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
 $total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(amount) as total FROM fees"))['total'];
 $paid = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(amount) as paid FROM fees WHERE status='Paid'"))['paid'];

@@ -1,9 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
 $query = "
 SELECT feedback.*, CONCAT(users.first_name,' ',COALESCE(users.last_name,'')) as full_name
@@ -17,7 +15,7 @@ include("../header.php");
 <div class="container mt-4">
 <h4>All Feedback</h4>
 <hr>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>User</th>
 <th>Role</th>

@@ -1,9 +1,7 @@
 <?php
 session_start();
 require_once '../../db.php';
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['warden', 'admin'])) {
-    header("Location: ../../login.php");
-    exit();
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['warden', 'admin'])) { header("Location: ../../login.php"); exit();
 }
 $stats = [];
 $stats['pending_collection'] = $conn->query("SELECT COUNT(*) as total FROM laundry_requests WHERE status = 'Pending'")->fetch_assoc()['total'] ?? 0;
@@ -13,123 +11,12 @@ $stats['completed'] = $conn->query("SELECT COUNT(*) as total FROM laundry_reques
 $recent_activity = $conn->query("SELECT r.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as full_name FROM laundry_requests r JOIN users u ON r.user_id = u.id WHERE r.status != 'Delivered' ORDER BY r.created_at DESC LIMIT 6");
 include '../../header.php';
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);">
-        <div class="d-flex align-items-center mb-2">
-            <img src="/WebTechProject/assets/images/Cleanly_Logo.jpeg" height="45" class="me-3 rounded shadow-sm">
-            <div>
-                <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">Cleanly Warden Dashboard</h3>
-                <p class="text-muted" style="margin:0;">Laundary operations, collection hub & dispatch center overview.</p>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4 mb-4">
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-primary">
-                <h5>Pending</h5>
-                <h2 class="text-gradient"><?= $stats['pending_collection'] ?></h2>
-                <small class="text-muted">Awaiting collection</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-info">
-                <h5>In Progress</h5>
-                <h2 style="color:var(--accent-info);"><?= $stats['in_progress'] ?></h2>
-                <small class="text-muted">Washing/Drying</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-success">
-                <h5>Ready</h5>
-                <h2 style="color:var(--accent-secondary);"><?= $stats['ready_dispatch'] ?></h2>
-                <small class="text-muted">Awaiting dispatch</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-secondary">
-                <h5>Completed</h5>
-                <h2 style="color:var(--text-muted-light);"><?= $stats['completed'] ?></h2>
-                <small class="text-muted">Successfully delivered</small>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100">
-                <h5 class="mb-4" style="font-weight:600;">⚡ Quick Actions</h5>
-                <div class="d-flex flex-column gap-3">
-                    <a href="requests.php" class="btn btn-gradient py-3 rounded-4 shadow-sm text-start ps-4">
-                        <i class="bi bi-box-seam me-2"></i> Collection Hub
-                    </a>
-                    <a href="ready.php" class="btn btn-outline-success py-3 rounded-4 text-start ps-4">
-                        <i class="bi bi-check2-circle me-2"></i> Dispatch Center
-                    </a>
-                    <a href="machines.php" class="btn btn-outline-primary py-3 rounded-4 text-start ps-4">
-                        <i class="bi bi-gear-wide-connected me-2"></i> Machine Monitor
-                    </a>
-                    <a href="audit.php" class="btn btn-outline-info py-3 rounded-4 text-start ps-4">
-                        <i class="bi bi-clipboard-data me-2"></i> Quality Audit
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-8 reveal">
-            <div class="glass-card-light h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 style="font-weight:600; margin:0;">Active Operations</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr class="small text-muted">
-                                <th>STUDENT</th>
-                                <th>SERVICE</th>
-                                <th>STATUS</th>
-                                <th>TIME</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if ($recent_activity && $recent_activity->num_rows > 0): ?>
-                                <?php while($row = $recent_activity->fetch_assoc()): ?>
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold text-dark"><?= htmlspecialchars($row['full_name']) ?></div>
-                                        <small class="text-muted">#CL-<?= $row['id'] ?></small>
-                                    </td>
-                                    <td><?= htmlspecialchars($row['service_type']) ?></td>
-                                    <td>
-                                        <?php 
-                                        $badge_class = 'bg-primary-subtle text-primary';
-                                        if($row['status'] == 'Ready') $badge_class = 'bg-success-subtle text-success';
-                                        if($row['status'] == 'Collected') $badge_class = 'bg-info-subtle text-info';
-                                        ?>
-                                        <span class="badge <?= $badge_class ?> px-3 py-2 rounded-pill small">
-                                            <?= htmlspecialchars($row['status']) ?>
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small"><?= date('d M, H:i', strtotime($row['created_at'])) ?></td>
-                                </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr><td colspan="4" class="text-center py-5 text-muted">No active orders found.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);"> <div class="d-flex align-items-center mb-2"> <img src="/assets/images/Cleanly_Logo.jpeg" height="45" class="me-3 rounded shadow-sm"> <div> <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">Cleanly Warden Dashboard</h3> <p class="text-muted" style="margin:0;">Laundary operations, collection hub & dispatch center overview.</p> </div> </div> </div> <div class="row g-4 mb-4"> <div class="col-md-3 reveal"> <div class="stat-card stat-primary"> <h5>Pending</h5> <h2 class="text-gradient"><?= $stats['pending_collection'] ?></h2> <small class="text-muted">Awaiting collection</small> </div> </div> <div class="col-md-3 reveal"> <div class="stat-card stat-info"> <h5>In Progress</h5> <h2 style="color:var(--accent-info);"><?= $stats['in_progress'] ?></h2> <small class="text-muted">Washing/Drying</small> </div> </div> <div class="col-md-3 reveal"> <div class="stat-card stat-success"> <h5>Ready</h5> <h2 style="color:var(--accent-secondary);"><?= $stats['ready_dispatch'] ?></h2> <small class="text-muted">Awaiting dispatch</small> </div> </div> <div class="col-md-3 reveal"> <div class="stat-card stat-secondary"> <h5>Completed</h5> <h2 style="color:var(--text-muted-light);"><?= $stats['completed'] ?></h2> <small class="text-muted">Successfully delivered</small> </div> </div> </div> <div class="row g-4"> <div class="col-md-4 reveal"> <div class="glass-card-light h-100"> <h5 class="mb-4" style="font-weight:600;">⚡ Quick Actions</h5> <div class="d-flex flex-column gap-3"> <a href="requests.php" class="btn btn-gradient py-3 rounded-4 shadow-sm text-start ps-4"> <i class="bi bi-box-seam me-2"></i> Collection Hub </a> <a href="ready.php" class="btn btn-outline-success py-3 rounded-4 text-start ps-4"> <i class="bi bi-check2-circle me-2"></i> Dispatch Center </a> <a href="machines.php" class="btn btn-outline-primary py-3 rounded-4 text-start ps-4"> <i class="bi bi-gear-wide-connected me-2"></i> Machine Monitor </a> <a href="audit.php" class="btn btn-outline-info py-3 rounded-4 text-start ps-4"> <i class="bi bi-clipboard-data me-2"></i> Quality Audit </a> </div> </div> </div> <div class="col-md-8 reveal"> <div class="glass-card-light h-100"> <div class="d-flex justify-content-between align-items-center mb-4"> <h5 style="font-weight:600; margin:0;">Active Operations</h5> </div> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr class="small text-muted"> <th>STUDENT</th> <th>SERVICE</th> <th>STATUS</th> <th>TIME</th> </tr> </thead> <tbody> <?php if ($recent_activity && $recent_activity->num_rows > 0): ?> <?php while($row = $recent_activity->fetch_assoc()): ?> <tr> <td> <div class="fw-bold"><?= htmlspecialchars($row['full_name']) ?></div> <small class="text-muted">#CL-<?= $row['id'] ?></small> </td> <td><?= htmlspecialchars($row['service_type']) ?></td> <td> <?php $badge_class = 'bg-primary-subtle text-primary'; if($row['status'] == 'Ready') $badge_class = 'bg-success-subtle text-success'; if($row['status'] == 'Collected') $badge_class = 'bg-info-subtle text-info'; ?> <span class="badge <?= $badge_class ?> px-3 py-2 rounded-pill small"> <?= htmlspecialchars($row['status']) ?> </span> </td> <td class="text-muted small"><?= date('d M, H:i', strtotime($row['created_at'])) ?></td> </tr> <?php endwhile; ?> <?php else: ?> <tr><td colspan="4" class="text-center py-5 text-muted">No active orders found.</td></tr> <?php endif; ?> </tbody> </table> </div> </div> </div> </div>
 </div>
 <style>
 .stat-card small { font-weight: 600; letter-spacing: 0.5px; }
-.btn-gradient {
-    background: linear-gradient(135deg, var(--accent-primary), #4f46e5);
-    color: white;
-    border: none;
+.btn-gradient { background: linear-gradient(135deg, var(--accent-primary), #4f46e5); border: none;
 }
-.btn-gradient:hover {
-    filter: brightness(1.1);
-    color: white;
-}
+.btn-gradient:hover { filter: brightness(1.1); }
 </style>
 <?php include '../../footer.php'; ?>

@@ -1,97 +1,10 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id'])) { header("Location: /login.php"); exit();
 }
 include("../header.php");
 ?>
-<div class="container mt-5 page-fade-in">
-    <div class="text-center mb-5 reveal">
-        <img src="/WebTechProject/assets/images/MatrixFit_Logo.jpeg" height="80" class="mb-3 rounded-4 shadow">
-        <h1 class="fw-bold text-gradient">MatrixFit Code of Conduct</h1>
-        <p class="text-muted">A shared space for fitness, respect, and discipline.</p>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100 p-4 text-center">
-                <div class="stat-icon bg-primary-subtle text-primary mb-3 mx-auto">
-                    <i class="bi bi-tags h3"></i>
-                </div>
-                <h5 class="fw-bold">Proper Attire</h5>
-                <p class="small text-muted">Proper athletic footwear and gym attire are mandatory at all times. Street shoes or formal wear are strictly prohibited inside the training zone.</p>
-            </div>
-        </div>
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100 p-4 text-center">
-                <div class="stat-icon bg-success-subtle text-success mb-3 mx-auto">
-                    <i class="bi bi-moisture h3"></i>
-                </div>
-                <h5 class="fw-bold">Hygiene First</h5>
-                <p class="small text-muted">Carry a personal towel for hygiene purposes. Always wipe down machines after each use using the provided disinfectant sprays.</p>
-            </div>
-        </div>
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100 p-4 text-center">
-                <div class="stat-icon bg-danger-subtle text-danger mb-3 mx-auto">
-                    <i class="bi bi-shield-exclamation h3"></i>
-                </div>
-                <h5 class="fw-bold">Safety Protocol</h5>
-                <p class="small text-muted">Return weights and dumbbells to their respective racks. Do not drop heavy weights on the floor to prevent injury and floor damage.</p>
-            </div>
-        </div>
-        <div class="col-lg-8 reveal">
-            <div class="glass-card-light p-4 h-100">
-                <h5 class="fw-bold mb-4">Terms & Conditions</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-3 d-flex align-items-start">
-                        <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                        <div>
-                            <strong>Check-in:</strong> Every member must carry their Digital ID generated from the MatrixFit portal for gym check-in.
-                        </div>
-                    </li>
-                    <li class="mb-3 d-flex align-items-start">
-                        <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                        <div>
-                            <strong>Machine Usage:</strong> Limit cardio machine usage to <strong>30 minutes</strong> during peak hours to ensure fair access for everyone.
-                        </div>
-                    </li>
-                    <li class="mb-3 d-flex align-items-start">
-                        <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                        <div>
-                            <strong>Prohibitions:</strong> Consumption of food and open beverages (except water) is strictly prohibited inside the gym area.
-                        </div>
-                    </li>
-                    <li class="mb-3 d-flex align-items-start">
-                        <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                        <div>
-                            <strong>Suspension:</strong> Failure to follow these guidelines may result in a <strong>temporary suspension</strong> of your gym membership.
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="col-lg-4 reveal">
-            <div class="glass-card-light p-4 h-100">
-                <h5 class="fw-bold mb-4">MatrixFit Hours</h5>
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Monday - Friday</span>
-                    <span class="fw-bold text-primary">06:00 AM - 10:00 PM</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Saturday</span>
-                    <span class="fw-bold text-primary">08:00 AM - 08:00 PM</span>
-                </div>
-                <div class="d-flex justify-content-between mb-4">
-                    <span>Sunday</span>
-                    <span class="fw-bold text-primary">08:00 AM - 12:00 PM</span>
-                </div>
-                <div class="p-3 bg-danger-subtle rounded-3 text-center">
-                    <p class="small text-danger mb-0 fw-bold">Gym is CLOSED on Public Holidays!</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-5 page-fade-in"> <div class="text-center mb-5 reveal"> <img src="/assets/images/MatrixFit_Logo.jpeg" height="80" class="mb-3 rounded-4 shadow"> <h1 class="fw-bold text-gradient">MatrixFit Code of Conduct</h1> <p class="text-muted">A shared space for fitness, respect, and discipline.</p> </div> <div class="row g-4"> <div class="col-md-4 reveal"> <div class="glass-card-light h-100 p-4 text-center"> <div class="stat-icon bg-primary-subtle text-primary mb-3 mx-auto"> <i class="bi bi-tags h3"></i> </div> <h5 class="fw-bold">Proper Attire</h5> <p class="small text-muted">Proper athletic footwear and gym attire are mandatory at all times. Street shoes or formal wear are strictly prohibited inside the training zone.</p> </div> </div> <div class="col-md-4 reveal"> <div class="glass-card-light h-100 p-4 text-center"> <div class="stat-icon bg-success-subtle text-success mb-3 mx-auto"> <i class="bi bi-moisture h3"></i> </div> <h5 class="fw-bold">Hygiene First</h5> <p class="small text-muted">Carry a personal towel for hygiene purposes. Always wipe down machines after each use using the provided disinfectant sprays.</p> </div> </div> <div class="col-md-4 reveal"> <div class="glass-card-light h-100 p-4 text-center"> <div class="stat-icon bg-danger-subtle text-danger mb-3 mx-auto"> <i class="bi bi-shield-exclamation h3"></i> </div> <h5 class="fw-bold">Safety Protocol</h5> <p class="small text-muted">Return weights and dumbbells to their respective racks. Do not drop heavy weights on the floor to prevent injury and floor damage.</p> </div> </div> <div class="col-lg-8 reveal"> <div class="glass-card-light p-4 h-100"> <h5 class="fw-bold mb-4">Terms & Conditions</h5> <ul class="list-unstyled"> <li class="mb-3 d-flex align-items-start"> <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i> <div> <strong>Check-in:</strong> Every member must carry their Digital ID generated from the MatrixFit portal for gym check-in. </div> </li> <li class="mb-3 d-flex align-items-start"> <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i> <div> <strong>Machine Usage:</strong> Limit cardio machine usage to <strong>30 minutes</strong> during peak hours to ensure fair access for everyone. </div> </li> <li class="mb-3 d-flex align-items-start"> <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i> <div> <strong>Prohibitions:</strong> Consumption of food and open beverages (except water) is strictly prohibited inside the gym area. </div> </li> <li class="mb-3 d-flex align-items-start"> <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i> <div> <strong>Suspension:</strong> Failure to follow these guidelines may result in a <strong>temporary suspension</strong> of your gym membership. </div> </li> </ul> </div> </div> <div class="col-lg-4 reveal"> <div class="glass-card-light p-4 h-100"> <h5 class="fw-bold mb-4">MatrixFit Hours</h5> <div class="d-flex justify-content-between mb-2"> <span>Monday - Friday</span> <span class="fw-bold text-primary">06:00 AM - 10:00 PM</span> </div> <div class="d-flex justify-content-between mb-2"> <span>Saturday</span> <span class="fw-bold text-primary">08:00 AM - 08:00 PM</span> </div> <div class="d-flex justify-content-between mb-4"> <span>Sunday</span> <span class="fw-bold text-primary">08:00 AM - 12:00 PM</span> </div> <div class="p-3 bg-danger-subtle rounded-3 text-center"> <p class="small text-danger mb-0 fw-bold">Gym is CLOSED on Public Holidays!</p> </div> </div> </div> </div>
 </div>
 <style>
 .stat-icon { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; }

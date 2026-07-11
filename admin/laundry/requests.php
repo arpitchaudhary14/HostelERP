@@ -1,85 +1,14 @@
 <?php
 session_start();
 require_once '../../db.php';
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
-    exit();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') { header("Location: ../../login.php"); exit();
 }
 $message = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-    $req_id = $_POST['req_id'];
-    $new_status = $_POST['status'];
-    $pickup_date = !empty($_POST['pickup_date']) ? $_POST['pickup_date'] : null;
-    $stmt = $conn->prepare("UPDATE laundry_requests SET status = ?, pickup_date = ? WHERE id = ?");
-    $stmt->bind_param("ssi", $new_status, $pickup_date, $req_id);
-    if ($stmt->execute()) {
-        $message = "Order #CL-$req_id status updated to $new_status.";
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) { $req_id = $_POST['req_id']; $new_status = $_POST['status']; $pickup_date = !empty($_POST['pickup_date']) ? $_POST['pickup_date'] : null; $stmt = $conn->prepare("UPDATE laundry_requests SET status = ?, pickup_date = ? WHERE id = ?"); $stmt->bind_param("ssi", $new_status, $pickup_date, $req_id); if ($stmt->execute()) { $message = "Order #CL-$req_id status updated to $new_status."; }
 }
-$requests = $conn->query("SELECT r.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as full_name, u.email 
-                          FROM laundry_requests r 
-                          JOIN users u ON r.user_id = u.id 
-                          ORDER BY r.created_at DESC");
+$requests = $conn->query("SELECT r.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as full_name, u.email FROM laundry_requests r JOIN users u ON r.user_id = u.id ORDER BY r.created_at DESC");
 include '../../header.php';
 ?>
-<div class="container mt-5 pt-4">
-    <div class="row mb-4 reveal">
-        <div class="col-12">
-            <h2 class="fw-bold"><img src="/WebTechProject/assets/images/Cleanly_Logo.jpeg" height="40" class="me-2 rounded shadow-sm"> Cleanly Order Management</h2>
-            <p class="text-muted">Manage laundry lifecycle from collection to delivery.</p>
-        </div>
-    </div>
-    <?php if($message): ?>
-        <div class="alert alert-success border-0 shadow-sm mb-4"><?php echo $message; ?></div>
-    <?php endif; ?>
-    <div class="glass-card-light p-0 overflow-hidden shadow-sm">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr class="small text-uppercase text-muted">
-                    <th class="ps-4">Student</th>
-                    <th>Order Info</th>
-                    <th>Status</th>
-                    <th>Exp. Pickup</th>
-                    <th class="text-end pe-4">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while($req = $requests->fetch_assoc()): ?>
-                <tr>
-                    <td class="ps-4">
-                        <div class="fw-bold"><?php echo htmlspecialchars($req['full_name']); ?></div>
-                        <div class="text-muted small"><?php echo $req['email']; ?></div>
-                    </td>
-                    <td>
-                        <div class="badge bg-secondary-subtle text-secondary"><?php echo $req['clothes_count']; ?> Clothes</div>
-                        <div class="small mt-1 text-primary fw-semibold"><?php echo $req['service_type']; ?></div>
-                    </td>
-                    <td>
-                        <span class="badge <?php echo ($req['status']=='Ready') ? 'bg-success' : 'bg-primary'; ?> px-3">
-                            <?php echo $req['status']; ?>
-                        </span>
-                    </td>
-                    <td>
-                        <input type="date" form="form-<?php echo $req['id']; ?>" name="pickup_date" value="<?php echo $req['pickup_date']; ?>" class="form-control form-control-sm" style="width: 140px;">
-                    </td>
-                    <td class="text-end pe-4">
-                        <form id="form-<?php echo $req['id']; ?>" method="POST" class="d-flex justify-content-end gap-2">
-                            <input type="hidden" name="req_id" value="<?php echo $req['id']; ?>">
-                            <select name="status" class="form-select form-select-sm" style="width: 130px;">
-                                <option value="Collected" <?php if($req['status']=='Collected') echo 'selected'; ?>>Collected</option>
-                                <option value="Washing" <?php if($req['status']=='Washing') echo 'selected'; ?>>Washing</option>
-                                <option value="Drying" <?php if($req['status']=='Drying') echo 'selected'; ?>>Drying</option>
-                                <option value="Ironing" <?php if($req['status']=='Ironing') echo 'selected'; ?>>Ironing</option>
-                                <option value="Ready" <?php if($req['status']=='Ready') echo 'selected'; ?>>Ready</option>
-                                <option value="Delivered" <?php if($req['status']=='Delivered') echo 'selected'; ?>>Delivered</option>
-                            </select>
-                            <button type="submit" name="update_status" class="btn btn-sm btn-dark px-3">Update</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
+<div class="container mt-5 pt-4"> <div class="row mb-4 reveal"> <div class="col-12"> <h2 class="fw-bold"><img src="/assets/images/Cleanly_Logo.jpeg" height="40" class="me-2 rounded shadow-sm"> Cleanly Order Management</h2> <p class="text-muted">Manage laundry lifecycle from collection to delivery.</p> </div> </div> <?php if($message): ?> <div class="alert alert-success border-0 shadow-sm mb-4"><?php echo $message; ?></div> <?php endif; ?> <div class="glass-card-light p-0 overflow-hidden shadow-sm"> <table class="table table-hover align-middle mb-0 table-sticky"> <thead class=""> <tr class="small text-uppercase text-muted"> <th class="ps-4">Student</th> <th>Order Info</th> <th>Status</th> <th>Exp. Pickup</th> <th class="text-end pe-4">Actions</th> </tr> </thead> <tbody> <?php while($req = $requests->fetch_assoc()): ?> <tr> <td class="ps-4"> <div class="fw-bold"><?php echo htmlspecialchars($req['full_name']); ?></div> <div class="text-muted small"><?php echo $req['email']; ?></div> </td> <td> <div class="badge bg-secondary-subtle text-secondary"><?php echo $req['clothes_count']; ?> Clothes</div> <div class="small mt-1 text-primary fw-semibold"><?php echo $req['service_type']; ?></div> </td> <td> <span class="badge <?php echo ($req['status']=='Ready') ? 'bg-success' : 'bg-primary'; ?> px-3"> <?php echo $req['status']; ?> </span> </td> <td> <input type="date" form="form-<?php echo $req['id']; ?>" name="pickup_date" value="<?php echo $req['pickup_date']; ?>" class="form-control form-control-sm" style="width: 140px;"> </td> <td class="text-end pe-4"> <form id="form-<?php echo $req['id']; ?>" method="POST" class="d-flex justify-content-end gap-2"> <input type="hidden" name="req_id" value="<?php echo $req['id']; ?>"> <select name="status" class="form-select form-select-sm" style="width: 130px;"> <option value="Collected" <?php if($req['status']=='Collected') echo 'selected'; ?>>Collected</option> <option value="Washing" <?php if($req['status']=='Washing') echo 'selected'; ?>>Washing</option> <option value="Drying" <?php if($req['status']=='Drying') echo 'selected'; ?>>Drying</option> <option value="Ironing" <?php if($req['status']=='Ironing') echo 'selected'; ?>>Ironing</option> <option value="Ready" <?php if($req['status']=='Ready') echo 'selected'; ?>>Ready</option> <option value="Delivered" <?php if($req['status']=='Delivered') echo 'selected'; ?>>Delivered</option> </select> <button type="submit" name="update_status" class="btn btn-sm btn-dark px-3">Update</button> </form> </td> </tr> <?php endwhile; ?> </tbody> </table> </div>
 </div>
 <?php include '../../footer.php'; ?>

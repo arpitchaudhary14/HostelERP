@@ -1,25 +1,20 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'student'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'student'){ header("Location: ../dashboard.php"); exit();
 }
 $user_id = $_SESSION['user_id'];
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "SELECT * FROM fees WHERE student_id='$user_id'";
-if(!empty($search)){
-    $query .= " AND status LIKE '%$search%'";
+if(!empty($search)){ $query .= " AND status LIKE '%$search%'";
 }
 $query .= " ORDER BY due_date DESC";
 $result = mysqli_query($conn,$query);
 $summary_query = "
-SELECT 
-SUM(amount) as total,
+SELECT SUM(amount) as total,
 SUM(CASE WHEN status='Paid' THEN amount ELSE 0 END) as paid,
 SUM(CASE WHEN status='Pending' THEN amount ELSE 0 END) as pending
-FROM fees 
-WHERE student_id='$user_id'
+FROM fees WHERE student_id='$user_id'
 ";
 $summary = mysqli_fetch_assoc(mysqli_query($conn,$summary_query));
 include("../header.php");
@@ -41,25 +36,25 @@ value="<?= htmlspecialchars($search) ?>">
 </form>
 <div class="row mb-4">
 <div class="col-md-4">
-<div class="card bg-primary text-white p-3">
+<div class="card bg-primary p-3">
 <h6>Total</h6>
 ₹ <?= number_format($summary['total'] ?? 0,2) ?>
 </div>
 </div>
 <div class="col-md-4">
-<div class="card bg-success text-white p-3">
+<div class="card bg-success p-3">
 <h6>Paid</h6>
 ₹ <?= number_format($summary['paid'] ?? 0,2) ?>
 </div>
 </div>
 <div class="col-md-4">
-<div class="card bg-danger text-white p-3">
+<div class="card bg-danger p-3">
 <h6>Pending</h6>
 ₹ <?= number_format($summary['pending'] ?? 0,2) ?>
 </div>
 </div>
 </div>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>Amount</th>
 <th>Due Date</th>

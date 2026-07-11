@@ -1,33 +1,16 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 require_once "../../library/includes/library_functions.php";
 calculate_overdue_fines($conn);
 $stats = get_library_stats($conn);
-$pending_requests = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username 
-                                          FROM library_borrows b 
-                                          JOIN library_books bk ON b.book_id = bk.id 
-                                          JOIN users u ON b.user_id = u.id 
-                                          WHERE b.status = 'pending' 
-                                          ORDER BY b.borrow_date DESC LIMIT 5");
-$overdue_books = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name 
-                                       FROM library_borrows b 
-                                       JOIN library_books bk ON b.book_id = bk.id 
-                                       JOIN users u ON b.user_id = u.id 
-                                       WHERE b.status = 'overdue' 
-                                       ORDER BY b.due_date ASC LIMIT 5");
-$category_stats = mysqli_query($conn, "SELECT c.name, COUNT(b.id) as count 
-                                        FROM library_categories c 
-                                        LEFT JOIN library_books b ON b.category_id = c.id 
-                                        GROUP BY c.id ORDER BY count DESC LIMIT 6");
+$pending_requests = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name, u.username FROM library_borrows b JOIN library_books bk ON b.book_id = bk.id JOIN users u ON b.user_id = u.id WHERE b.status = 'pending' ORDER BY b.borrow_date DESC LIMIT 5");
+$overdue_books = mysqli_query($conn, "SELECT b.*, bk.title, u.full_name FROM library_borrows b JOIN library_books bk ON b.book_id = bk.id JOIN users u ON b.user_id = u.id WHERE b.status = 'overdue' ORDER BY b.due_date ASC LIMIT 5");
+$category_stats = mysqli_query($conn, "SELECT c.name, COUNT(b.id) as count FROM library_categories c LEFT JOIN library_books b ON b.category_id = c.id GROUP BY c.id ORDER BY count DESC LIMIT 6");
 $cat_labels = []; $cat_counts = [];
-while ($row = mysqli_fetch_assoc($category_stats)) {
-    $cat_labels[] = $row['name'];
-    $cat_counts[] = $row['count'];
+while ($row = mysqli_fetch_assoc($category_stats)) { $cat_labels[] = $row['name']; $cat_counts[] = $row['count'];
 }
 $total_books_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM library_books");
 $total_books = mysqli_fetch_assoc($total_books_res)['total'] ?? 0;
@@ -35,177 +18,11 @@ $available_res = mysqli_query($conn, "SELECT SUM(available_copies) as total FROM
 $available_copies = mysqli_fetch_assoc($available_res)['total'] ?? 0;
 include("../../header.php");
 ?>
-<div class="container mt-4 page-fade-in">
-    <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);">
-        <div class="d-flex align-items-center mb-2">
-            <div style="width:44px;height:44px;background:linear-gradient(135deg,#6c63ff,#a78bfa);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:16px;font-size:22px;">📚</div>
-            <div>
-                <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">Indexia Library Dashboard</h3>
-                <p class="text-muted" style="margin:0;">Full library overview — books, borrows, fines & requests.</p>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4 mb-4">
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-primary">
-                <h5>Total Books</h5>
-                <h2 class="text-gradient"><?= $total_books ?></h2>
-                <small class="text-muted">In the catalog</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-success">
-                <h5>Active Borrows</h5>
-                <h2 style="color:var(--accent-secondary);"><?= $stats['active_borrows'] ?></h2>
-                <small class="text-muted">Currently with students</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-danger">
-                <h5>Pending Requests</h5>
-                <h2 style="color:var(--accent-danger);"><?= $stats['pending_requests'] ?></h2>
-                <small class="text-muted">Awaiting approval</small>
-            </div>
-        </div>
-        <div class="col-md-3 reveal">
-            <div class="stat-card stat-info">
-                <h5>Outstanding Fines</h5>
-                <h2 style="color:var(--accent-info);">₹<?= number_format($stats['total_fines'], 2) ?></h2>
-                <small class="text-muted">Total overdue fines</small>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4 mb-4">
-        <div class="col-md-8 reveal">
-            <div class="glass-card-light h-100">
-                <h5 class="mb-4" style="font-weight:600;">⏳ Pending Borrow Requests</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Book</th>
-                                <th>Requested</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (mysqli_num_rows($pending_requests) > 0): ?>
-                                <?php while($row = mysqli_fetch_assoc($pending_requests)): ?>
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold"><?= htmlspecialchars($row['full_name']) ?></div>
-                                        <small class="text-muted">@<?= htmlspecialchars($row['username']) ?></small>
-                                    </td>
-                                    <td><?= htmlspecialchars($row['title']) ?></td>
-                                    <td><?= date('d M, Y', strtotime($row['borrow_date'])) ?></td>
-                                    <td>
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    </td>
-                                </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr><td colspan="4" class="text-center text-muted py-3">No pending requests 🎉</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-end mt-3">
-                    <a href="borrows.php" class="btn btn-sm btn-outline-primary">Manage All Borrows</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light h-100">
-                <h5 class="mb-4" style="font-weight:600;">📊 Books by Category</h5>
-                <canvas id="categoryChart" style="max-height:200px;"></canvas>
-                <div class="mt-3">
-                    <?php foreach($cat_labels as $i => $label): ?>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="text-muted" style="font-size:0.85rem;"><?= htmlspecialchars($label) ?></span>
-                        <span class="fw-bold"><?= $cat_counts[$i] ?></span>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-6 reveal">
-            <div class="glass-card-light">
-                <h5 class="mb-4" style="font-weight:600;">🚨 Overdue Books</h5>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Book</th>
-                                <th>Due Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (mysqli_num_rows($overdue_books) > 0): ?>
-                                <?php while($row = mysqli_fetch_assoc($overdue_books)): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['full_name']) ?></td>
-                                    <td><?= htmlspecialchars($row['title']) ?></td>
-                                    <td><span class="badge bg-danger"><?= date('d M', strtotime($row['due_date'])) ?></span></td>
-                                </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr><td colspan="3" class="text-center text-muted">No overdue books!</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-end mt-2">
-                    <a href="fines.php" class="btn btn-sm btn-outline-danger">View All Fines</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 reveal">
-            <div class="glass-card-light">
-                <h5 class="mb-4" style="font-weight:600;">⚡ Quick Actions</h5>
-                <div class="row g-2">
-                    <div class="col-6">
-                        <a href="manage_books.php" class="btn btn-gradient w-100">Manage Books</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="borrows.php" class="btn btn-outline-primary w-100">Borrows</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="categories.php" class="btn btn-outline-info w-100">Categories</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="fines.php" class="btn btn-outline-danger w-100">Fines</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="suggestions.php" class="btn btn-outline-warning w-100">Suggestions</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="reports.php" class="btn btn-outline-secondary w-100">Reports</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);"> <div class="d-flex align-items-center mb-2"> <div style="width:44px;height:44px;background:linear-gradient(135deg,#6c63ff,#a78bfa);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:16px;font-size:22px;">📚</div> <div> <h3 style="font-weight:700; color:var(--inner-heading); margin:0;">Indexia Library Dashboard</h3> <p class="text-muted" style="margin:0;">Full library overview — books, borrows, fines & requests.</p> </div> </div> </div> <div class="row g-4 mb-4"> <div class="col-md-3 reveal"> <div class="stat-card stat-primary"> <h5>Total Books</h5> <h2 class="text-gradient"><?= $total_books ?></h2> <small class="text-muted">In the catalog</small> </div> </div> <div class="col-md-3 reveal"> <div class="stat-card stat-success"> <h5>Active Borrows</h5> <h2 style="color:var(--accent-secondary);"><?= $stats['active_borrows'] ?></h2> <small class="text-muted">Currently with students</small> </div> </div> <div class="col-md-3 reveal"> <div class="stat-card stat-danger"> <h5>Pending Requests</h5> <h2 style="color:var(--accent-danger);"><?= $stats['pending_requests'] ?></h2> <small class="text-muted">Awaiting approval</small> </div> </div> <div class="col-md-3 reveal"> <div class="stat-card stat-info"> <h5>Outstanding Fines</h5> <h2 style="color:var(--accent-info);">₹<?= number_format($stats['total_fines'], 2) ?></h2> <small class="text-muted">Total overdue fines</small> </div> </div> </div> <div class="row g-4 mb-4"> <div class="col-md-8 reveal"> <div class="glass-card-light h-100"> <h5 class="mb-4" style="font-weight:600;">⏳ Pending Borrow Requests</h5> <div class="table-responsive"> <table class="table table-hover align-middle table-sticky"> <thead> <tr> <th>Student</th> <th>Book</th> <th>Requested</th> <th>Action</th> </tr> </thead> <tbody> <?php if (mysqli_num_rows($pending_requests) > 0): ?> <?php while($row = mysqli_fetch_assoc($pending_requests)): ?> <tr> <td> <div class="fw-bold"><?= htmlspecialchars($row['full_name']) ?></div> <small class="text-muted">@<?= htmlspecialchars($row['username']) ?></small> </td> <td><?= htmlspecialchars($row['title']) ?></td> <td><?= date('d M, Y', strtotime($row['borrow_date'])) ?></td> <td> <span class="badge bg-warning text-dark">Pending</span> </td> </tr> <?php endwhile; ?> <?php else: ?> <tr><td colspan="4" class="text-center text-muted py-3">No pending requests 🎉</td></tr> <?php endif; ?> </tbody> </table> </div> <div class="text-end mt-3"> <a href="borrows.php" class="btn btn-sm btn-outline-primary">Manage All Borrows</a> </div> </div> </div> <div class="col-md-4 reveal"> <div class="glass-card-light h-100"> <h5 class="mb-4" style="font-weight:600;">📊 Books by Category</h5> <canvas id="categoryChart" style="max-height:200px;"></canvas> <div class="mt-3"> <?php foreach($cat_labels as $i => $label): ?> <div class="d-flex justify-content-between mb-1"> <span class="text-muted" style="font-size:0.85rem;"><?= htmlspecialchars($label) ?></span> <span class="fw-bold"><?= $cat_counts[$i] ?></span> </div> <?php endforeach; ?> </div> </div> </div> </div> <div class="row g-4"> <div class="col-md-6 reveal"> <div class="glass-card-light"> <h5 class="mb-4" style="font-weight:600;">🚨 Overdue Books</h5> <div class="table-responsive"> <table class="table table-sm table-sticky"> <thead> <tr> <th>Student</th> <th>Book</th> <th>Due Date</th> </tr> </thead> <tbody> <?php if (mysqli_num_rows($overdue_books) > 0): ?> <?php while($row = mysqli_fetch_assoc($overdue_books)): ?> <tr> <td><?= htmlspecialchars($row['full_name']) ?></td> <td><?= htmlspecialchars($row['title']) ?></td> <td><span class="badge bg-danger"><?= date('d M', strtotime($row['due_date'])) ?></span></td> </tr> <?php endwhile; ?> <?php else: ?> <tr><td colspan="3" class="text-center text-muted">No overdue books!</td></tr> <?php endif; ?> </tbody> </table> </div> <div class="text-end mt-2"> <a href="fines.php" class="btn btn-sm btn-outline-danger">View All Fines</a> </div> </div> </div> <div class="col-md-6 reveal"> <div class="glass-card-light"> <h5 class="mb-4" style="font-weight:600;">⚡ Quick Actions</h5> <div class="row g-2"> <div class="col-6"> <a href="manage_books.php" class="btn btn-gradient w-100">Manage Books</a> </div> <div class="col-6"> <a href="borrows.php" class="btn btn-outline-primary w-100">Borrows</a> </div> <div class="col-6"> <a href="categories.php" class="btn btn-outline-info w-100">Categories</a> </div> <div class="col-6"> <a href="fines.php" class="btn btn-outline-danger w-100">Fines</a> </div> <div class="col-6"> <a href="suggestions.php" class="btn btn-outline-warning w-100">Suggestions</a> </div> <div class="col-6"> <a href="reports.php" class="btn btn-outline-secondary w-100">Reports</a> </div> </div> </div> </div> </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-new Chart(document.getElementById('categoryChart'), {
-    type: 'doughnut',
-    data: {
-        labels: <?= json_encode($cat_labels) ?>,
-        datasets: [{
-            data: <?= json_encode($cat_counts) ?>,
-            backgroundColor: ['#6c63ff','#00e676','#ffab40','#ff5252','#29b6f6','#ab47bc'],
-            borderWidth: 0
-        }]
-    },
-    options: {
-        plugins: { legend: { display: false } },
-        cutout: '70%'
-    }
+new Chart(document.getElementById('categoryChart'), { type: 'doughnut', data: { labels: <?= json_encode($cat_labels) ?>, datasets: [{ data: <?= json_encode($cat_counts) ?>, backgroundColor: ['#6c63ff','#00e676','#ffab40','#ff5252','#29b6f6','#ab47bc'], borderWidth: 0 }] }, options: { plugins: { legend: { display: false } }, cutout: '70%' }
 });
 </script>
 <?php include("../../footer.php"); ?>

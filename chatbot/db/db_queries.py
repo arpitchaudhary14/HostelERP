@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        user=os.getenv("DB_USER", "root"),
-        password="Arpit@123",
+        host=os.getenv("DB_HOST", "mysql-db"),
+        user=os.getenv("DB_USER", "hostelerp"),
+        password=os.getenv("DB_PASS", "hostelerp123"),
         database=os.getenv("DB_NAME", "hostelerp_db")
     )
 def get_user_data(user_id):

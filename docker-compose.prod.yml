@@ -1,0 +1,199 @@
+services:
+  # ==========================================================================
+  # PHP Application Service (Production)
+  # ==========================================================================
+  php-app:
+    image: arpit00011/hostelerp-app:1.0.0
+    container_name: hostelerp-app-prod
+    ports:
+      - "8080:80"
+    environment:
+      # Database configuration (REQUIRED - no defaults)
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      
+      # Mail configuration (REQUIRED - no defaults for secrets)
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-HostelERP}
+      
+      # OAuth configuration (REQUIRED for auth features)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      
+      MS_CLIENT_ID: ${MS_CLIENT_ID}
+      MS_CLIENT_SECRET: ${MS_CLIENT_SECRET}
+      MS_REDIRECT_URI: ${MS_REDIRECT_URI}
+      
+      # API keys (REQUIRED - no defaults)
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+      
+      # Application host for email links and redirects
+      APP_HOST: ${APP_HOST}
+    
+    volumes:
+      # PRODUCTION: Code is baked into image (COPY in Dockerfile)
+      # No bind mounts to prevent accidental code modifications
+      
+      # Named volume: persistent session storage
+      - php_sessions:/var/lib/php/sessions
+      
+      # Named volume: persistent uploads
+      - uploads:/var/www/html/uploads
+    
+    networks:
+      - hostelerp-net
+    
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost/index.php') ? 0 : 1);"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    
+    restart: always
+    
+    # Production: explicit resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ==========================================================================
+  # MySQL Database Service (Production)
+  # ==========================================================================
+  mysql-db:
+    image: mysql:8.4.10
+    container_name: hostelerp-db-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_INITDB_SKIP_TZINFO: "yes"
+    
+    volumes:
+      # Named volume: persistent database data
+      - mysql_data:/var/lib/mysql
+      
+      # SQL initialization script (auto-imported on first startup)
+      - ./hostelerp_db.sql:/docker-entrypoint-initdb.d/hostelerp_db.sql:ro
+    
+    networks:
+      - hostelerp-net
+    
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASS}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    restart: always
+    
+    # Production: explicit resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ==========================================================================
+  # LEON Chatbot API Service (Production)
+  # ==========================================================================
+  leon-api:
+    image: arpit00011/hostelerp-leon:1.0.0
+    container_name: hostelerp-leon-prod
+    environment:
+      # Database configuration
+      MYSQL_HOST: mysql-db
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      
+      # API keys
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      
+      # Python runtime environment variables
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      
+      # Flask configuration (production mode)
+      FLASK_ENV: production
+    
+    volumes:
+      # PRODUCTION: Code is baked into image (COPY in Dockerfile.leon)
+      # No bind mounts to prevent accidental code modifications
+      # Optional: mount read-only config if needed
+      # - ./chatbot/config:/app/config:ro
+    
+    networks:
+      - hostelerp-net
+    
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    restart: always
+    
+    # Production: explicit resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+# ============================================================================
+# Networks
+# ============================================================================
+# Default bridge network with automatic DNS resolution.
+# Services connect via container names (mysql-db, leon-api, etc.)
+# Custom subnet not required; removed for simplicity.
+# ============================================================================
+networks:
+  hostelerp-net:
+    driver: bridge
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  mysql_data:
+    driver: local
+  
+  php_sessions:
+    driver: local
+  
+  uploads:
+    driver: local

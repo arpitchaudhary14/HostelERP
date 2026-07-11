@@ -2,43 +2,6 @@
 session_start();
 include '../header.php';
 ?>
-<div class="container mt-5 pt-4">
-    <div class="row justify-content-center reveal">
-        <div class="col-md-8">
-            <div class="glass-card-light p-5 shadow-lg border-0" style="border-top: 5px solid #0ea5e9 !important;">
-                <div class="text-center mb-5">
-                    <img src="/WebTechProject/assets/images/Cleanly_Logo.jpeg" height="80" class="mb-3 rounded-circle shadow-sm">
-                    <h2 class="fw-bold">Cleanly Operational Guidelines</h2>
-                    <p class="text-muted">Standards of service and code of conduct for laundry residents.</p>
-                </div>
-                <div class="guideline-section mb-4">
-                    <h5 class="fw-bold text-primary"><i class="bi bi-clock-history me-2"></i> 1. Collection & Delivery Timings</h5>
-                    <ul class="text-muted small">
-                        <li>Clothes must be dropped at the wing collection point between **08:00 AM and 10:00 AM**.</li>
-                        <li>Standard processing time is **48 hours**. Express 24-hour delivery is only available for Elite plan members.</li>
-                    </ul>
-                </div>
-                <div class="guideline-section mb-4">
-                    <h5 class="fw-bold text-primary"><i class="bi bi-shield-check me-2"></i> 2. User Responsibility</h5>
-                    <ul class="text-muted small">
-                        <li>**Check Pockets:** Ensure no valuables (Cash, Coins, IDs, Electronics) are left in the pockets. Cleanly is not responsible for items lost during the wash.</li>
-                        <li>**Stain Reporting:** Any heavy stains (Ink, Oil, Blood) must be reported at the time of collection.</li>
-                        <li>**Color Bleeding:** Cleanly takes standard precautions, but is not responsible for color bleeding in cheap or non-standard fabrics.</li>
-                    </ul>
-                </div>
-                <div class="guideline-section mb-4">
-                    <h5 class="fw-bold text-primary"><i class="bi bi-info-circle me-2"></i> 3. Subscription & Billing</h5>
-                    <ul class="text-muted small">
-                        <li>One subscription is valid for **30 days** or until the clothes limit is exhausted, whichever is earlier.</li>
-                        <li>Remaining clothes do not carry forward to the next month's subscription.</li>
-                        <li>Payments once made for a plan are **non-refundable**.</li>
-                    </ul>
-                </div>
-                <div class="mt-5 p-3 bg-light rounded-3 text-center border">
-                    <p class="mb-0 text-muted small">By using Cleanly services, you agree to the above terms and conditions. For support, contact the Laundry Warden.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-5 pt-4"> <div class="row justify-content-center reveal"> <div class="col-md-8"> <div class="glass-card-light p-5 shadow-lg border-0" style="border-top: 5px solid #0ea5e9 !important;"> <div class="text-center mb-5"> <img src="/assets/images/Cleanly_Logo.jpeg" height="80" class="mb-3 rounded-circle shadow-sm"> <h2 class="fw-bold">Cleanly Operational Guidelines</h2> <p class="text-muted">Standards of service and code of conduct for laundry residents.</p> </div> <div class="guideline-section mb-4"> <h5 class="fw-bold text-primary"><i class="bi bi-clock-history me-2"></i> 1. Collection & Delivery Timings</h5> <ul class="text-muted small"> <li>Clothes must be dropped at the wing collection point between **08:00 AM and 10:00 AM**.</li> <li>Standard processing time is **48 hours**. Express 24-hour delivery is only available for Elite plan members.</li> </ul> </div> <div class="guideline-section mb-4"> <h5 class="fw-bold text-primary"><i class="bi bi-shield-check me-2"></i> 2. User Responsibility</h5> <ul class="text-muted small"> <li>**Check Pockets:** Ensure no valuables (Cash, Coins, IDs, Electronics) are left in the pockets. Cleanly is not responsible for items lost during the wash.</li> <li>**Stain Reporting:** Any heavy stains (Ink, Oil, Blood) must be reported at the time of collection.</li> <li>**Color Bleeding:** Cleanly takes standard precautions, but is not responsible for color bleeding in cheap or non-standard fabrics.</li> </ul> </div> <div class="guideline-section mb-4"> <h5 class="fw-bold text-primary"><i class="bi bi-info-circle me-2"></i> 3. Subscription & Billing</h5> <ul class="text-muted small"> <li>One subscription is valid for **30 days** or until the clothes limit is exhausted, whichever is earlier.</li> <li>Remaining clothes do not carry forward to the next month's subscription.</li> <li>Payments once made for a plan are **non-refundable**.</li> </ul> </div> <div class="mt-5 p-3 rounded-3 text-center border"> <p class="mb-0 text-muted small">By using Cleanly services, you agree to the above terms and conditions. For support, contact the Laundry Warden.</p> </div> </div> </div> </div>
 </div>
 <?php include '../footer.php'; ?>

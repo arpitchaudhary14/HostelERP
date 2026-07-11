@@ -1,17 +1,11 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role']!='warden' && $_SESSION['role']!='admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role']!='warden' && $_SESSION['role']!='admin'){ header("Location: ../dashboard.php"); exit();
 }
-if(isset($_GET['resolve'])){
-    $id = intval($_GET['resolve']);
-    mysqli_query($conn,"UPDATE complaints SET status='Approved' WHERE id='$id'");
+if(isset($_GET['resolve'])){ $id = intval($_GET['resolve']); mysqli_query($conn,"UPDATE complaints SET status='Approved' WHERE id='$id'");
 }
-if(isset($_GET['reject'])){
-    $id = intval($_GET['reject']);
-    mysqli_query($conn,"UPDATE complaints SET status='Rejected' WHERE id='$id'");
+if(isset($_GET['reject'])){ $id = intval($_GET['reject']); mysqli_query($conn,"UPDATE complaints SET status='Rejected' WHERE id='$id'");
 }
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "
@@ -19,9 +13,7 @@ SELECT complaints.*, CONCAT(users.first_name,' ',COALESCE(users.last_name,'')) a
 FROM complaints
 JOIN users ON complaints.student_id = users.id
 ";
-if(!empty($search)){
-    $query .= " WHERE complaints.status LIKE '%$search%'
-                OR CONCAT(users.first_name,' ',users.last_name) LIKE '%$search%'";
+if(!empty($search)){ $query .= " WHERE complaints.status LIKE '%$search%' OR CONCAT(users.first_name,' ',users.last_name) LIKE '%$search%'";
 }
 $query .= " ORDER BY complaints.created_at DESC";
 $result = mysqli_query($conn,$query);
@@ -42,7 +34,7 @@ value="<?= htmlspecialchars($search) ?>">
 </div>
 </div>
 </form>
-<table class="table table-bordered">
+<table class="table table-bordered table-sticky">
 <tr>
 <th>Student</th>
 <th>Message</th>
@@ -56,10 +48,8 @@ value="<?= htmlspecialchars($search) ?>">
 <td><?= $row['status'] ?></td>
 <td>
 <?php if($row['status']=="Pending"){ ?>
-<a href="?resolve=<?= $row['id'] ?>" 
-class="btn btn-success btn-sm">Approve</a>
-<a href="?reject=<?= $row['id'] ?>" 
-class="btn btn-danger btn-sm">Reject</a>
+<a href="?resolve=<?= $row['id'] ?>" class="btn btn-success btn-sm">Approve</a>
+<a href="?reject=<?= $row['id'] ?>" class="btn btn-danger btn-sm">Reject</a>
 <?php } ?>
 </td>
 </tr>

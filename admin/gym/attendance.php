@@ -1,186 +1,19 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /WebTechProject/login.php");
-    exit();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: /login.php"); exit();
 }
 require_once "../../db.php";
 require_once "../../gym/includes/gym_functions.php";
 $message = "";
-if (isset($_POST['check_in'])) {
-    $uid = intval($_POST['user_id']);
-    $date = date('Y-m-d');
-    $time = date('H:i:s');
-    $check = mysqli_query($conn, "SELECT id FROM gym_attendance WHERE user_id = $uid AND date = '$date' AND check_out_time IS NULL");
-    if (mysqli_num_rows($check) == 0) {
-        $query = "INSERT INTO gym_attendance (user_id, date, check_in_time) VALUES ($uid, '$date', '$time')";
-        if (mysqli_query($conn, $query)) {
-            $message = "Checked in successfully!";
-        }
-    } else {
-        $message = "User is already checked in!";
-    }
+if (isset($_POST['check_in'])) { $uid = intval($_POST['user_id']); $date = date('Y-m-d'); $time = date('H:i:s'); $check = mysqli_query($conn, "SELECT id FROM gym_attendance WHERE user_id = $uid AND date = '$date' AND check_out_time IS NULL"); if (mysqli_num_rows($check) == 0) { $query = "INSERT INTO gym_attendance (user_id, date, check_in_time) VALUES ($uid, '$date', '$time')"; if (mysqli_query($conn, $query)) { $message = "Checked in successfully!"; } } else { $message = "User is already checked in!"; }
 }
-if (isset($_GET['checkout'])) {
-    $id = intval($_GET['checkout']);
-    $time = date('H:i:s');
-    mysqli_query($conn, "UPDATE gym_attendance SET check_out_time = '$time' WHERE id = $id");
-    header("Location: attendance.php");
-    exit();
+if (isset($_GET['checkout'])) { $id = intval($_GET['checkout']); $time = date('H:i:s'); mysqli_query($conn, "UPDATE gym_attendance SET check_out_time = '$time' WHERE id = $id"); header("Location: attendance.php"); exit();
 }
-$active_members = mysqli_query($conn, "SELECT u.id, u.full_name 
-                                       FROM users u 
-                                       JOIN gym_subscriptions s ON u.id = s.user_id 
-                                       WHERE s.status = 'active'");
-$today_logs = mysqli_query($conn, "SELECT a.*, u.full_name 
-                                   FROM gym_attendance a 
-                                   JOIN users u ON a.user_id = u.id 
-                                   WHERE a.date = CURDATE() 
-                                   ORDER BY a.check_in_time DESC");
-$history = mysqli_query($conn, "SELECT a.*, u.full_name 
-                                FROM gym_attendance a 
-                                JOIN users u ON a.user_id = u.id 
-                                ORDER BY a.date DESC, a.check_in_time DESC LIMIT 50");
+$active_members = mysqli_query($conn, "SELECT u.id, u.full_name FROM users u JOIN gym_subscriptions s ON u.id = s.user_id WHERE s.status = 'active'");
+$today_logs = mysqli_query($conn, "SELECT a.*, u.full_name FROM gym_attendance a JOIN users u ON a.user_id = u.id WHERE a.date = CURDATE() ORDER BY a.check_in_time DESC");
+$history = mysqli_query($conn, "SELECT a.*, u.full_name FROM gym_attendance a JOIN users u ON a.user_id = u.id ORDER BY a.date DESC, a.check_in_time DESC LIMIT 50");
 ?>
 <?php include("../../header.php"); ?>
-<div class="container mt-4 page-fade-in">
-    <?php 
-    $admin_active = get_active_membership($conn, $_SESSION['user_id']);
-    $admin_session = mysqli_fetch_assoc(mysqli_query($conn, "SELECT id FROM gym_attendance WHERE user_id = ".$_SESSION['user_id']." AND date = CURDATE() AND check_out_time IS NULL"));
-    ?>
-    <div class="glass-card-light mb-4 reveal">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="mb-0 fw-bold">Gym Attendance Management</h4>
-            <form method="POST" action="">
-                <input type="hidden" name="user_id" value="<?= $_SESSION['user_id'] ?>">
-                <button type="submit" name="check_in" class="btn <?= $admin_session ? 'btn-success disabled' : 'btn-gradient' ?> rounded-pill px-4">
-                    <i class="bi bi-person-check me-2"></i>
-                    <?= $admin_session ? 'I am in the Gym' : 'Check Me In' ?>
-                </button>
-            </form>
-        </div>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-4 reveal">
-            <div class="glass-card-light">
-                <h4 class="mb-4" style="font-weight:700;">Manual Check-in</h4>
-                <?php if($message){ ?>
-                    <div class="alert alert-info"><?= $message ?></div>
-                <?php } ?>
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Select Active Member</label>
-                        <select name="user_id" class="form-select" required>
-                            <option value="">Choose member...</option>
-                            <?php while($m = mysqli_fetch_assoc($active_members)){ ?>
-                                <option value="<?= $m['id'] ?>"><?= htmlspecialchars($m['full_name']) ?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
-                    <button type="submit" name="check_in" class="btn btn-gradient w-100">Check In Now</button>
-                </form>
-            </div>
-            <div class="glass-card-light mt-4">
-                <h5 class="mb-3" style="font-weight:600;">Currently In Gym</h5>
-                <div class="list-group list-group-flush bg-transparent">
-                    <?php 
-                    if(mysqli_num_rows($today_logs) > 0) {
-                        mysqli_data_seek($today_logs, 0);
-                    }
-                    $in_gym = 0;
-                    while($log = mysqli_fetch_assoc($today_logs)){ 
-                        if(!$log['check_out_time']){
-                            $in_gym++;
-                    ?>
-                    <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-0 px-0">
-                        <div>
-                            <div class="fw-bold"><?= htmlspecialchars($log['full_name']) ?></div>
-                            <small class="text-muted">In: <?= date('h:i A', strtotime($log['check_in_time'])) ?></small>
-                        </div>
-                        <a href="?checkout=<?= $log['id'] ?>" class="btn btn-sm btn-outline-danger rounded-pill">Check Out</a>
-                    </div>
-                    <?php }} ?>
-                    <?php if($in_gym == 0){ ?>
-                        <p class="text-muted small">No members currently in the gym.</p>
-                    <?php } ?>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-8 reveal">
-            <div class="glass-card-light">
-                <ul class="nav nav-pills mb-4" id="attendanceTabs">
-                    <li class="nav-item">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#today">Today's Logs</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history">Full History</button>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="today">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Member</th>
-                                        <th>In Time</th>
-                                        <th>Out Time</th>
-                                        <th>Duration</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                    if(mysqli_num_rows($today_logs) > 0) {
-                                        mysqli_data_seek($today_logs, 0);
-                                    }
-                                    while($row = mysqli_fetch_assoc($today_logs)){ ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($row['full_name']) ?></td>
-                                        <td><?= date('h:i A', strtotime($row['check_in_time'])) ?></td>
-                                        <td><?= $row['check_out_time'] ? date('h:i A', strtotime($row['check_out_time'])) : '<span class="text-success fw-bold">Active</span>' ?></td>
-                                        <td>
-                                            <?php 
-                                            if($row['check_out_time']){
-                                                $start = strtotime($row['check_in_time']);
-                                                $end = strtotime($row['check_out_time']);
-                                                $diff = $end - $start;
-                                                echo floor($diff / 60) . " mins";
-                                            } else { echo "-"; }
-                                            ?>
-                                        </td>
-                                    </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="history">
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Member</th>
-                                        <th>In</th>
-                                        <th>Out</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while($row = mysqli_fetch_assoc($history)){ ?>
-                                    <tr>
-                                        <td><?= date('d M, Y', strtotime($row['date'])) ?></td>
-                                        <td><?= htmlspecialchars($row['full_name']) ?></td>
-                                        <td><?= date('h:i A', strtotime($row['check_in_time'])) ?></td>
-                                        <td><?= $row['check_out_time'] ? date('h:i A', strtotime($row['check_out_time'])) : '-' ?></td>
-                                    </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container mt-4 page-fade-in"> <?php $admin_active = get_active_membership($conn, $_SESSION['user_id']); $admin_session = mysqli_fetch_assoc(mysqli_query($conn, "SELECT id FROM gym_attendance WHERE user_id = ".$_SESSION['user_id']." AND date = CURDATE() AND check_out_time IS NULL")); ?> <div class="glass-card-light mb-4 reveal"> <div class="d-flex justify-content-between align-items-center"> <h4 class="mb-0 fw-bold">Gym Attendance Management</h4> <form method="POST" action=""> <input type="hidden" name="user_id" value="<?= $_SESSION['user_id'] ?>"> <button type="submit" name="check_in" class="btn <?= $admin_session ? 'btn-success disabled' : 'btn-gradient' ?> rounded-pill px-4"> <i class="bi bi-person-check me-2"></i> <?= $admin_session ? 'I am in the Gym' : 'Check Me In' ?> </button> </form> </div> </div> <div class="row g-4"> <div class="col-md-4 reveal"> <div class="glass-card-light"> <h4 class="mb-4" style="font-weight:700;">Manual Check-in</h4> <?php if($message){ ?> <div class="alert alert-info"><?= $message ?></div> <?php } ?> <form method="POST"> <div class="mb-3"> <label class="form-label">Select Active Member</label> <select name="user_id" class="form-select" required> <option value="">Choose member...</option> <?php while($m = mysqli_fetch_assoc($active_members)){ ?> <option value="<?= $m['id'] ?>"><?= htmlspecialchars($m['full_name']) ?></option> <?php } ?> </select> </div> <button type="submit" name="check_in" class="btn btn-gradient w-100">Check In Now</button> </form> </div> <div class="glass-card-light mt-4"> <h5 class="mb-3" style="font-weight:600;">Currently In Gym</h5> <div class="list-group list-group-flush bg-transparent"> <?php if(mysqli_num_rows($today_logs) > 0) { mysqli_data_seek($today_logs, 0); } $in_gym = 0; while($log = mysqli_fetch_assoc($today_logs)){ if(!$log['check_out_time']){ $in_gym++; ?> <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-0 px-0"> <div> <div class="fw-bold"><?= htmlspecialchars($log['full_name']) ?></div> <small class="text-muted">In: <?= date('h:i A', strtotime($log['check_in_time'])) ?></small> </div> <a href="?checkout=<?= $log['id'] ?>" class="btn btn-sm btn-outline-danger rounded-pill">Check Out</a> </div> <?php }} ?> <?php if($in_gym == 0){ ?> <p class="text-muted small">No members currently in the gym.</p> <?php } ?> </div> </div> </div> <div class="col-md-8 reveal"> <div class="glass-card-light"> <ul class="nav nav-pills mb-4" id="attendanceTabs"> <li class="nav-item"> <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#today">Today's Logs</button> </li> <li class="nav-item"> <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history">Full History</button> </li> </ul> <div class="tab-content"> <div class="tab-pane fade show active" id="today"> <div class="table-responsive"> <table class="table table-hover table-sticky"> <thead> <tr> <th>Member</th> <th>In Time</th> <th>Out Time</th> <th>Duration</th> </tr> </thead> <tbody> <?php if(mysqli_num_rows($today_logs) > 0) { mysqli_data_seek($today_logs, 0); } while($row = mysqli_fetch_assoc($today_logs)){ ?> <tr> <td><?= htmlspecialchars($row['full_name']) ?></td> <td><?= date('h:i A', strtotime($row['check_in_time'])) ?></td> <td><?= $row['check_out_time'] ? date('h:i A', strtotime($row['check_out_time'])) : '<span class="text-success fw-bold">Active</span>' ?></td> <td> <?php if($row['check_out_time']){ $start = strtotime($row['check_in_time']); $end = strtotime($row['check_out_time']); $diff = $end - $start; echo floor($diff / 60) . " mins"; } else { echo "-"; } ?> </td> </tr> <?php } ?> </tbody> </table> </div> </div> <div class="tab-pane fade" id="history"> <div class="table-responsive"> <table class="table table-sm table-sticky"> <thead> <tr> <th>Date</th> <th>Member</th> <th>In</th> <th>Out</th> </tr> </thead> <tbody> <?php while($row = mysqli_fetch_assoc($history)){ ?> <tr> <td><?= date('d M, Y', strtotime($row['date'])) ?></td> <td><?= htmlspecialchars($row['full_name']) ?></td> <td><?= date('h:i A', strtotime($row['check_in_time'])) ?></td> <td><?= $row['check_out_time'] ? date('h:i A', strtotime($row['check_out_time'])) : '-' ?></td> </tr> <?php } ?> </tbody> </table> </div> </div> </div> </div> </div> </div>
 </div>
 <?php include("../../footer.php"); ?>

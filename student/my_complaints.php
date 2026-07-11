@@ -4,8 +4,7 @@ include("../db.php");
 $user_id = $_SESSION['user_id'];
 $search = mysqli_real_escape_string($conn, $_GET['search'] ?? '');
 $query = "SELECT * FROM complaints WHERE student_id='$user_id'";
-if(!empty($search)){
-    $query .= " AND status LIKE '%$search%'";
+if(!empty($search)){ $query .= " AND status LIKE '%$search%'";
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
@@ -29,7 +28,7 @@ value="<?= htmlspecialchars($search) ?>">
 <?php if(mysqli_num_rows($result) == 0){ ?>
 <div class="alert alert-info">No complaints found.</div>
 <?php } else { ?>
-<table class="table table-bordered table-hover">
+<table class="table table-bordered table-hover table-sticky">
 <tr>
 <th>Subject</th>
 <th>Message</th>

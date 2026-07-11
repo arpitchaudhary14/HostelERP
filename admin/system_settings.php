@@ -1,9 +1,7 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'admin'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
 $total_students = mysqli_fetch_assoc(mysqli_query($conn,
 "SELECT COUNT(*) as total FROM users WHERE role='student'"))['total'];

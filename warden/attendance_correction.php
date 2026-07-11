@@ -1,46 +1,12 @@
 <?php
 include("../session_check.php");
 include("../db.php");
-if($_SESSION['role'] != 'warden'){
-    header("Location: ../dashboard.php");
-    exit();
+if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit();
 }
 $user_id = $_SESSION['user_id'];
 $prefill_date = isset($_GET['date']) ? $_GET['date'] : '';
 $prefill_current = isset($_GET['current']) ? $_GET['current'] : '';
-if(isset($_POST['submit_correction'])){
-    validate_csrf();
-    $corr_date = $_POST['correction_date'];
-    $current_st = $_POST['current_status'];
-    $requested_st = $_POST['requested_status'];
-    $reason = trim($_POST['reason']);
-    $allowed = ['present','absent','leave'];
-    if(empty($corr_date) || empty($reason)){
-        $error = "Please fill all fields.";
-    } elseif(!in_array($current_st, $allowed) || !in_array($requested_st, $allowed)){
-        $error = "Invalid status selected.";
-    } elseif($current_st === $requested_st){
-        $error = "Requested status is the same as current status.";
-    } elseif($corr_date === date('Y-m-d')){
-        $error = "Same-day corrections should be resolved directly by Admin.";
-    } else {
-        $chk = mysqli_prepare($conn, "SELECT id FROM attendance_corrections WHERE user_id=? AND date=? AND status='Pending'");
-        mysqli_stmt_bind_param($chk, "is", $user_id, $corr_date);
-        mysqli_stmt_execute($chk);
-        $chk_r = mysqli_stmt_get_result($chk);
-        if(mysqli_num_rows($chk_r) > 0){
-            $error = "A pending correction request already exists for this date.";
-        } else {
-            $stmt = mysqli_prepare($conn, "INSERT INTO attendance_corrections (user_id, role, date, current_status, requested_status, reason) VALUES (?,?,?,?,?,?)");
-            $role = 'warden';
-            mysqli_stmt_bind_param($stmt, "isssss", $user_id, $role, $corr_date, $current_st, $requested_st, $reason);
-            if(mysqli_stmt_execute($stmt)){
-                $success = "Correction request submitted. Awaiting Admin approval.";
-            } else {
-                $error = "Something went wrong. Please try again.";
-            }
-        }
-    }
+if(isset($_POST['submit_correction'])){ validate_csrf(); $corr_date = $_POST['correction_date']; $current_st = $_POST['current_status']; $requested_st = $_POST['requested_status']; $reason = trim($_POST['reason']); $allowed = ['present','absent','leave']; if(empty($corr_date) || empty($reason)){ $error = "Please fill all fields."; } elseif(!in_array($current_st, $allowed) || !in_array($requested_st, $allowed)){ $error = "Invalid status selected."; } elseif($current_st === $requested_st){ $error = "Requested status is the same as current status."; } elseif($corr_date === date('Y-m-d')){ $error = "Same-day corrections should be resolved directly by Admin."; } else { $chk = mysqli_prepare($conn, "SELECT id FROM attendance_corrections WHERE user_id=? AND date=? AND status='Pending'"); mysqli_stmt_bind_param($chk, "is", $user_id, $corr_date); mysqli_stmt_execute($chk); $chk_r = mysqli_stmt_get_result($chk); if(mysqli_num_rows($chk_r) > 0){ $error = "A pending correction request already exists for this date."; } else { $stmt = mysqli_prepare($conn, "INSERT INTO attendance_corrections (user_id, role, date, current_status, requested_status, reason) VALUES (?,?,?,?,?,?)"); $role = 'warden'; mysqli_stmt_bind_param($stmt, "isssss", $user_id, $role, $corr_date, $current_st, $requested_st, $reason); if(mysqli_stmt_execute($stmt)){ $success = "Correction request submitted. Awaiting Admin approval."; } else { $error = "Something went wrong. Please try again."; } } }
 }
 include("../header.php");
 ?>
@@ -49,7 +15,7 @@ include("../header.php");
 <h4 class="mb-3" style="font-weight:700; ">📝 Request Attendance Correction</h4>
 <p style="font-size:0.9rem;">Submit a formal request to Admin to correct a past attendance record.</p>
 <?php if(isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
-<?php if(isset($error))   echo "<div class='alert alert-danger'>$error</div>"; ?>
+<?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
 <form method="POST">
 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 <div class="mb-3">
