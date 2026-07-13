@@ -1,4 +1,5 @@
 # HostelERP
+### **[Access Live Demo Here](https://hostelerp.eastasia.cloudapp.azure.com/)**
 A full-stack hostel management system with an AI assistant to automate student and administrative tasks.
 ## Key Features
 *   **Role-Based Access**: Specialized portals for Admins, Wardens, and Students with dynamic role-based navigation.

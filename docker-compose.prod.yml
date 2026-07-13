@@ -6,7 +6,7 @@ services:
     image: arpit00011/hostelerp-app:1.0.0
     container_name: hostelerp-app-prod
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
     environment:
       # Database configuration (REQUIRED - no defaults)
       DB_HOST: mysql-db
@@ -41,8 +41,8 @@ services:
       APP_HOST: ${APP_HOST}
     
     volumes:
-      # PRODUCTION: Code is baked into image (COPY in Dockerfile)
-      # No bind mounts to prevent accidental code modifications
+      # PRODUCTION: Code is baked into image, but we are mounting it here to bypass the disk space build issue
+      - ./WebTechProjectCode:/var/www/html
       
       # Named volume: persistent session storage
       - php_sessions:/var/lib/php/sessions
@@ -134,6 +134,7 @@ services:
       
       # API keys
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_PROXY_URL: ${GEMINI_PROXY_URL}
       
       # Python runtime environment variables
       PYTHONUNBUFFERED: "1"
@@ -141,13 +142,10 @@ services:
       
       # Flask configuration (production mode)
       FLASK_ENV: production
-    
+      
     volumes:
-      # PRODUCTION: Code is baked into image (COPY in Dockerfile.leon)
-      # No bind mounts to prevent accidental code modifications
-      # Optional: mount read-only config if needed
-      # - ./chatbot/config:/app/config:ro
-    
+      - ./WebTechProjectCode/chatbot:/app
+      
     networks:
       - hostelerp-net
     

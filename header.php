@@ -17,7 +17,7 @@ function _di(string $icon, string $href, string $label, bool $bold=false): strin
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>HostelERP</title> <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> <link rel="stylesheet" href="/assets/css/style.css?v=<?= time(); ?>"> <script>(function(){var t=localStorage.getItem('hostelerp-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+<head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>HostelERP</title> <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> <link rel="stylesheet" href="/assets/css/style.css?v=<?= time() ?>"> <script>(function(){var t=localStorage.getItem('hostelerp-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
 <body class="d-flex flex-column min-vh-100 inner-bg">
 <nav class="navbar navbar-expand-lg navbar-dark navbar-glass">

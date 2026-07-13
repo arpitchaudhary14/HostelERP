@@ -11,6 +11,10 @@ def classify_intent(query):
       - "apply", "submit", "register", "request" -> action
     """
     query_lower = query.lower()
+    # Guidance query check
+    guidance_keywords = ["how to", "how do i", "where", "guide", "click", "page", "steps", "kahan", "kaise", "view", "check", "see"]
+    is_guidance = any(gk in query_lower for gk in guidance_keywords)
+
     action_keywords = [
         "apply", "submit", "register", "request", "create", 
         "post", "verify", "assign", "collect", "delete", 
@@ -32,9 +36,12 @@ def classify_intent(query):
         "visitor", "parcel", "document", "hostel", "wing", "caretaker",
         "kennedy", "grace", "leon", "laundry policy", "laundry timings", "laundry rules"
     ]
-    for kw in action_keywords:
-        if kw in query_lower:
-            return "ACTION"
+    # PROFILE queries are always USER DATA or INFO, never an ACTION mutation
+    # Guidance requests should also skip the ACTION route to get help text instead
+    if "profile" not in query_lower and not is_guidance:
+        for kw in action_keywords:
+            if kw in query_lower:
+                return "ACTION"
     for kw in data_keywords:
         if kw in query_lower:
             return "USER DATA"

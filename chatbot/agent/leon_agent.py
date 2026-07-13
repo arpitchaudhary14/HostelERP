@@ -1,6 +1,6 @@
 import json
 import db.db_queries as db
-from rag.rag_engine import call_gemini
+from rag.rag_engine import call_llm
 def process_action(user_id, query):
     """Detect the action from Gemini and execute it via DB queries."""
     system_prompt = (
@@ -15,7 +15,7 @@ def process_action(user_id, query):
         "If you cannot detect the action, return: "
         '{"action": "unknown", "data": {}}'
     )
-    raw_response = call_gemini(system_prompt, query)
+    raw_response = call_llm(system_prompt, query)
     if "```json" in raw_response:
         raw_response = raw_response.replace("```json", "").replace("```", "").strip()
     try:
@@ -54,5 +54,5 @@ def process_action(user_id, query):
             reply_message = "I couldn't quite understand what action you want to take. Could you be more specific?"
         return reply_message
     except json.JSONDecodeError:
-        print("Invalid JSON returned by Gemini:", raw_response)
+        print("Invalid JSON returned by Groq:", raw_response)
         return "I encountered an error trying to process your action."

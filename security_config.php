@@ -7,7 +7,7 @@ if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_b
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header_remove("Content-Security-Policy");
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; frame-src 'self' https://www.google.com https://recaptcha.google.com; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.google.com https://www.gstatic.com https://generativelanguage.googleapis.com; img-src 'self' data: https:;");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com; frame-src 'self' https://www.google.com https://recaptcha.google.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' https://www.google.com https://www.gstatic.com https://generativelanguage.googleapis.com; img-src 'self' data: https:;");
 // Note: CSP allows external Google APIs (reCAPTCHA, Gemini) and internal localhost proxying.
 // LEON API calls are proxied through /api/leon/chat.php (same-origin)
 ini_set('display_errors', 0);

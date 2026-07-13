@@ -74,6 +74,7 @@ Thumbs.db
 # Environment files (security: don't bake into image)
 .env
 .env.production
+.env.prod
 .env.local
 secrets.yaml
 

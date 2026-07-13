@@ -12,7 +12,7 @@ $student = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 if(!$student){ header("Location: manage_students.php"); exit; }
 $full_name = trim(($student['first_name'] ?? '') . " " . ($student['last_name'] ?? ''));
 if(empty(trim($full_name))) $full_name = $student['full_name'] ?? 'Unknown';
-$room_stmt = mysqli_prepare($conn, "SELECT r.* FROM room_allocations ra JOIN rooms r ON ra.room_id=r.id WHERE ra.student_id=? AND ra.is_active=1 LIMIT 1");
+$room_stmt = mysqli_prepare($conn, "SELECT r.* FROM room_allocations ra JOIN rooms r ON ra.room_id=r.id WHERE ra.user_id=? AND ra.status='active' LIMIT 1");
 mysqli_stmt_bind_param($room_stmt, "i", $student_id);
 mysqli_stmt_execute($room_stmt);
 $room = mysqli_fetch_assoc(mysqli_stmt_get_result($room_stmt));

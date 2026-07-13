@@ -4,7 +4,7 @@ include("../db.php");
 if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 }
 $query = "
-SELECT feedback.*, CONCAT(users.first_name,' ',COALESCE(users.last_name,'')) as full_name
+SELECT feedback.*, CONCAT(users.first_name,' ',COALESCE(users.last_name,'')) as full_name, users.role
 FROM feedback
 JOIN users ON feedback.user_id = users.id
 ORDER BY feedback.created_at DESC

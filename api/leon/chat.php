@@ -1,4 +1,5 @@
 <?php
+session_start();
 /**
  * ============================================================================
  * LEON AI Chatbot Reverse Proxy Endpoint
@@ -61,6 +62,13 @@ if (!$input || !is_array($input)) {
         'message' => 'Invalid JSON payload.'
     ]);
     exit;
+}
+
+// Secure User Session Validation and User ID Injection
+if (isset($_SESSION['user_id'])) {
+    $input['user_id'] = $_SESSION['user_id'];
+} else if (!isset($input['user_id'])) {
+    $input['user_id'] = 1; // Default fallback for developer API scripts
 }
 
 if (empty($input['message']) || !is_string($input['message'])) {

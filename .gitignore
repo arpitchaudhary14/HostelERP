@@ -1,6 +1,7 @@
 # Environment and Secrets
 .env
 .env.local
+.env.prod
 # Dependency Directories
 /node_modules/
 /vendor/

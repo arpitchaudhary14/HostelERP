@@ -3,6 +3,7 @@ from flask_cors import CORS
 from core.router import route_query
 import db.db_queries as db
 import os
+import traceback
 
 app = Flask(__name__)
 CORS(app)
@@ -32,11 +33,13 @@ def health():
         conn = db.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
+        cursor.fetchone()
         cursor.close()
         conn.close()
         
         return jsonify({"status": "healthy", "service": "leon-api"}), 200
     except Exception as e:
+        traceback.print_exc()
         print(f"Health check failed: {e}")
         return jsonify({"status": "unhealthy", "error": str(e)}), 503
 

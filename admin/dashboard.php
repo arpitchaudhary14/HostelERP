@@ -64,7 +64,7 @@ $pending_warden_leaves = mysqli_fetch_assoc( mysqli_query($conn, "SELECT COUNT(*
 <h5>Complaints</h5>
 <h2 style="color:var(--accent-danger);" data-count="<?= $complaint_count ?>"><?= $complaint_count ?></h2>
 <span class="stat-sub"><?= $pending_complaints ?> pending</span>
-<a class="stat-link" href="manage_complaints.php" style="color:var(--accent-danger);">Manage <i class="bi bi-arrow-right"></i></a>
+<a class="stat-link" href="../warden/manage_complaints.php" style="color:var(--accent-danger);">Manage <i class="bi bi-arrow-right"></i></a>
 </div>
 </div>
 <div class="col-md-4 reveal">

@@ -1,0 +1,64 @@
+# HostelERP System Navigation and Feature Manual
+
+## General Pages & Profile Settings
+To access the main portal, go to the Home Page at `/index.php` or click the logo in the navbar. To view and edit your profile picture, personal details, change your account password, or inspect your login activity audit logs, navigate to the Profile Page at `/profile.php`. To contact support or administrators, visit the Contact Us Page at `/contact.php`. To log out of the system safely, click the Logout button at `/logout.php` in the top right navbar. You can toggle the visual theme between Light and Dark mode using the Theme Toggle button (id="themeToggle") next to the Contact link in the navigation bar.
+
+## Student Panel - Features & Navigation
+Students can access all student features through the Student Panel dropdown in the navigation bar:
+- Student Dashboard: Navigate to `/student/dashboard.php` to view your general hostel stats.
+- Room Details: Go to `/student/my_room.php` to view room number, roommate invites, room swap requests, and roommate agreements.
+- Attendance Check: View daily attendance records and your attendance percentages at `/student/attendance.php`.
+- Attendance Correction: Submit correction requests for any attendance errors at `/student/attendance_correction.php`.
+- Leave Requests: Submit a new leave application at `/student/leave_request.php` or view history and Warden approval status at `/student/my_leaves.php`.
+- Fees Ledger: View fee bills, due dates, payment history, and pay outstanding fees online at `/student/fees.php`.
+- Submit Complaints: Register maintenance, electrical, or plumbing complaints at `/student/submit_complaint.php` and track resolution status at `/student/my_complaints.php`.
+- Visitor Records: Track your visitors at `/student/visitors.php`.
+- Parcel Registry: Check delivered student parcels at `/student/parcels.php`.
+- Mess Menu: View the weekly breakfast, lunch, snacks, and dinner menu at `/student/mess_menu.php`.
+- System Notices & Feedback: Read official announcements at `/student/notices.php`, check alerts at `/student/notifications.php`, view uploaded files at `/student/documents.php`, and submit feedback at `/student/feedback.php`.
+
+## Warden Panel - Features & Navigation
+Wardens manage hostel operations and their own staff requests using the Warden Panel dropdown in the navigation bar:
+- Student Management: Search student profiles and export details at `/warden/manage_students.php`.
+- Room Assignment: Assign students to rooms at `/warden/assign_rooms.php` and manage room swaps or configuration details at `/warden/manage_rooms.php`.
+- Student Attendance: Mark daily student attendance records at `/warden/mark_attendance.php`.
+- Student Requests: Approve or reject student leaves at `/warden/manage_leaves.php` and manage student complaints at `/warden/manage_complaints.php`.
+- Fees Collection: Collect fee payments at `/warden/collect_fees.php`.
+- Visitor & Parcel logs: Track hostel visitors at `/warden/visitors.php` and manage parcel arrivals at `/warden/parcels.php`.
+- Notice Board: Post official notices for students at `/warden/notices.php` and manage system notifications at `/warden/notifications.php`.
+- Document Verification: Verify student identity documents at `/warden/documents.php`.
+- Warden Self-Service: View your own staff attendance at `/warden/my_attendance.php`, submit attendance correction requests at `/warden/attendance_correction.php`, request leaves at `/warden/leave_request.php`, track leave approval history at `/warden/my_leaves.php`, and submit portal feedback at `/warden/feedback.php`.
+
+## Admin Panel - Features & Navigation
+Administrators manage system configurations, roles, logs, and override options via the Admin Panel dropdown:
+- Admin Dashboard: Go to `/admin/dashboard.php` for general system statistics.
+- User Management: Add, update, or remove students, wardens, and admin accounts at `/admin/manage_users.php`.
+- Room Configuration: Configure room numbers, AC/Non-AC tiers, and capacities at `/admin/manage_rooms.php`, and check allocations history at `/admin/room_history.php`.
+- Fee Structure: Manage fee billing cycles and dues at `/admin/manage_fees.php`.
+- System & Hostel Settings: Modify general site parameters at `/admin/system_settings.php` and specific hostel configurations at `/admin/settings.php`.
+- Reports & Logs: View dynamic reports at `/admin/reports.php`, track system events at `/admin/activity_logs.php`, and inspect submitted feedback at `/admin/view_feedback.php`.
+- System Knowledge Registry: Access `/admin/chatbot/knowledge.php` to publish, update, and manage official manual protocols that synchronize with the LEON chatbot.
+- Notices: Publish official notices at `/admin/notices.php` and system notifications at `/admin/notifications.php`.
+- Warden Attendance & Leaves: Mark warden attendance at `/admin/mark_warden_attendance.php`, view history at `/admin/warden_attendance.php`, approve warden leaves at `/admin/manage_warden_leaves.php`, and approve student/warden attendance corrections at `/admin/manage_corrections.php`.
+- General Logistics & Docs: View visitor records at `/admin/visitors_records.php`, parcel delivery logs at `/admin/parcels_records.php`, and verify submitted user documents at `/admin/documents.php`.
+
+## MatrixFit Gym - Features & Navigation
+All users can access the MatrixFit Gym dropdown in the navigation bar to manage gym activities:
+- Student Gym Portal: Check membership status at `/student/gym/my_membership.php`, browse subscription plans at `/student/gym/plans.php`, meet personal trainers at `/student/gym/trainers.php`, check gym equipment operational status at `/student/gym/equipment.php`, check personal attendance at `/student/gym/attendance.php`, view your digital gym card at `/student/gym/member_card.php`, and review billing history at `/student/gym/payment_history.php`.
+- Warden Gym Portal: View warden dashboard at `/warden/gym/dashboard.php`, check current plans at `/warden/gym/plans.php`, meet trainers at `/warden/gym/trainers.php`, view equipment inventory status at `/warden/gym/equipment.php`, and check personal gym attendance at `/warden/gym/attendance.php`.
+- Admin Gym Portal: Manage gym operations at `/admin/gym/dashboard.php`, check active members list at `/admin/gym/members.php`, configure plans at `/admin/gym/plans.php`, audit active subscriptions at `/admin/gym/subscriptions.php`, coordinate trainers at `/admin/gym/trainers.php`, track gym check-ins at `/admin/gym/attendance.php`, record payments at `/admin/gym/payments.php`, and update equipment status at `/admin/gym/equipment.php`.
+- Gym Guidelines: General policies, safety rules, and operation hours are located at `/gym/guidelines.php`.
+
+## Indexia Library - Features & Navigation
+Users manage book requests and library resources via the Indexia Library dropdown:
+- Student Library Portal: View library status at `/student/library/dashboard.php`, search catalog by ISBN/Title/Author at `/student/library/catalog.php`, view borrowed books at `/student/library/my_bookshelf.php`, request library member card at `/student/library/member_card.php`, track book reservations at `/student/library/my_bookings.php`, pay overdue book fines at `/student/library/fines_history.php`, and request new acquisitions at `/student/library/suggest.php`.
+- Warden Library Portal: Access warden dashboard at `/warden/library/dashboard.php`, monitor overdue book items at `/warden/library/overdue.php`, view student book suggestions at `/warden/library/suggestions.php`, and audit library inventory health at `/warden/library/audit.php`.
+- Admin Library Portal: Manage library operations at `/admin/library/dashboard.php`, catalog books at `/admin/library/manage_books.php`, manage genres at `/admin/library/categories.php`, handle book issuing/returns at `/admin/library/borrows.php`, process overdue book fines at `/admin/library/fines.php`, manage student requests at `/admin/library/suggestions.php`, and view insights report analysis at `/admin/library/reports.php`.
+- Library Rules: View book loan periods and fee structures at `/library/guidelines.php`.
+
+## Cleanly Laundry - Features & Navigation
+Users access laundry services and order tracking via the Cleanly Laundry dropdown:
+- Student Laundry Portal: Access student laundry portal at `/student/laundry/dashboard.php`, generate your digital wash pass QR-code at `/student/laundry/member_card.php`, submit a new wash request at `/student/laundry/request.php`, and track wash history and status (e.g. Processing, Ready for pickup) at `/student/laundry/history.php`.
+- Warden Laundry Portal: Track incoming wash requests at `/warden/laundry/dashboard.php`, collect laundry from students at `/warden/laundry/requests.php` (Collection Hub), dispatch clean laundry at `/warden/laundry/ready.php` (Dispatch Center), monitor commercial washer capacity at `/warden/laundry/machines.php`, and run quality control reviews at `/warden/laundry/audit.php`.
+- Admin Laundry Portal: Manage laundry operations at `/admin/laundry/dashboard.php`, configure plans at `/admin/laundry/plans.php`, manage order state at `/admin/laundry/requests.php`, audit transactions at `/admin/laundry/payments.php`, monitor commercial machines at `/admin/laundry/machines.php`, and run quality audits at `/admin/laundry/audit.php`.
+- Laundry Policies: Operational rules and drop-off guidelines are located at `/laundry/guidelines.php`.

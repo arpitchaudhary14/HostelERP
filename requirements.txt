@@ -5,3 +5,5 @@ python-dotenv
 mysql-connector-python
 scikit-learn
 google-generativeai
+faiss-cpu
+sentence-transformers
