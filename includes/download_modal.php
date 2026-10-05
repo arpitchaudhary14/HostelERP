@@ -43,7 +43,7 @@
                                 <a href="#" id="link-win-arm64-exe" class="btn btn-sm btn-outline-primary">ARM64</a>
                             </div>
                         </div>
-
+                        <div>
                             <h6 class="fw-bold">Portable Version (.zip)</h6>
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="#" id="link-win-x64-zip" class="btn btn-sm btn-dark">x64</a>
