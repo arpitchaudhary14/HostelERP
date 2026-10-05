@@ -38,27 +38,16 @@
                         <div class="mb-3">
                             <h6 class="fw-bold">Standard Installer (.exe)</h6>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-Setup-x64.exe" class="btn btn-sm btn-primary">x64 (Intel/AMD)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-Setup-ia32.exe" class="btn btn-sm btn-outline-primary">ia32 (32-bit)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-Setup-arm64.exe" class="btn btn-sm btn-outline-primary">ARM64</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-Setup-armv7l.exe" class="btn btn-sm btn-outline-primary">ARM32</a>
+                                <a href="#" id="link-win-x64-exe" class="btn btn-sm btn-primary">x64 (Intel/AMD)</a>
+                                <a href="#" id="link-win-ia32-exe" class="btn btn-sm btn-outline-primary">ia32 (32-bit)</a>
+                                <a href="#" id="link-win-arm64-exe" class="btn btn-sm btn-outline-primary">ARM64</a>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <h6 class="fw-bold">Windows Installer Package (.msi)</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-x64.msi" class="btn btn-sm btn-secondary">x64 (Intel/AMD)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-ia32.msi" class="btn btn-sm btn-outline-secondary">ia32 (32-bit)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-arm64.msi" class="btn btn-sm btn-outline-secondary">ARM64</a>
-                            </div>
-                        </div>
-
-                        <div>
                             <h6 class="fw-bold">Portable Version (.zip)</h6>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-win32-x64.zip" class="btn btn-sm btn-dark">x64</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-win32-ia32.zip" class="btn btn-sm btn-outline-dark">ia32</a>
+                                <a href="#" id="link-win-x64-zip" class="btn btn-sm btn-dark">x64</a>
+                                <a href="#" id="link-win-ia32-zip" class="btn btn-sm btn-outline-dark">ia32</a>
                             </div>
                         </div>
                     </div>
@@ -76,16 +65,8 @@
                         <div class="mb-3">
                             <h6 class="fw-bold">Disk Image (.dmg) - Recommended</h6>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-arm64.dmg" class="btn btn-sm btn-dark">Apple Silicon (M1/M2/M3/M4)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-x64.dmg" class="btn btn-sm btn-outline-dark">Intel Chip (Older Macs)</a>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h6 class="fw-bold">macOS Installer Package (.pkg)</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-arm64.pkg" class="btn btn-sm btn-secondary">Apple Silicon</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-x64.pkg" class="btn btn-sm btn-outline-secondary">Intel Chip</a>
+                                <a href="#" id="link-mac-arm64-dmg" class="btn btn-sm btn-dark">Apple Silicon (M1/M2/M3)</a>
+                                <a href="#" id="link-mac-x64-dmg" class="btn btn-sm btn-outline-dark">Intel Chip (Older Macs)</a>
                             </div>
                         </div>
                     </div>
@@ -103,16 +84,16 @@
                         <div class="mb-3">
                             <h6 class="fw-bold">Debian/Ubuntu (.deb)</h6>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP_amd64.deb" class="btn btn-sm btn-warning text-dark fw-bold">x64 (AMD64)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP_arm64.deb" class="btn btn-sm btn-outline-dark">arm64</a>
+                                <a href="#" id="link-linux-x64-deb" class="btn btn-sm btn-warning text-dark fw-bold">x64 (AMD64)</a>
+                                <a href="#" id="link-linux-arm64-deb" class="btn btn-sm btn-outline-dark">arm64</a>
                             </div>
                         </div>
 
                         <div>
                             <h6 class="fw-bold">Universal Portable (.AppImage)</h6>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-x86_64.AppImage" class="btn btn-sm btn-secondary">x64 (AMD64)</a>
-                                <a href="https://github.com/arpitchaudhary14/HostelERP/releases/latest/download/HostelERP-arm64.AppImage" class="btn btn-sm btn-outline-secondary">arm64</a>
+                                <a href="#" id="link-linux-x64-appimage" class="btn btn-sm btn-secondary">x64 (AMD64)</a>
+                                <a href="#" id="link-linux-arm64-appimage" class="btn btn-sm btn-outline-secondary">arm64</a>
                             </div>
                         </div>
                     </div>
@@ -149,6 +130,45 @@ document.addEventListener("DOMContentLoaded", function () {
       osSelect.value = detectedOS;
       showOSOptions();
   }
+
+  // Fetch real release assets from GitHub API
+  fetch("https://api.github.com/repos/arpitchaudhary14/HostelERP/releases/latest")
+    .then(response => response.json())
+    .then(data => {
+        if (!data.assets) return;
+        data.assets.forEach(asset => {
+            const name = asset.name.toLowerCase();
+            const url = asset.browser_download_url;
+            
+            // Windows
+            if(name.endsWith('.exe') && name.includes('setup')) {
+                if(name.includes('arm64')) document.getElementById('link-win-arm64-exe').href = url;
+                else if(name.includes('ia32') || name.includes('x86')) document.getElementById('link-win-ia32-exe').href = url;
+                else document.getElementById('link-win-x64-exe').href = url;
+            }
+            if(name.endsWith('.zip') && name.includes('win')) {
+                if(name.includes('ia32') || name.includes('x86')) document.getElementById('link-win-ia32-zip').href = url;
+                else document.getElementById('link-win-x64-zip').href = url;
+            }
+            
+            // macOS
+            if(name.endsWith('.dmg')) {
+                if(name.includes('arm64') || name.includes('m1') || name.includes('mac-arm64')) document.getElementById('link-mac-arm64-dmg').href = url;
+                else document.getElementById('link-mac-x64-dmg').href = url;
+            }
+            
+            // Linux
+            if(name.endsWith('.deb')) {
+                if(name.includes('arm64')) document.getElementById('link-linux-arm64-deb').href = url;
+                else document.getElementById('link-linux-x64-deb').href = url;
+            }
+            if(name.endsWith('.appimage')) {
+                if(name.includes('arm64')) document.getElementById('link-linux-arm64-appimage').href = url;
+                else document.getElementById('link-linux-x64-appimage').href = url;
+            }
+        });
+    })
+    .catch(err => console.error("Error fetching release assets:", err));
 });
 
 function showOSOptions() {
