@@ -1,5 +1,6 @@
 HOSTELERP PROPRIETARY SOFTWARE LICENSE
 ======================================
+
 Copyright (c) 2026 Arpit Chaudhary. All rights reserved.
 
 This license governs the use, modification, and distribution of the HostelERP 
@@ -19,25 +20,18 @@ specific modules for competing software is strictly prohibited.
 
 3. REDISTRIBUTION
 Redistribution of the Software, in whole or in part, is permitted only if 
-this license file remains unmodified and is included.
+this license file remains unmodified and is included in all copies. You may 
+not claim ownership or authorship of any original code provided within 
+this repository.
 
-======================================
-TERMS & CONDITIONS
-======================================
-1. Acceptance
-By installing this application, you agree to these terms. If you do not agree, do not install or use the application.
+4. DISCLAIMER OF WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-2. Usage Policy
-You agree to use this application only for its intended purpose of managing and interacting with HostelERP services.
-
-======================================
-PRIVACY POLICY
-======================================
-1. Data Collection
-We collect minimal data necessary for authentication and service delivery. This includes your session tokens and profile identifiers.
-
-2. Data Security
-All data transmitted between this desktop client and the HostelERP cloud servers is encrypted using standard protocols.
-
-3. Third-party Sharing
-We do not sell or share your personal data with any third parties under any circumstances.
+By accessing or using the Software, you acknowledge that you have read, 
+understood, and agree to be bound by these terms.

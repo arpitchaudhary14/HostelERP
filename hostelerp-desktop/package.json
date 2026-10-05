@@ -25,15 +25,15 @@
     ],
     "win": {
       "target": ["nsis", "msi"],
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
       "license": "license.txt",
-      "installerIcon": "assets/icon.ico",
-      "uninstallerIcon": "assets/icon.ico",
+      "installerIcon": "assets/icon.png",
+      "uninstallerIcon": "assets/icon.png",
       "uninstallDisplayName": "HostelERP",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
@@ -41,7 +41,7 @@
     },
     "mac": {
       "target": ["dmg", "pkg"],
-      "icon": "assets/icon.icns",
+      "icon": "assets/icon.png",
       "category": "public.app-category.education"
     },
     "linux": {
