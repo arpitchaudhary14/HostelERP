@@ -35,4 +35,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: true
           package_root: hostelerp-desktop
-          args: --config package.json
