@@ -19,8 +19,8 @@ ServerSignature Off
 </FilesMatch>
 
 # Error Documents
-ErrorDocument 400 /WebTechProject/error.php?code=400
-ErrorDocument 403 /WebTechProject/error.php?code=403
-ErrorDocument 404 /WebTechProject/error.php?code=404
-ErrorDocument 500 /WebTechProject/error.php?code=500
-ErrorDocument 503 /WebTechProject/error.php?code=503
+ErrorDocument 400 /error.php?code=400
+ErrorDocument 403 /error.php?code=403
+ErrorDocument 404 /error.php?code=404
+ErrorDocument 500 /error.php?code=500
+ErrorDocument 503 /error.php?code=503
