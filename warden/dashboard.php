@@ -38,7 +38,9 @@ $my_att = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(status='present') a
 $my_p = intval($my_att['p'] ?? 0); $my_a = intval($my_att['a'] ?? 0); $my_l = intval($my_att['l'] ?? 0); $my_t = intval($my_att['t'] ?? 0);
 $my_pct = $my_t > 0 ? round(($my_p/$my_t)*100) : 0;
 ?>
-<?php include("../header.php"); ?>
+<?php $pageTitle = 'Dashboard - HostelERP';
+$pageDesc = 'Access your Dashboard on HostelERP.';
+include("../header.php"); ?>
 <div class="container mt-4 page-fade-in">
 <div class="glass-card-light mb-4 reveal" style="padding:var(--space-xl);"> <div class="dash-welcome"> <div class="dash-welcome-icon">👋</div> <div> <h3>Welcome back, <?= htmlspecialchars($full_name) ?></h3> <p>Here's your hostel operations summary for today.</p> </div> </div>
 </div>

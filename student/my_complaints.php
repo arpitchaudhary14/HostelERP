@@ -8,6 +8,8 @@ if(!empty($search)){ $query .= " AND status LIKE '%$search%'";
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'My Complaints - HostelERP';
+$pageDesc = 'Access your My Complaints on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

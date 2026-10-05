@@ -25,6 +25,8 @@ mysqli_stmt_bind_param($comp_stmt, "i", $student_id);
 mysqli_stmt_execute($comp_stmt);
 $complaints = mysqli_fetch_all(mysqli_stmt_get_result($comp_stmt), MYSQLI_ASSOC);
 $att = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(status='present') as present, SUM(status='absent') as absent, COUNT(*) as total FROM attendance WHERE user_id=$student_id"));
+$pageTitle = 'View Student - HostelERP';
+$pageDesc = 'Access your View Student on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:800px;">

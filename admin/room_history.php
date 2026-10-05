@@ -12,6 +12,8 @@ JOIN rooms ON room_history.room_id = rooms.id
 ORDER BY room_history.assigned_on DESC
 ";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'Room History (Admin) - HostelERP';
+$pageDesc = 'Access your Room History (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

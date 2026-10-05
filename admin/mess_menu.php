@@ -14,7 +14,9 @@ while($row = mysqli_fetch_assoc($menu_result)){ $menu[$row['day_of_week']][$row[
 $days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 $meals = ['Breakfast','Lunch','Snacks','Dinner'];
 ?>
-<?php include("../header.php"); ?>
+<?php $pageTitle = 'Mess Menu (Admin) - HostelERP';
+$pageDesc = 'Access your Mess Menu (Admin) on HostelERP.';
+include("../header.php"); ?>
 <div class="container mt-4 page-fade-in"> <div class="row"> <div class="col-md-4"> <div class="glass-card-light p-4 reveal"> <h4 style="font-weight:700;">Update Menu</h4> <?php if($msg) echo "<div class='alert alert-success'>$msg</div>"; ?> <?php if($error) echo "<div class='alert alert-danger'>$error</div>"; ?> <form method="POST"> <div class="mb-3"> <label>Day of Week</label> <select name="day_of_week" class="form-select" required> <?php foreach($days as $d): ?> <option value="<?= $d ?>"><?= $d ?></option> <?php endforeach; ?> </select> </div> <div class="mb-3"> <label>Meal Type</label> <select name="meal_type" class="form-select" required> <?php foreach($meals as $m): ?> <option value="<?= $m ?>"><?= $m ?></option> <?php endforeach; ?> </select> </div> <div class="mb-3"> <label>Items</label> <textarea name="items" class="form-control" rows="3" required></textarea> </div> <button type="submit" class="btn btn-primary w-100">Save Menu</button> </form> </div> </div> <div class="col-md-8"> <div class="glass-card-light p-4 reveal" style="min-height: 400px;"> <h4 style="font-weight:700;">Weekly Mess Menu</h4> <div class="table-responsive mt-3"> <table class="table table-bordered table-hover table-sticky"> <thead class=""> <tr> <th>Day</th> <?php foreach($meals as $m): ?> <th><?= $m ?></th> <?php endforeach; ?> </tr> </thead> <tbody> <?php foreach($days as $day): ?> <tr> <td style="font-weight:600;"><?= $day ?></td> <?php foreach($meals as $m): ?> <td><?= isset($menu[$day][$m]) ? nl2br(htmlspecialchars($menu[$day][$m])) : '<span class="text-muted">Not Set</span>' ?></td> <?php endforeach; ?> </tr> <?php endforeach; ?> </tbody> </table> </div> </div> </div> </div>
 </div>
 <?php include("../footer.php"); ?>

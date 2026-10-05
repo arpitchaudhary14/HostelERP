@@ -15,6 +15,8 @@ if(!empty($search)){ $query .= " WHERE full_name LIKE '%$search%' OR CONCAT(firs
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'Manage Users (Admin) - HostelERP';
+$pageDesc = 'Access your Manage Users (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

@@ -17,6 +17,8 @@ ORDER BY ac.status = 'Pending' DESC, ac.created_at DESC
 ";
 $result = mysqli_query($conn, $query);
 $all_users = mysqli_query($conn, "SELECT id, CONCAT(first_name,' ',COALESCE(last_name,'')) as full_name, role FROM users WHERE role IN ('student','warden') ORDER BY role, first_name");
+$pageTitle = 'Manage Corrections (Admin) - HostelERP';
+$pageDesc = 'Access your Manage Corrections (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

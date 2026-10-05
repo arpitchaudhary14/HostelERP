@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . "/security_config.php";
 $role = $_SESSION['role'] ?? '';
-// Active page detection
 $_cu = strtok($_SERVER['REQUEST_URI'], '?');
 $_gy = strpos($_cu, '/gym/') !== false;
 $_lb = strpos($_cu, '/library/') !== false;
@@ -15,9 +14,21 @@ function _ia(string $p): string { global $_cu; return ($_cu===$p) ? ' active' : 
 function _di(string $icon, string $href, string $label, bool $bold=false): string { global $_cu; $act = ($_cu===$href) ? ' active' : ''; $fw = $bold ? ' fw-bold' : ''; $col = $bold ? ' text-primary' : ''; return "<li><a class=\"dropdown-item{$fw}{$col}{$act}\" href=\"{$href}\"><i class=\"bi bi-{$icon} item-icon\"></i>{$label}</a></li>\n";
 }
 ?>
+<?php
+$pageTitle = $pageTitle ?? 'HostelERP - Modern Hostel Management System';
+$pageDesc = $pageDesc ?? 'HostelERP simplifies room allocation, attendance, complaints, and digital administration through a centralized platform.';
+?>
 <!DOCTYPE html>
 <html lang="en">
-<head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>HostelERP</title> <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> <link rel="stylesheet" href="/assets/css/style.css?v=<?= time() ?>"> <script>(function(){var t=localStorage.getItem('hostelerp-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+<head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<title><?= htmlspecialchars($pageTitle) ?></title> 
+<meta name="description" content="<?= htmlspecialchars($pageDesc) ?>">
+<meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>">
+<meta property="og:description" content="<?= htmlspecialchars($pageDesc) ?>">
+<meta property="og:image" content="https://hostelerp.eastasia.cloudapp.azure.com/assets/images/banner.webp">
+<meta property="og:url" content="https://hostelerp.eastasia.cloudapp.azure.com<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? '') ?>">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> <link rel="stylesheet" href="/assets/css/style.css?v=<?= time() ?>"> <script>(function(){var t=localStorage.getItem('hostelerp-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
 <body class="d-flex flex-column min-vh-100 inner-bg">
 <nav class="navbar navbar-expand-lg navbar-dark navbar-glass">
@@ -119,7 +130,6 @@ function _di(string $icon, string $href, string $label, bool $bold=false): strin
 </ul>
 </li>
 <?php } ?> <?php if($role){ ?>
-<!-- MatrixFit Gym -->
 <li class="nav-item dropdown">
 <a class="nav-link dropdown-toggle<?= _na($_gy) ?>" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="color:var(--accent-secondary)!important;font-weight:700;">
 <span class="nav-module-label"><img src="/assets/images/MatrixFit_Logo.jpeg" alt="">MatrixFit</span></a>
@@ -164,7 +174,7 @@ function _di(string $icon, string $href, string $label, bool $bold=false): strin
 <?= _di('info-circle','/gym/guidelines.php','Gym Guidelines') ?>
 <?php } ?>
 </ul>
-</li> <!-- Indexia Library -->
+</li> 
 <li class="nav-item dropdown">
 <a class="nav-link dropdown-toggle<?= _na($_lb) ?>" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="color:var(--accent-primary)!important;font-weight:700;">
 <span class="nav-module-label"><img src="/assets/images/Indexia_Logo.jpeg" alt="">Indexia</span></a>
@@ -207,7 +217,7 @@ function _di(string $icon, string $href, string $label, bool $bold=false): strin
 <?= _di('info-circle','/library/guidelines.php','Library Guidelines') ?>
 <?php } ?>
 </ul>
-</li> <!-- Cleanly Laundry -->
+</li> 
 <li class="nav-item dropdown">
 <a class="nav-link dropdown-toggle<?= _na($_ly) ?>" href="javascript:void(0)" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="color:#0ea5e9!important;font-weight:700;">
 <span class="nav-module-label"><img src="/assets/images/Cleanly_Logo.jpeg" alt="">Cleanly</span></a>
@@ -250,7 +260,11 @@ function _di(string $icon, string $href, string $label, bool $bold=false): strin
 <?php } ?>
 </ul>
 </li>
-<?php } ?> <li class="nav-item me-2">
+<?php } ?> 
+<li class="nav-item me-2 d-flex align-items-center">
+<?php include __DIR__ . '/includes/download_modal.php'; ?>
+</li>
+<li class="nav-item me-2">
 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"> <span class="theme-icon">🌙</span> <span class="theme-label">Dark</span>
 </button>
 </li>

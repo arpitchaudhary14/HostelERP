@@ -7,6 +7,8 @@ $total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(amount) as total FROM
 $paid = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(amount) as paid FROM fees WHERE status='Paid'"))['paid'];
 $pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(amount) as pending FROM fees WHERE status='Pending'"))['pending'];
 $overdue = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(amount) as overdue FROM fees WHERE status='Overdue'"))['overdue'];
+$pageTitle = 'Reports (Admin) - HostelERP';
+$pageDesc = 'Access your Reports (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

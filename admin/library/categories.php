@@ -37,6 +37,8 @@ if (isset($_POST['delete_category'])) {
     }
 }
 $categories = mysqli_query($conn, "SELECT c.*, (SELECT COUNT(*) FROM library_books WHERE category_id = c.id) as book_count FROM library_categories c ORDER BY name ASC");
+$pageTitle = 'Categories (Library) - HostelERP';
+$pageDesc = 'Access your Categories (Library) on HostelERP.';
 include("../../header.php");
 ?>
 <div class="container mt-4 page-fade-in">

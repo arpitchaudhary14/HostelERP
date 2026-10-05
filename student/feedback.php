@@ -3,8 +3,10 @@ include("../session_check.php");
 include("../db.php");
 if($_SESSION['role'] != 'student'){ header("Location: ../dashboard.php"); exit();
 }
-if(isset($_POST['submit_feedback'])){ validate_csrf(); $user_id = $_SESSION['user_id']; $subject = trim($_POST['subject'] ?? ''); $message = trim($_POST['message'] ?? ''); $rating = intval($_POST['rating'] ?? 5); $stmt = mysqli_prepare($conn, "INSERT INTO feedback (user_id, role, type, subject, message, rating) VALUES (?, 'student', 'Hostel', ?, ?, ?)"); mysqli_stmt_bind_param($stmt, "issi", $user_id, $subject, $message, $rating); mysqli_stmt_execute($stmt); $success = "Feedback submitted successfully!";
+if(isset($_POST['submit_feedback'])){ validate_csrf(); $user_id = $_SESSION['user_id']; $subject = trim($_POST['subject'] ?? ''); $message = trim($_POST['message'] ?? ''); $rating = intval($_POST['rating'] ?? 5); $stmt = mysqli_prepare($conn, "INSERT INTO feedback (user_id, role, type, subject, message, rating) VALUES (?, 'student', 'Hostel', ?, ?, ?)"); mysqli_stmt_bind_param($stmt, "issi", $user_id, $subject, $message, $rating); mysqli_stmt_execute($stmt); $_SESSION['action_type'] = 'feedback'; header("Location: /thank_you.php"); exit();
 }
+$pageTitle = 'Hostel Feedback - HostelERP';
+$pageDesc = 'Submit your feedback to help us improve the hostel experience.';
 include("../header.php");
 ?>
 <div class="container mt-4">

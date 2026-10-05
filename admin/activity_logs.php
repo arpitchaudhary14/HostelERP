@@ -13,6 +13,8 @@ if(!empty($search)){ $query .= " WHERE activity_logs.action LIKE '%$search%'";
 }
 $query .= " ORDER BY activity_logs.created_at DESC";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'Activity Logs (Admin) - HostelERP';
+$pageDesc = 'Access your Activity Logs (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

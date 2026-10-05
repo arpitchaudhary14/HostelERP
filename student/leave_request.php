@@ -4,8 +4,10 @@ include("../db.php");
 if($_SESSION['role'] != 'student'){ header("Location: ../dashboard.php"); exit();
 }
 $user_id = $_SESSION['user_id'];
-if(isset($_POST['submit_leave'])){ validate_csrf(); $from = $_POST['from_date']; $to = $_POST['to_date']; $reason = trim($_POST['reason']); if(empty($from) || empty($to)){ $error = "Please select both From and To dates."; } elseif(strtotime($from) < strtotime(date('Y-m-d'))){ $error = "From date cannot be in the past."; } elseif(strtotime($to) < strtotime($from)){ $error = "To date cannot be before From date."; } else { $stmt = mysqli_prepare($conn, "INSERT INTO leave_requests (student_id, from_date, to_date, reason) VALUES (?,?,?,?)"); mysqli_stmt_bind_param($stmt, "isss", $user_id, $from, $to, $reason); if(mysqli_stmt_execute($stmt)){ $success = "Leave request submitted successfully."; } else { $error = "Something went wrong. Please try again."; } }
+if(isset($_POST['submit_leave'])){ validate_csrf(); $from = $_POST['from_date']; $to = $_POST['to_date']; $reason = trim($_POST['reason']); if(empty($from) || empty($to)){ $error = "Please select both From and To dates."; } elseif(strtotime($from) < strtotime(date('Y-m-d'))){ $error = "From date cannot be in the past."; } elseif(strtotime($to) < strtotime($from)){ $error = "To date cannot be before From date."; } else { $stmt = mysqli_prepare($conn, "INSERT INTO leave_requests (student_id, from_date, to_date, reason) VALUES (?,?,?,?)"); mysqli_stmt_bind_param($stmt, "isss", $user_id, $from, $to, $reason); if(mysqli_stmt_execute($stmt)){ $_SESSION['action_type'] = 'leave_request'; header("Location: /thank_you.php"); exit(); } else { $error = "Something went wrong. Please try again."; } }
 }
+$pageTitle = 'Request Leave - HostelERP';
+$pageDesc = 'Submit a leave application for your hostel stay.';
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:600px;">

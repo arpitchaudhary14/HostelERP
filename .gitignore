@@ -26,3 +26,8 @@ env/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Electron App
+hostelerp-desktop/dist/
+hostelerp-desktop/node_modules/
+hostelerp-desktop/build/

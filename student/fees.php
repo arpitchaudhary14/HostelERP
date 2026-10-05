@@ -17,6 +17,8 @@ SUM(CASE WHEN status='Pending' THEN amount ELSE 0 END) as pending
 FROM fees WHERE student_id='$user_id'
 ";
 $summary = mysqli_fetch_assoc(mysqli_query($conn,$summary_query));
+$pageTitle = 'Fees - HostelERP';
+$pageDesc = 'Access your Fees on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">
@@ -69,8 +71,10 @@ value="<?= htmlspecialchars($search) ?>">
 <span class="badge bg-success">Paid</span>
 <?php } elseif($row['status']=="Overdue"){ ?>
 <span class="badge bg-danger">Overdue</span>
+<a href="payment_gateway.php?type=fee_payment&id=<?= $row['id'] ?>&amount=<?= $row['amount'] ?>&item=Overdue+Fee" class="btn btn-sm btn-danger ms-2 rounded-pill">Pay Now</a>
 <?php } else { ?>
 <span class="badge bg-warning text-dark">Pending</span>
+<a href="payment_gateway.php?type=fee_payment&id=<?= $row['id'] ?>&amount=<?= $row['amount'] ?>&item=Pending+Fee" class="btn btn-sm btn-primary ms-2 rounded-pill">Pay Now</a>
 <?php } ?>
 </td>
 </tr>

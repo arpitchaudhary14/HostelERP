@@ -7,6 +7,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){ validate_csrf(); $title = trim($_POST[
 }
 $result = mysqli_query($conn, "SELECT * FROM notices ORDER BY created_at DESC");
 $notices = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$pageTitle = 'Notices - HostelERP';
+$pageDesc = 'Access your Notices on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

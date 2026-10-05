@@ -6,6 +6,8 @@ if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit;
 if($_SERVER['REQUEST_METHOD'] == 'POST'){ validate_csrf(); $date = date("Y-m-d"); foreach($_POST['status'] as $student_id => $status){ $student_id = intval($student_id); $allowed = ['present','absent','leave']; if(!in_array($status, $allowed)) continue; $stmt = mysqli_prepare($conn, "INSERT INTO attendance (user_id, date, status, marked_by) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE status=VALUES(status)" ); $marker = intval($_SESSION['user_id']); mysqli_stmt_bind_param($stmt, "issi", $student_id, $date, $status, $marker); mysqli_stmt_execute($stmt); } $success = "Attendance marked for " . date("d M Y") . ".";
 }
 $students = mysqli_query($conn, "SELECT id, CONCAT(first_name,' ',COALESCE(last_name,'')) as full_name FROM users WHERE role='student' ORDER BY first_name");
+$pageTitle = 'Mark Attendance - HostelERP';
+$pageDesc = 'Access your Mark Attendance on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

@@ -17,6 +17,8 @@ if(!empty($search)){ $query .= " WHERE complaints.status LIKE '%$search%' OR CON
 }
 $query .= " ORDER BY complaints.created_at DESC";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'Manage Complaints - HostelERP';
+$pageDesc = 'Access your Manage Complaints on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

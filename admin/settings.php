@@ -6,6 +6,8 @@ if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit();
 if(isset($_POST['update_settings'])){ validate_csrf(); $name = trim($_POST['hostel_name']); $email = trim($_POST['contact_email']); $phone = trim($_POST['contact_phone']); $stmt = mysqli_prepare($conn, "UPDATE system_settings SET hostel_name=?, contact_email=?, contact_phone=? WHERE id=1" ); mysqli_stmt_bind_param($stmt, "sss", $name, $email, $phone); mysqli_stmt_execute($stmt); $success = "Settings updated successfully.";
 }
 $settings = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM system_settings WHERE id=1"));
+$pageTitle = 'Settings (Admin) - HostelERP';
+$pageDesc = 'Access your Settings (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:700px;">

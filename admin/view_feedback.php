@@ -10,6 +10,8 @@ JOIN users ON feedback.user_id = users.id
 ORDER BY feedback.created_at DESC
 ";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'View Feedback (Admin) - HostelERP';
+$pageDesc = 'Access your View Feedback (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

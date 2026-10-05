@@ -22,6 +22,8 @@ A full-stack hostel management system with an AI assistant to automate student a
     -   Room Swapping desks where students request swaps subject to recipient consent and Warden mediation.
     -   Simplified unified room configurations (2-Seater / 3-Seater with AC, Air-Cooled, or Normal ventilation tiers).
 *   **System Knowledge Registry**: A secure portal for admins to dynamically add, update, and remove institutional protocols which instantly synchronize with the AI Assistant.
+*   **Desktop Application**: Full-fledged Native Desktop App built with Electron, offering seamless single-instance Deep Linking OAuth synchronization and CI/CD via GitHub Actions for Windows, macOS, and Linux.
+*   **SEO & UX Optimization**: Implemented PRG (Post/Redirect/Get) patterns for all forms to prevent duplicate submissions, auto-generated `.webp` images for fast loading, dynamic Meta Tags, and a robust Open Graph (OG) setup.
 *   **Rate Limiting**: IP-based and Email-based OTP request limits (5 per hour) to safeguard security flows.
 ### Premium Upgrades & Hardening (May 2026)
 *   **Self-Aware Text-to-SQL RAG**: LEON AI utilizes live MySQL schema discovery to execute dynamic SELECT queries directly, enabling natural-language queries for plans, timings, costs, and availability.

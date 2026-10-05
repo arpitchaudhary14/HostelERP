@@ -4,6 +4,8 @@ include("../db.php");
 if($_SESSION['role'] != 'admin'){ header("Location: ../dashboard.php"); exit;
 }
 $view_warden = isset($_GET['warden_id']) ? intval($_GET['warden_id']) : 0;
+$pageTitle = 'Warden Attendance (Admin) - HostelERP';
+$pageDesc = 'Access your Warden Attendance (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

@@ -7,6 +7,8 @@ if(!empty($search)){ $query .= " WHERE title LIKE '%$search%'";
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'Notices - HostelERP';
+$pageDesc = 'Access your Notices on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

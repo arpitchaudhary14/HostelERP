@@ -12,6 +12,8 @@ JOIN users u ON lr.student_id = u.id
 ORDER BY lr.created_at DESC
 ";
 $result = mysqli_query($conn, $query);
+$pageTitle = 'Manage Leaves - HostelERP';
+$pageDesc = 'Access your Manage Leaves on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

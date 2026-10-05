@@ -5,6 +5,8 @@ if($_SESSION['role'] != 'warden'){ header("Location: ../dashboard.php"); exit();
 }
 if(isset($_POST['submit_feedback'])){ validate_csrf(); $user_id = $_SESSION['user_id']; $subject = trim($_POST['subject'] ?? ''); $message = trim($_POST['message'] ?? ''); $stmt = mysqli_prepare($conn, "INSERT INTO feedback (user_id, role, type, subject, message) VALUES (?, 'warden', 'System', ?, ?)"); mysqli_stmt_bind_param($stmt, "iss", $user_id, $subject, $message); mysqli_stmt_execute($stmt); $success = "Feedback submitted to Admin successfully!";
 }
+$pageTitle = 'Feedback - HostelERP';
+$pageDesc = 'Access your Feedback on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

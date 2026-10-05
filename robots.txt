@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /login.php
+Allow: /register.php
+Allow: /index.php
+Allow: /contact.php
+Allow: /assets/
+Disallow: /admin/
+Disallow: /warden/
+Disallow: /student/
+Disallow: /includes/
+Disallow: /gym/
+Disallow: /library/
+Disallow: /laundry/
+Disallow: /api/
+Disallow: /*.php$ # Disallow any other direct php access if not explicitly allowed
+
+Sitemap: https://hostelerp.eastasia.cloudapp.azure.com/sitemap.xml

@@ -2,8 +2,11 @@
 include("../session_check.php");
 include("../db.php");
 $user_id = $_SESSION['user_id'];
-if(isset($_POST['submit_complaint'])){ validate_csrf(); $subject = trim($_POST['subject']); $message = trim($_POST['message']); $stmt = mysqli_prepare($conn, "INSERT INTO complaints (student_id, subject, message) VALUES (?,?,?)"); mysqli_stmt_bind_param($stmt, "iss", $user_id, $subject, $message); if(mysqli_stmt_execute($stmt)){ $success = "Complaint submitted successfully."; } else { $error = "Something went wrong. Please try again."; }
+if(isset($_POST['submit_complaint'])){ validate_csrf(); $subject = trim($_POST['subject']); $message = trim($_POST['message']); $stmt = mysqli_prepare($conn, "INSERT INTO complaints (student_id, subject, message) VALUES (?,?,?)"); mysqli_stmt_bind_param($stmt, "iss", $user_id, $subject, $message); if(mysqli_stmt_execute($stmt)){ $_SESSION['action_type'] = 'complaint'; header("Location: /thank_you.php"); exit(); } else { $error = "Something went wrong. Please try again."; }
 }
+
+$pageTitle = 'File Complaint - HostelERP';
+$pageDesc = 'Submit a complaint regarding hostel facilities, maintenance, or discipline.';
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:700px;">

@@ -108,3 +108,8 @@ vendor/tests
 *.dmg
 *.tar.gz
 *.zip
+
+# Electron Desktop App
+hostelerp-desktop/dist
+hostelerp-desktop/node_modules
+hostelerp-desktop/build

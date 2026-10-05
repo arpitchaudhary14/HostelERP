@@ -9,6 +9,8 @@ if(!empty($search)){ $query .= " AND (first_name LIKE '%$search%' OR last_name L
 }
 $query .= " ORDER BY created_at DESC";
 $result = mysqli_query($conn,$query);
+$pageTitle = 'Manage Students - HostelERP';
+$pageDesc = 'Access your Manage Students on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

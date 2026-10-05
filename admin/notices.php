@@ -6,6 +6,8 @@ if($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'warden'){ header("Locat
 if(isset($_POST['add_notice'])){ validate_csrf(); $title = trim($_POST['title']); $message = trim($_POST['message']); $user_id = intval($_SESSION['user_id']); $role = $_SESSION['role']; $stmt = mysqli_prepare($conn, "INSERT INTO notices (title, message, posted_by, role) VALUES (?,?,?,?)"); mysqli_stmt_bind_param($stmt, "ssis", $title, $message, $user_id, $role); if(mysqli_stmt_execute($stmt)){ $success = "Notice posted successfully."; } else { $error = "Something went wrong."; }
 }
 $notices = mysqli_fetch_all(mysqli_query($conn, "SELECT * FROM notices ORDER BY created_at DESC"), MYSQLI_ASSOC);
+$pageTitle = 'Notices (Admin) - HostelERP';
+$pageDesc = 'Access your Notices (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4" style="max-width:800px;">

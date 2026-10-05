@@ -1,4 +1,6 @@
-<?php include("header.php"); ?>
+<?php $pageTitle = 'Contact - HostelERP';
+$pageDesc = 'Access your Contact on HostelERP.';
+include("header.php"); ?>
 <div class="container mt-5 page-fade-in" style="max-width:800px;">
 <h2 class="mb-2 reveal" style="font-weight:700;">Contact Us</h2>
 <p class="mb-4 reveal text-muted">

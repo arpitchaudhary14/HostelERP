@@ -9,6 +9,8 @@ mysqli_query($conn, "UPDATE fees SET status='Overdue' WHERE due_date < CURDATE()
 $students = mysqli_query($conn, "SELECT id, CONCAT(first_name,' ',COALESCE(last_name,'')) as full_name FROM users WHERE role='student' ORDER BY first_name");
 $fees_result = mysqli_query($conn, " SELECT f.*, CONCAT(u.first_name,' ',COALESCE(u.last_name,'')) as full_name FROM fees f JOIN users u ON f.student_id = u.id ORDER BY f.created_at DESC
 ");
+$pageTitle = 'Collect Fees - HostelERP';
+$pageDesc = 'Access your Collect Fees on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

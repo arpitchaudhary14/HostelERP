@@ -12,6 +12,8 @@ JOIN users u ON wlr.warden_id = u.id
 ORDER BY wlr.created_at DESC
 ";
 $result = mysqli_query($conn, $query);
+$pageTitle = 'Manage Warden Leaves (Admin) - HostelERP';
+$pageDesc = 'Access your Manage Warden Leaves (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

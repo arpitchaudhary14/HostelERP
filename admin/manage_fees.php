@@ -12,6 +12,8 @@ mysqli_query($conn," UPDATE fees SET status='Overdue' WHERE due_date < CURDATE()
 $students = mysqli_query($conn,"SELECT id, first_name, last_name FROM users WHERE role='student'");
 $fees = mysqli_query($conn," SELECT fees.*, users.first_name, users.last_name FROM fees JOIN users ON fees.student_id = users.id ORDER BY fees.created_at DESC
 ");
+$pageTitle = 'Manage Fees (Admin) - HostelERP';
+$pageDesc = 'Access your Manage Fees (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

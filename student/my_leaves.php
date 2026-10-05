@@ -8,6 +8,8 @@ $stmt = mysqli_prepare($conn, "SELECT * FROM leave_requests WHERE student_id=? O
 mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
+$pageTitle = 'My Leaves - HostelERP';
+$pageDesc = 'Access your My Leaves on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">

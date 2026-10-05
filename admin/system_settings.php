@@ -15,6 +15,8 @@ $pending_leaves = mysqli_fetch_assoc(mysqli_query($conn,
 "SELECT COUNT(*) as total FROM leave_requests WHERE status='Pending'"))['total'];
 $open_complaints = mysqli_fetch_assoc(mysqli_query($conn,
 "SELECT COUNT(*) as total FROM complaints WHERE status='Pending'"))['total'];
+$pageTitle = 'System Settings (Admin) - HostelERP';
+$pageDesc = 'Access your System Settings (Admin) on HostelERP.';
 include("../header.php");
 ?>
 <div class="container mt-4">
