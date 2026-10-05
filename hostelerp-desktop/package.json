@@ -25,7 +25,11 @@
       }
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        { "target": "nsis", "arch": ["x64", "ia32", "arm64"] },
+        { "target": "portable", "arch": ["x64", "ia32"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
       "icon": "assets/icon.ico"
     },
     "nsis": {
@@ -41,12 +45,18 @@
       "shortcutName": "HostelERP"
     },
     "mac": {
-      "target": ["dmg", "pkg"],
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "pkg", "arch": ["x64", "arm64"] }
+      ],
       "icon": "assets/icon.png",
       "category": "public.app-category.education"
     },
     "linux": {
-      "target": ["deb", "AppImage"],
+      "target": [
+        { "target": "deb", "arch": ["x64", "arm64"] },
+        { "target": "AppImage", "arch": ["x64", "arm64"] }
+      ],
       "icon": "assets/icon.png",
       "category": "Utility"
     }
