@@ -1,7 +1,7 @@
 <!-- Download Modal -->
 <div class="modal fade" id="downloadAppModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+    <div class="modal-content glass-card-light border-0 shadow-lg" style="border-radius: 20px;">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold" id="downloadModalLabel">
           <i class="bi bi-laptop text-primary me-2"></i>Download HostelERP for Desktop
@@ -32,7 +32,7 @@
         <div id="options-windows" class="os-options-container" style="display: none;">
             <div class="row g-3 justify-content-center">
                 <div class="col-md-10">
-                    <div class="card border-primary bg-primary-subtle shadow-sm p-4 text-start">
+                    <div class="card border-primary glass-card-light shadow-sm p-4 text-start">
                         <h5 class="fw-bold text-primary mb-3"><i class="bi bi-windows me-2"></i>Windows Downloads</h5>
                         
                         <div class="mb-3">
@@ -70,8 +70,8 @@
         <div id="options-macos" class="os-options-container" style="display: none;">
             <div class="row g-3 justify-content-center">
                 <div class="col-md-10">
-                    <div class="card border-dark bg-light shadow-sm p-4 text-start">
-                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-apple me-2"></i>macOS Downloads</h5>
+                    <div class="card border-secondary glass-card-light shadow-sm p-4 text-start">
+                        <h5 class="fw-bold mb-3" style="color:var(--inner-heading);"><i class="bi bi-apple me-2"></i>macOS Downloads</h5>
                         
                         <div class="mb-3">
                             <h6 class="fw-bold">Disk Image (.dmg) - Recommended</h6>
@@ -97,8 +97,8 @@
         <div id="options-linux" class="os-options-container" style="display: none;">
             <div class="row g-3 justify-content-center">
                 <div class="col-md-10">
-                    <div class="card border-warning bg-warning-subtle shadow-sm p-4 text-start">
-                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-ubuntu me-2"></i>Linux Downloads</h5>
+                    <div class="card border-warning glass-card-light shadow-sm p-4 text-start">
+                        <h5 class="fw-bold mb-3" style="color:var(--inner-heading);"><i class="bi bi-ubuntu me-2"></i>Linux Downloads</h5>
                         
                         <div class="mb-3">
                             <h6 class="fw-bold">Debian/Ubuntu (.deb)</h6>
