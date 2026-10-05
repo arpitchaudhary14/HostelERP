@@ -1,8 +1,3 @@
-<!-- Download Modal Trigger Button in Navbar -->
-<button class="btn btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#downloadAppModal">
-    <i class="bi bi-display me-1"></i> Get Desktop App
-</button>
-
 <!-- Download Modal -->
 <div class="modal fade" id="downloadAppModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">

@@ -262,7 +262,9 @@ $pageDesc = $pageDesc ?? 'HostelERP simplifies room allocation, attendance, comp
 </li>
 <?php } ?> 
 <li class="nav-item me-2 d-flex align-items-center">
-<?php include __DIR__ . '/includes/download_modal.php'; ?>
+<button class="btn btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#downloadAppModal">
+    <i class="bi bi-display me-1"></i> Get Desktop App
+</button>
 </li>
 <li class="nav-item me-2">
 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"> <span class="theme-icon">🌙</span> <span class="theme-label">Dark</span>
@@ -280,3 +282,4 @@ $pageDesc = $pageDesc ?? 'HostelERP simplifies room allocation, attendance, comp
 </div>
 </div>
 </nav>
+<?php include __DIR__ . '/includes/download_modal.php'; ?>
