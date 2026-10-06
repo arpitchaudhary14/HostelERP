@@ -131,54 +131,32 @@ document.addEventListener("DOMContentLoaded", function () {
       showOSOptions();
   }
 
-  // Fetch real release assets from GitHub API
-  fetch("https://api.github.com/repos/arpitchaudhary14/HostelERP/releases/latest")
-    .then(response => response.json())
-    .then(data => {
-        if (!data.assets) return;
-        data.assets.forEach(asset => {
-            const name = asset.name.toLowerCase();
-            const url = asset.browser_download_url;
-            
-            // Windows
-            if(name.endsWith('.exe') && name.includes('setup')) {
-                if(name.includes('arm64')) document.getElementById('link-win-arm64-exe').href = url;
-                else if(name.includes('ia32') || name.includes('x86')) document.getElementById('link-win-ia32-exe').href = url;
-                else document.getElementById('link-win-x64-exe').href = url;
-            }
-            if(name.endsWith('.zip') && name.includes('win')) {
-                if(name.includes('ia32') || name.includes('x86')) document.getElementById('link-win-ia32-zip').href = url;
-                else document.getElementById('link-win-x64-zip').href = url;
-            }
-            
-            // macOS
-            if(name.endsWith('.dmg')) {
-                if(name.includes('arm64') || name.includes('m1') || name.includes('mac-arm64')) document.getElementById('link-mac-arm64-dmg').href = url;
-                else document.getElementById('link-mac-x64-dmg').href = url;
-            }
-            
-            // Linux
-            if(name.endsWith('.deb')) {
-                if(name.includes('arm64')) document.getElementById('link-linux-arm64-deb').href = url;
-                else document.getElementById('link-linux-x64-deb').href = url;
-            }
-            if(name.endsWith('.appimage')) {
-                if(name.includes('arm64')) document.getElementById('link-linux-arm64-appimage').href = url;
-                else document.getElementById('link-linux-x64-appimage').href = url;
-            }
-        });
-    })
-    .catch(err => console.error("Error fetching release assets:", err));
+  // Hardcoded Release Links for v1.0.9 to prevent GitHub API Rate Limiting (60 req/hr)
+  const repo = "https://github.com/arpitchaudhary14/HostelERP/releases/download/v1.0.9";
+  
+  // Windows
+  document.getElementById('link-win-x64-exe').href = repo + "/HostelERP-Setup-1.0.9.exe";
+  document.getElementById('link-win-ia32-exe').href = repo + "/HostelERP-Setup-1.0.9-ia32.exe";
+  document.getElementById('link-win-arm64-exe').href = repo + "/HostelERP-Setup-1.0.9-arm64.exe";
+  
+  document.getElementById('link-win-x64-zip').href = repo + "/HostelERP-1.0.9-win.zip";
+  document.getElementById('link-win-ia32-zip').href = repo + "/HostelERP-1.0.9-win.zip"; // Assuming unified or fallback
+  
+  // macOS
+  document.getElementById('link-mac-x64-dmg').href = repo + "/HostelERP-1.0.9.dmg";
+  document.getElementById('link-mac-arm64-dmg').href = repo + "/HostelERP-1.0.9-arm64.dmg";
+  
+  // Linux
+  document.getElementById('link-linux-x64-deb').href = repo + "/HostelERP_1.0.9_amd64.deb";
+  document.getElementById('link-linux-arm64-deb').href = repo + "/HostelERP_1.0.9_arm64.deb";
+  
+  document.getElementById('link-linux-x64-appimage').href = repo + "/HostelERP-1.0.9.AppImage";
+  document.getElementById('link-linux-arm64-appimage').href = repo + "/HostelERP-1.0.9-arm64.AppImage";
 });
 
 function showOSOptions() {
-    // Hide all
     document.querySelectorAll('.os-options-container').forEach(el => el.style.display = 'none');
-    
-    // Show selected
     const selected = document.getElementById("osSelect").value;
-    if (selected) {
-        document.getElementById("options-" + selected).style.display = 'block';
-    }
+    if (selected) document.getElementById("options-" + selected).style.display = 'block';
 }
 </script>
