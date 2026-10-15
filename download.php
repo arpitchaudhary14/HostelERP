@@ -16,13 +16,13 @@ $release_assets = [
         'os' => 'Windows',
         'type' => 'Installer (.exe)',
         'arch' => 'x64',
-        'size' => '211 MB'
+        'size' => '148 MB'
     ],
     'HostelERP-2.0.0.exe' => [
         'os' => 'Windows',
         'type' => 'Portable (.exe)',
         'arch' => 'x64',
-        'size' => '135 MB'
+        'size' => '73 MB'
     ],
     'HostelERP-2.0.0-win.zip' => [
         'os' => 'Windows',

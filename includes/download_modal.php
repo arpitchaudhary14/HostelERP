@@ -125,7 +125,7 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                   <div class="d-flex flex-wrap gap-2 align-items-center">
                     <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-Setup-2.0.0.exe" class="btn btn-primary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Windows Setup (x64)', this.href)">
                       <i class="bi bi-download me-1"></i> Download Setup (.exe)
-                      <span class="badge bg-white text-primary ms-1" style="font-size:0.75rem;">211 MB</span>
+                      <span class="badge bg-white text-primary ms-1" style="font-size:0.75rem;">148 MB</span>
                     </a>
                     <button type="button" class="btn btn-outline-secondary px-3 rounded-pill fw-semibold" onclick="showDiscontinuedNotice('Windows 32-bit (ia32)')">
                       <i class="bi bi-slash-circle me-1"></i> ia32 (32-bit)
@@ -145,7 +145,7 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                   <p class="text-muted small mb-3">Run immediately from a USB flash drive or folder without administrator privileges.</p>
                   <div class="d-flex flex-wrap gap-2">
                     <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0.exe" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable .exe', this.href)">
-                      <i class="bi bi-play-circle me-1"></i> Standalone App (.exe) <span class="badge bg-primary-subtle text-primary ms-1">135 MB</span>
+                      <i class="bi bi-play-circle me-1"></i> Standalone App (.exe) <span class="badge bg-primary-subtle text-primary ms-1">73 MB</span>
                     </a>
                     <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0-win.zip" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable Zip x64', this.href)">
                       <i class="bi bi-file-earmark-zip me-1"></i> Portable Zip (x64) <span class="badge bg-secondary-subtle text-secondary ms-1">99 MB</span>
