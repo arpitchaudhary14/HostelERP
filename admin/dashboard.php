@@ -65,15 +65,26 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resolve_dispute'])) {
     }
 }
 
-$pending_petitions_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t FROM room_decommission_requests WHERE status='pending'"))['t'] ?? 0;
-$pending_disputes_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t FROM room_decommission_disputes WHERE status='pending'"))['t'] ?? 0;
-$pending_disputes_res = mysqli_query($conn, "
-    SELECT rdd.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as student_name, u.email, u.phone 
-    FROM room_decommission_disputes rdd 
-    JOIN users u ON rdd.student_id = u.id 
-    WHERE rdd.status='pending' 
-    ORDER BY rdd.created_at ASC
-");
+$pending_petitions_count = 0;
+$pending_disputes_count = 0;
+$pending_disputes_res = null;
+try {
+    $pet_q = mysqli_query($conn, "SELECT COUNT(*) as t FROM room_decommission_requests WHERE status='pending'");
+    if($pet_q) $pending_petitions_count = mysqli_fetch_assoc($pet_q)['t'] ?? 0;
+    
+    $disp_q = mysqli_query($conn, "SELECT COUNT(*) as t FROM room_decommission_disputes WHERE status='pending'");
+    if($disp_q) $pending_disputes_count = mysqli_fetch_assoc($disp_q)['t'] ?? 0;
+
+    $pending_disputes_res = mysqli_query($conn, "
+        SELECT rdd.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as student_name, u.email, u.phone 
+        FROM room_decommission_disputes rdd 
+        JOIN users u ON rdd.student_id = u.id 
+        WHERE rdd.status='pending' 
+        ORDER BY rdd.created_at ASC
+    ");
+} catch (Throwable $e) {
+    error_log("Dashboard decommission queries error: " . $e->getMessage());
+}
 ?>
 <?php $pageTitle = 'Dashboard (Admin) - HostelERP';
 $pageDesc = 'Access your Dashboard (Admin) on HostelERP.';

@@ -132,16 +132,28 @@ while($row = mysqli_fetch_assoc($result)){
 
 // Fetch pending decommission request IDs for fast lookup
 $pending_reqs = [];
-$p_res = mysqli_query($conn, "SELECT room_id FROM room_decommission_requests WHERE status = 'pending'");
-while($pr = mysqli_fetch_assoc($p_res)) {
-    $pending_reqs[$pr['room_id']] = true;
+try {
+    $p_res = mysqli_query($conn, "SELECT room_id FROM room_decommission_requests WHERE status = 'pending'");
+    if($p_res) {
+        while($pr = mysqli_fetch_assoc($p_res)) {
+            $pending_reqs[$pr['room_id']] = true;
+        }
+    }
+} catch (Throwable $e) {
+    error_log("Pending reqs query error: " . $e->getMessage());
 }
 
 // Fetch warden's past petitions log
 $my_petitions = [];
-$pet_res = mysqli_query($conn, "SELECT * FROM room_decommission_requests WHERE warden_id = $warden_id ORDER BY created_at DESC LIMIT 10");
-while($prow = mysqli_fetch_assoc($pet_res)) {
-    $my_petitions[] = $prow;
+try {
+    $pet_res = mysqli_query($conn, "SELECT * FROM room_decommission_requests WHERE warden_id = $warden_id ORDER BY created_at DESC LIMIT 10");
+    if($pet_res) {
+        while($prow = mysqli_fetch_assoc($pet_res)) {
+            $my_petitions[] = $prow;
+        }
+    }
+} catch (Throwable $e) {
+    error_log("Petitions query error: " . $e->getMessage());
 }
 
 $pageTitle = 'Manage Rooms - HostelERP';

@@ -145,17 +145,23 @@ if(isset($_POST['action']) && $_POST['action'] === 'reject_decommission') {
 }
 
 // Fetch pending decommission petitions
-$petitions_query = "
-    SELECT rdr.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as warden_name, u.email as warden_email
-    FROM room_decommission_requests rdr
-    JOIN users u ON rdr.warden_id = u.id
-    WHERE rdr.status = 'pending'
-    ORDER BY rdr.created_at ASC
-";
-$pending_petitions_res = mysqli_query($conn, $petitions_query);
 $pending_petitions = [];
-while($p = mysqli_fetch_assoc($pending_petitions_res)) {
-    $pending_petitions[] = $p;
+try {
+    $petitions_query = "
+        SELECT rdr.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as warden_name, u.email as warden_email
+        FROM room_decommission_requests rdr
+        JOIN users u ON rdr.warden_id = u.id
+        WHERE rdr.status = 'pending'
+        ORDER BY rdr.created_at ASC
+    ";
+    $pending_petitions_res = mysqli_query($conn, $petitions_query);
+    if($pending_petitions_res) {
+        while($p = mysqli_fetch_assoc($pending_petitions_res)) {
+            $pending_petitions[] = $p;
+        }
+    }
+} catch (Throwable $e) {
+    error_log("Admin pending petitions query error: " . $e->getMessage());
 }
 
 // Fetch rooms
