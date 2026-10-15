@@ -79,3 +79,9 @@ function record_login($conn, $user_id, $type = 'normal') {
     mysqli_stmt_bind_param($stmt, "isss", $user_id, $ip, $ua, $type);
     mysqli_stmt_execute($stmt);
 }
+
+function redirect_thank_you() {
+    $base = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== false || strpos($_SERVER['SCRIPT_NAME'] ?? '', '/WebTechProject') !== false) ? '/WebTechProject' : '';
+    header("Location: {$base}/thank_you.php");
+    exit();
+}

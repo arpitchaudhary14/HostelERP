@@ -27,27 +27,43 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_dispute'])) {
     } elseif(strlen($details) < 20) {
         $error = "Please provide complete details (minimum 20 characters) explaining your 5-day SLA breach.";
     } else {
-        $stmt = mysqli_prepare($conn, "
-            INSERT INTO room_decommission_disputes (student_id, room_number, claim_type, details, status)
-            VALUES (?, ?, ?, ?, 'pending')
-        ");
-        mysqli_stmt_bind_param($stmt, "isss", $user_id, $room_number, $claim_type, $details);
-
-        if(mysqli_stmt_execute($stmt)) {
-            // High-priority notification directly to Admin
-            $admin_title = "URGENT SLA DISPUTE: Decommissioned Room $room_number";
-            $admin_msg = "Student User (ID: $user_id) has lodged a 5-Day SLA Claim for decommissioned Room $room_number requesting " . strtoupper(str_replace('_', ' ', $claim_type)) . ". Review immediately under 'Necessary Actions' on the Admin Dashboard.";
-            
-            mysqli_query($conn, "
-                INSERT INTO notifications (sender_id, target_role, title, message, is_read)
-                VALUES ($user_id, 'admin', '" . mysqli_real_escape_string($conn, $admin_title) . "', '" . mysqli_real_escape_string($conn, $admin_msg) . "', 0)
+        try {
+            $stmt = mysqli_prepare($conn, "
+                INSERT INTO room_decommission_disputes (student_id, room_number, claim_type, details, status)
+                VALUES (?, ?, ?, ?, 'pending')
             ");
+            mysqli_stmt_bind_param($stmt, "isss", $user_id, $room_number, $claim_type, $details);
 
-            $_SESSION['action_type'] = 'student_decommission_dispute';
-            header("Location: ../thank_you.php");
-            exit();
-        } else {
-            $error = "Failed to submit dispute: " . mysqli_error($conn);
+            if(mysqli_stmt_execute($stmt)) {
+                // High-priority notification directly to Admin (guarded against schema mismatches)
+                try {
+                    $admin_title = "URGENT SLA DISPUTE: Decommissioned Room $room_number";
+                    $admin_msg = "Student User (ID: $user_id) has lodged a 5-Day SLA Claim for decommissioned Room $room_number requesting " . strtoupper(str_replace('_', ' ', $claim_type)) . ". Review immediately under 'Necessary Actions' on the Admin Dashboard.";
+                    
+                    $chk_tr = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+                    if($chk_tr && mysqli_num_rows($chk_tr) > 0) {
+                        mysqli_query($conn, "
+                            INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read)
+                            VALUES (NULL, $user_id, 'admin', '" . mysqli_real_escape_string($conn, $admin_title) . "', '" . mysqli_real_escape_string($conn, $admin_msg) . "', 0)
+                        ");
+                    } else {
+                        mysqli_query($conn, "
+                            INSERT INTO notifications (user_id, title, message, is_read)
+                            VALUES (NULL, '" . mysqli_real_escape_string($conn, $admin_title) . "', '" . mysqli_real_escape_string($conn, $admin_msg) . "', 0)
+                        ");
+                    }
+                } catch (Throwable $ne) {
+                    error_log("Failed to dispatch admin SLA claim notification: " . $ne->getMessage());
+                }
+
+                $_SESSION['action_type'] = 'student_decommission_dispute';
+                redirect_thank_you();
+            } else {
+                $error = "Failed to submit dispute: " . mysqli_error($conn);
+            }
+        } catch (Throwable $e) {
+            error_log("Student dispute claim submission error: " . $e->getMessage());
+            $error = "Could not record dispute claim: " . $e->getMessage();
         }
     }
 }

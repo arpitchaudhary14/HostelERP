@@ -15,7 +15,7 @@ mysqli_query($conn, "SET time_zone = '+05:30'");
 mysqli_set_charset($conn, "utf8mb4");
 
 // Auto-heal missing decommission tables if not created yet
-mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_decommission_requests (
+@mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_decommission_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     room_id INT NOT NULL,
     room_number VARCHAR(50) NOT NULL,
@@ -29,7 +29,7 @@ mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_decommission_requests (
     reviewed_at TIMESTAMP NULL
 )");
 
-mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_decommission_disputes (
+@mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_decommission_disputes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     room_number VARCHAR(50) NOT NULL,
@@ -41,3 +41,16 @@ mysqli_query($conn, "CREATE TABLE IF NOT EXISTS room_decommission_disputes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     resolved_at TIMESTAMP NULL
 )");
+
+// Auto-heal notifications table schema for roles and audit senders
+try {
+    @mysqli_query($conn, "ALTER TABLE notifications MODIFY COLUMN user_id INT NULL DEFAULT NULL");
+    $chk_tr = @mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+    if ($chk_tr && mysqli_num_rows($chk_tr) == 0) {
+        @mysqli_query($conn, "ALTER TABLE notifications ADD COLUMN target_role VARCHAR(20) DEFAULT 'global'");
+    }
+    $chk_si = @mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'sender_id'");
+    if ($chk_si && mysqli_num_rows($chk_si) == 0) {
+        @mysqli_query($conn, "ALTER TABLE notifications ADD COLUMN sender_id INT NULL DEFAULT NULL");
+    }
+} catch (Throwable $ignore) {}

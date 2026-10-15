@@ -50,71 +50,97 @@ if(isset($_POST['action']) && $_POST['action'] === 'approve_decommission') {
     $request_id = intval($_POST['request_id'] ?? 0);
     $admin_remarks = trim($_POST['admin_remarks'] ?? 'Approved by Supreme Admin');
 
-    $req_res = mysqli_query($conn, "SELECT * FROM room_decommission_requests WHERE id = $request_id AND status = 'pending' LIMIT 1");
-    if($req = mysqli_fetch_assoc($req_res)) {
-        $room_id = intval($req['room_id']);
-        $room_num = $req['room_number'];
-        $warden_id = intval($req['warden_id']);
+    try {
+        $req_res = mysqli_query($conn, "SELECT * FROM room_decommission_requests WHERE id = $request_id AND status = 'pending' LIMIT 1");
+        if($req = mysqli_fetch_assoc($req_res)) {
+            $room_id = intval($req['room_id']);
+            $room_num = $req['room_number'];
+            $warden_id = intval($req['warden_id']);
 
-        // Fetch living residents before unallocation
-        $alloc_stmt = mysqli_prepare($conn, "
-            SELECT u.id, u.full_name, u.first_name, u.last_name, u.email
-            FROM room_allocations ra
-            JOIN users u ON ra.user_id = u.id
-            WHERE ra.room_id = ? AND ra.status = 'active'
-        ");
-        mysqli_stmt_bind_param($alloc_stmt, "i", $room_id);
-        mysqli_stmt_execute($alloc_stmt);
-        $alloc_res = mysqli_stmt_get_result($alloc_stmt);
+            // Fetch living residents before unallocation
+            $alloc_stmt = mysqli_prepare($conn, "
+                SELECT u.id, u.full_name, u.first_name, u.last_name, u.email
+                FROM room_allocations ra
+                JOIN users u ON ra.user_id = u.id
+                WHERE ra.room_id = ? AND ra.status = 'active'
+            ");
+            mysqli_stmt_bind_param($alloc_stmt, "i", $room_id);
+            mysqli_stmt_execute($alloc_stmt);
+            $alloc_res = mysqli_stmt_get_result($alloc_stmt);
 
-        $evicted_students = [];
-        $evicted_ids = [];
-        while($st = mysqli_fetch_assoc($alloc_res)) {
-            $name = trim($st['full_name'] ?? '');
-            if(empty($name)) $name = trim(($st['first_name'] ?? '') . ' ' . ($st['last_name'] ?? ''));
-            if(empty($name)) $name = $st['email'];
-            $evicted_students[] = $name;
-            $evicted_ids[] = intval($st['id']);
-        }
-
-        // 1. Unallocate residents
-        mysqli_query($conn, "DELETE FROM room_allocations WHERE room_id = $room_id");
-
-        // 2. Cancel pending swaps
-        if(!empty($evicted_ids)) {
-            $id_list = implode(',', $evicted_ids);
-            @mysqli_query($conn, "UPDATE room_swaps SET status = 'cancelled' WHERE (sender_id IN ($id_list) OR receiver_id IN ($id_list)) AND status IN ('pending', 'accepted_by_receiver')");
-        }
-
-        // 3. Delete the physical room
-        mysqli_query($conn, "DELETE FROM rooms WHERE id = $room_id");
-
-        // 4. Update decommission petition status
-        $upd_stmt = mysqli_prepare($conn, "UPDATE room_decommission_requests SET status = 'approved', admin_id = ?, admin_remarks = ?, reviewed_at = NOW() WHERE id = ?");
-        mysqli_stmt_bind_param($upd_stmt, "isi", $admin_id, $admin_remarks, $request_id);
-        mysqli_stmt_execute($upd_stmt);
-
-        // 5. Notify Warden
-        $w_title = "Petition Approved: Room $room_num Decommissioned";
-        $w_msg = "Your petition to decommission Room $room_num has been authorized by Supreme Admin. Active residents have been transitioned to the priority pool. Remarks: $admin_remarks";
-        mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES ($warden_id, $admin_id, 'warden', '" . mysqli_real_escape_string($conn, $w_title) . "', '" . mysqli_real_escape_string($conn, $w_msg) . "', 0)");
-
-        // 6. Notify each student with Guaranteed 5-Day SLA & Refund Guarantee
-        $s_title = "Important Notice: Room $room_num Decommissioned [5-Day SLA Guarantee]";
-        $s_msg = "Your allotted Room $room_num has been officially decommissioned by Supreme Admin authorization following structural/facility review. Your allotment has been moved to the Priority Re-allocation Pool.\n\n🛡️ GUARANTEED 5-DAY SLA: You are entitled to an equivalent room allotment or 100% proportional fee refund within 5 Business Days. If you do not receive a replacement room or refund within this window, please submit an escalated claim directly to the Supreme Admin via the Housing Portal for immediate redressal.";
-        foreach($evicted_ids as $sid) {
-            $n_stmt = mysqli_prepare($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES (?, ?, 'student', ?, ?, 0)");
-            if($n_stmt) {
-                mysqli_stmt_bind_param($n_stmt, "iiss", $sid, $admin_id, $s_title, $s_msg);
-                mysqli_stmt_execute($n_stmt);
+            $evicted_students = [];
+            $evicted_ids = [];
+            while($st = mysqli_fetch_assoc($alloc_res)) {
+                $name = trim($st['full_name'] ?? '');
+                if(empty($name)) $name = trim(($st['first_name'] ?? '') . ' ' . ($st['last_name'] ?? ''));
+                if(empty($name)) $name = $st['email'];
+                $evicted_students[] = $name;
+                $evicted_ids[] = intval($st['id']);
             }
-        }
 
-        $_SESSION['action_type'] = 'admin_room_decommission_executed';
-        header("Location: ../thank_you.php");
-        exit();
-    } else {
-        $error = "Petition not found or already processed.";
+            // 1. Unallocate residents
+            mysqli_query($conn, "DELETE FROM room_allocations WHERE room_id = $room_id");
+
+            // 2. Cancel pending swaps
+            if(!empty($evicted_ids)) {
+                $id_list = implode(',', $evicted_ids);
+                @mysqli_query($conn, "UPDATE room_swaps SET status = 'cancelled' WHERE (sender_id IN ($id_list) OR receiver_id IN ($id_list)) AND status IN ('pending', 'accepted_by_receiver')");
+            }
+
+            // 3. Delete the physical room
+            mysqli_query($conn, "DELETE FROM rooms WHERE id = $room_id");
+
+            // 4. Update decommission petition status
+            $upd_stmt = mysqli_prepare($conn, "UPDATE room_decommission_requests SET status = 'approved', admin_id = ?, admin_remarks = ?, reviewed_at = NOW() WHERE id = ?");
+            mysqli_stmt_bind_param($upd_stmt, "isi", $admin_id, $admin_remarks, $request_id);
+            mysqli_stmt_execute($upd_stmt);
+
+            // 5. Notify Warden (guarded so notification issues never trigger 500)
+            try {
+                $w_title = "Petition Approved: Room $room_num Decommissioned";
+                $w_msg = "Your petition to decommission Room $room_num has been authorized by Supreme Admin. Active residents have been transitioned to the priority pool. Remarks: $admin_remarks";
+                $chk_tr = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+                if($chk_tr && mysqli_num_rows($chk_tr) > 0) {
+                    mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES ($warden_id, $admin_id, 'warden', '" . mysqli_real_escape_string($conn, $w_title) . "', '" . mysqli_real_escape_string($conn, $w_msg) . "', 0)");
+                } else {
+                    mysqli_query($conn, "INSERT INTO notifications (user_id, title, message, is_read) VALUES ($warden_id, '" . mysqli_real_escape_string($conn, $w_title) . "', '" . mysqli_real_escape_string($conn, $w_msg) . "', 0)");
+                }
+            } catch (Throwable $ne) {
+                error_log("Failed to notify warden of approval: " . $ne->getMessage());
+            }
+
+            // 6. Notify each student with Guaranteed 5-Day SLA & Refund Guarantee
+            $s_title = "Important Notice: Room $room_num Decommissioned [5-Day SLA Guarantee]";
+            $s_msg = "Your allotted Room $room_num has been officially decommissioned by Supreme Admin authorization following structural/facility review. Your allotment has been moved to the Priority Re-allocation Pool.\n\n🛡️ GUARANTEED 5-DAY SLA: You are entitled to an equivalent room allotment or 100% proportional fee refund within 5 Business Days. If you do not receive a replacement room or refund within this window, please submit an escalated claim directly to the Supreme Admin via the Housing Portal for immediate redressal.";
+            foreach($evicted_ids as $sid) {
+                try {
+                    $chk_tr = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+                    if($chk_tr && mysqli_num_rows($chk_tr) > 0) {
+                        $n_stmt = mysqli_prepare($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES (?, ?, 'student', ?, ?, 0)");
+                        if($n_stmt) {
+                            mysqli_stmt_bind_param($n_stmt, "iiss", $sid, $admin_id, $s_title, $s_msg);
+                            mysqli_stmt_execute($n_stmt);
+                        }
+                    } else {
+                        $n_stmt = mysqli_prepare($conn, "INSERT INTO notifications (user_id, title, message, is_read) VALUES (?, ?, ?, 0)");
+                        if($n_stmt) {
+                            mysqli_stmt_bind_param($n_stmt, "iss", $sid, $s_title, $s_msg);
+                            mysqli_stmt_execute($n_stmt);
+                        }
+                    }
+                } catch (Throwable $ne) {
+                    error_log("Failed to notify student of decommission: " . $ne->getMessage());
+                }
+            }
+
+            $_SESSION['action_type'] = 'admin_room_decommission_executed';
+            redirect_thank_you();
+        } else {
+            $error = "Petition not found or already processed.";
+        }
+    } catch (Throwable $e) {
+        error_log("Decommission approval exception: " . $e->getMessage());
+        $error = "Failed to execute decommission: " . $e->getMessage();
     }
 }
 
@@ -124,23 +150,37 @@ if(isset($_POST['action']) && $_POST['action'] === 'reject_decommission') {
     $request_id = intval($_POST['request_id'] ?? 0);
     $admin_remarks = trim($_POST['admin_remarks'] ?? 'Petition declined. Ground deemed insufficient.');
 
-    $req_res = mysqli_query($conn, "SELECT * FROM room_decommission_requests WHERE id = $request_id AND status = 'pending' LIMIT 1");
-    if($req = mysqli_fetch_assoc($req_res)) {
-        $room_num = $req['room_number'];
-        $warden_id = intval($req['warden_id']);
+    try {
+        $req_res = mysqli_query($conn, "SELECT * FROM room_decommission_requests WHERE id = $request_id AND status = 'pending' LIMIT 1");
+        if($req = mysqli_fetch_assoc($req_res)) {
+            $room_num = $req['room_number'];
+            $warden_id = intval($req['warden_id']);
 
-        $upd_stmt = mysqli_prepare($conn, "UPDATE room_decommission_requests SET status = 'rejected', admin_id = ?, admin_remarks = ?, reviewed_at = NOW() WHERE id = ?");
-        mysqli_stmt_bind_param($upd_stmt, "isi", $admin_id, $admin_remarks, $request_id);
-        mysqli_stmt_execute($upd_stmt);
+            $upd_stmt = mysqli_prepare($conn, "UPDATE room_decommission_requests SET status = 'rejected', admin_id = ?, admin_remarks = ?, reviewed_at = NOW() WHERE id = ?");
+            mysqli_stmt_bind_param($upd_stmt, "isi", $admin_id, $admin_remarks, $request_id);
+            mysqli_stmt_execute($upd_stmt);
 
-        // Notify Warden of rejection
-        $w_title = "Petition Rejected: Room $room_num Closure Denied";
-        $w_msg = "Your petition to decommission Room $room_num was REJECTED by Supreme Admin. Room and residents remain active. Remarks: $admin_remarks";
-        mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES ($warden_id, $admin_id, 'warden', '" . mysqli_real_escape_string($conn, $w_title) . "', '" . mysqli_real_escape_string($conn, $w_msg) . "', 0)");
+            // Notify Warden of rejection
+            try {
+                $w_title = "Petition Rejected: Room $room_num Closure Denied";
+                $w_msg = "Your petition to decommission Room $room_num was REJECTED by Supreme Admin. Room and residents remain active. Remarks: $admin_remarks";
+                $chk_tr = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+                if($chk_tr && mysqli_num_rows($chk_tr) > 0) {
+                    mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES ($warden_id, $admin_id, 'warden', '" . mysqli_real_escape_string($conn, $w_title) . "', '" . mysqli_real_escape_string($conn, $w_msg) . "', 0)");
+                } else {
+                    mysqli_query($conn, "INSERT INTO notifications (user_id, title, message, is_read) VALUES ($warden_id, '" . mysqli_real_escape_string($conn, $w_title) . "', '" . mysqli_real_escape_string($conn, $w_msg) . "', 0)");
+                }
+            } catch (Throwable $ne) {
+                error_log("Failed to notify warden of rejection: " . $ne->getMessage());
+            }
 
-        $success = "Decommission petition for Room '$room_num' was rejected. The room and its residents remain fully protected.";
-    } else {
-        $error = "Petition not found or already processed.";
+            $success = "Decommission petition for Room '$room_num' was rejected. The room and its residents remain fully protected.";
+        } else {
+            $error = "Petition not found or already processed.";
+        }
+    } catch (Throwable $e) {
+        error_log("Decommission rejection exception: " . $e->getMessage());
+        $error = "Failed to reject petition: " . $e->getMessage();
     }
 }
 
@@ -270,75 +310,6 @@ include("../header.php");
                                             </div>
                                         </td>
                                     </tr>
-
-                                    <!-- APPROVAL MODAL -->
-                                    <div class="modal fade" id="approvePetModal_<?= $pet['id'] ?>" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content glass-card-light" style="border: 2px solid var(--accent-danger);">
-                                                <div class="modal-header border-0">
-                                                    <h5 class="modal-title fw-bold text-danger">Authorize Room <?= htmlspecialchars($pet['room_number']) ?> Closure</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <form method="POST">
-                                                    <div class="modal-body pt-0">
-                                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                                        <input type="hidden" name="action" value="approve_decommission">
-                                                        <input type="hidden" name="request_id" value="<?= $pet['id'] ?>">
-
-                                                        <div class="alert alert-warning py-2 px-3 small mb-3">
-                                                            <i class="bi bi-shield-fill-exclamation me-1"></i>
-                                                            Confirming this supreme order will delete Room <strong><?= htmlspecialchars($pet['room_number']) ?></strong>, unallocate <?= $aff_count ?> student(s), and automatically dispatch the <strong>5-Day SLA Refund & Re-allocation Guarantee</strong> to affected residents.
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label class="form-label small fw-semibold text-muted">Supreme Admin Executive Remarks</label>
-                                                            <textarea name="admin_remarks" class="form-control" rows="2" placeholder="e.g. Approved. Decommission authorized for safety renovation. Students prioritized."></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer border-0 pt-0">
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-danger btn-sm fw-bold">
-                                                            <i class="bi bi-check-circle-fill me-1"></i> Confirm & Execute Decommission
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- REJECTION MODAL -->
-                                    <div class="modal fade" id="rejectPetModal_<?= $pet['id'] ?>" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content glass-card-light">
-                                                <div class="modal-header border-0">
-                                                    <h5 class="modal-title fw-bold">Decline Decommission Petition</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <form method="POST">
-                                                    <div class="modal-body pt-0">
-                                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                                        <input type="hidden" name="action" value="reject_decommission">
-                                                        <input type="hidden" name="request_id" value="<?= $pet['id'] ?>">
-
-                                                        <p class="small text-muted mb-3">
-                                                            Room <strong><?= htmlspecialchars($pet['room_number']) ?></strong> and all its residents will remain protected. Please provide a reason to the Warden.
-                                                        </p>
-
-                                                        <div class="mb-3">
-                                                            <label class="form-label small fw-semibold text-muted">Administrative Rejection Feedback <span class="text-danger">*</span></label>
-                                                            <textarea name="admin_remarks" class="form-control" rows="2" placeholder="e.g. Disapproved. Alternative repair scheduled without tenant relocation." required></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer border-0 pt-0">
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm fw-bold">
-                                                            <i class="bi bi-x-circle me-1"></i> Decline Petition
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -439,4 +410,85 @@ include("../header.php");
         </div>
     </div>
 </div>
+
+<!-- SUPREME AUTHORIZATION & REJECTION MODALS (Rendered outside cards & tables to prevent backdrop freeze) -->
+<?php foreach($pending_petitions as $pet): ?>
+    <?php 
+    $aff = json_decode($pet['affected_students'] ?? '[]', true); 
+    $aff_count = is_array($aff) ? count($aff) : 0;
+    ?>
+    <!-- APPROVAL MODAL -->
+    <div class="modal fade" id="approvePetModal_<?= $pet['id'] ?>" tabindex="-1" aria-labelledby="approveLabel_<?= $pet['id'] ?>" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border border-danger border-opacity-50" style="background: var(--inner-card-bg, #1a2234); color: var(--inner-heading, #fff); border-radius: 16px;">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                    <h5 class="modal-title fw-bold text-danger" id="approveLabel_<?= $pet['id'] ?>">
+                        <i class="bi bi-shield-check me-2"></i> Authorize Room <?= htmlspecialchars($pet['room_number']) ?> Closure
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body pt-3">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                        <input type="hidden" name="action" value="approve_decommission">
+                        <input type="hidden" name="request_id" value="<?= $pet['id'] ?>">
+
+                        <div class="alert alert-warning py-2 px-3 small mb-3">
+                            <i class="bi bi-shield-fill-exclamation me-1"></i>
+                            Confirming this supreme order will delete Room <strong><?= htmlspecialchars($pet['room_number']) ?></strong>, unallocate <?= $aff_count ?> student(s), and automatically dispatch the <strong>5-Day SLA Refund & Re-allocation Guarantee</strong> to affected residents.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Supreme Admin Executive Remarks</label>
+                            <textarea name="admin_remarks" class="form-control" rows="2" placeholder="e.g. Approved. Decommission authorized for safety renovation. Students prioritized."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25 pt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger btn-sm fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> Confirm & Execute Decommission
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- REJECTION MODAL -->
+    <div class="modal fade" id="rejectPetModal_<?= $pet['id'] ?>" tabindex="-1" aria-labelledby="rejectLabel_<?= $pet['id'] ?>" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border border-secondary border-opacity-25" style="background: var(--inner-card-bg, #1a2234); color: var(--inner-heading, #fff); border-radius: 16px;">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                    <h5 class="modal-title fw-bold" id="rejectLabel_<?= $pet['id'] ?>">
+                        <i class="bi bi-x-circle me-2 text-danger"></i> Decline Decommission Petition
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body pt-3">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                        <input type="hidden" name="action" value="reject_decommission">
+                        <input type="hidden" name="request_id" value="<?= $pet['id'] ?>">
+
+                        <p class="small text-muted mb-3">
+                            Room <strong><?= htmlspecialchars($pet['room_number']) ?></strong> and all its residents will remain protected. Please provide a reason to the Warden.
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Administrative Rejection Feedback <span class="text-danger">*</span></label>
+                            <textarea name="admin_remarks" class="form-control" rows="2" placeholder="e.g. Disapproved. Alternative repair scheduled without tenant relocation." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25 pt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-outline-danger btn-sm fw-bold">
+                            <i class="bi bi-x-circle me-1"></i> Decline Petition
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
+
 <?php include("../footer.php"); ?>

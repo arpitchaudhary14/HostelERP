@@ -41,33 +41,48 @@ $pending_warden_leaves = mysqli_fetch_assoc( mysqli_query($conn, "SELECT COUNT(*
 
 // Governance: Decommission Petitions & Student 5-Day SLA Disputes
 $dash_msg = "";
+$dash_error = "";
 if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resolve_dispute'])) {
     validate_csrf();
     $dispute_id = intval($_POST['dispute_id'] ?? 0);
     $resolution = $_POST['resolution_type'] ?? 'refund_processed';
     $remarks = trim($_POST['admin_remarks'] ?? '');
 
-    $d_res = mysqli_query($conn, "SELECT * FROM room_decommission_disputes WHERE id = $dispute_id LIMIT 1");
-    if($d = mysqli_fetch_assoc($d_res)) {
-        $st_id = intval($d['student_id']);
-        $r_num = $d['room_number'];
-        $status = ($resolution === 'rejected') ? 'rejected' : 'resolved';
-        $stmt = mysqli_prepare($conn, "UPDATE room_decommission_disputes SET status = ?, resolution_type = ?, admin_remarks = ?, resolved_at = NOW() WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "sssi", $status, $resolution, $remarks, $dispute_id);
-        mysqli_stmt_execute($stmt);
+    try {
+        $d_res = mysqli_query($conn, "SELECT * FROM room_decommission_disputes WHERE id = $dispute_id LIMIT 1");
+        if($d = mysqli_fetch_assoc($d_res)) {
+            $st_id = intval($d['student_id']);
+            $r_num = $d['room_number'];
+            $status = ($resolution === 'rejected') ? 'rejected' : 'resolved';
+            $stmt = mysqli_prepare($conn, "UPDATE room_decommission_disputes SET status = ?, resolution_type = ?, admin_remarks = ?, resolved_at = NOW() WHERE id = ?");
+            mysqli_stmt_bind_param($stmt, "sssi", $status, $resolution, $remarks, $dispute_id);
+            mysqli_stmt_execute($stmt);
 
-        // Notify student
-        $n_title = "Supreme Admin Action: Room $r_num 5-Day SLA Claim";
-        $n_msg = "Your 5-Day SLA room decommission claim has been resolved by Supreme Admin.\nResolution: " . strtoupper(str_replace('_', ' ', $resolution)) . "\nRemarks: $remarks";
-        mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES ($st_id, $user_id, 'student', '" . mysqli_real_escape_string($conn, $n_title) . "', '" . mysqli_real_escape_string($conn, $n_msg) . "', 0)");
+            // Notify student (guarded against notification schema issues)
+            try {
+                $n_title = "Supreme Admin Action: Room $r_num 5-Day SLA Claim";
+                $n_msg = "Your 5-Day SLA room decommission claim has been resolved by Supreme Admin.\nResolution: " . strtoupper(str_replace('_', ' ', $resolution)) . "\nRemarks: $remarks";
+                $chk_tr = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+                if($chk_tr && mysqli_num_rows($chk_tr) > 0) {
+                    mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES ($st_id, $user_id, 'student', '" . mysqli_real_escape_string($conn, $n_title) . "', '" . mysqli_real_escape_string($conn, $n_msg) . "', 0)");
+                } else {
+                    mysqli_query($conn, "INSERT INTO notifications (user_id, title, message, is_read) VALUES ($st_id, '" . mysqli_real_escape_string($conn, $n_title) . "', '" . mysqli_real_escape_string($conn, $n_msg) . "', 0)");
+                }
+            } catch (Throwable $ne) {
+                error_log("Failed to notify student of dispute resolution: " . $ne->getMessage());
+            }
 
-        $dash_msg = "Dispute for Room '$r_num' resolved successfully!";
+            $dash_msg = "Dispute for Room '$r_num' resolved successfully!";
+        }
+    } catch (Throwable $e) {
+        error_log("Admin dispute resolution error: " . $e->getMessage());
+        $dash_error = "Dispute resolution error: " . $e->getMessage();
     }
 }
 
 $pending_petitions_count = 0;
 $pending_disputes_count = 0;
-$pending_disputes_res = null;
+$pending_disputes_list = [];
 try {
     $pet_q = mysqli_query($conn, "SELECT COUNT(*) as t FROM room_decommission_requests WHERE status='pending'");
     if($pet_q) $pending_petitions_count = mysqli_fetch_assoc($pet_q)['t'] ?? 0;
@@ -75,13 +90,18 @@ try {
     $disp_q = mysqli_query($conn, "SELECT COUNT(*) as t FROM room_decommission_disputes WHERE status='pending'");
     if($disp_q) $pending_disputes_count = mysqli_fetch_assoc($disp_q)['t'] ?? 0;
 
-    $pending_disputes_res = mysqli_query($conn, "
+    $disp_res = mysqli_query($conn, "
         SELECT rdd.*, CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as student_name, u.email, u.phone 
         FROM room_decommission_disputes rdd 
         JOIN users u ON rdd.student_id = u.id 
         WHERE rdd.status='pending' 
         ORDER BY rdd.created_at ASC
     ");
+    if($disp_res) {
+        while($drow = mysqli_fetch_assoc($disp_res)) {
+            $pending_disputes_list[] = $drow;
+        }
+    }
 } catch (Throwable $e) {
     error_log("Dashboard decommission queries error: " . $e->getMessage());
 }
@@ -96,6 +116,12 @@ include("../header.php"); ?>
 <?php if(!empty($dash_msg)): ?>
     <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
         <i class="bi bi-check-circle-fill me-2"></i> <?= htmlspecialchars($dash_msg) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+<?php if(!empty($dash_error)): ?>
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-exclamation-octagon-fill me-2"></i> <?= htmlspecialchars($dash_error) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
@@ -138,7 +164,7 @@ include("../header.php"); ?>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($dispute = mysqli_fetch_assoc($pending_disputes_res)): ?>
+                        <?php foreach($pending_disputes_list as $dispute): ?>
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars($dispute['student_name']) ?></strong><br>
@@ -164,52 +190,7 @@ include("../header.php"); ?>
                                     </button>
                                 </td>
                             </tr>
-
-                            <!-- RESOLUTION MODAL -->
-                            <div class="modal fade" id="resolveModal_<?= $dispute['id'] ?>" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content glass-card-light" style="border: 2px solid var(--accent-danger);">
-                                        <div class="modal-header border-0">
-                                            <h5 class="modal-title fw-bold text-danger">Resolve 5-Day SLA Claim #<?= $dispute['id'] ?></h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <form method="POST">
-                                            <div class="modal-body pt-0">
-                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                                <input type="hidden" name="dispute_id" value="<?= $dispute['id'] ?>">
-                                                <input type="hidden" name="resolve_dispute" value="1">
-
-                                                <div class="p-3 bg-secondary bg-opacity-10 rounded mb-3 small">
-                                                    <div><strong>Student:</strong> <?= htmlspecialchars($dispute['student_name']) ?> (<?= htmlspecialchars($dispute['email']) ?>)</div>
-                                                    <div><strong>Room Number:</strong> <?= htmlspecialchars($dispute['room_number']) ?></div>
-                                                    <div class="mt-1"><strong>Breach Notes:</strong> <?= htmlspecialchars($dispute['details']) ?></div>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label class="form-label small fw-bold text-muted">Redressal Action</label>
-                                                    <select name="resolution_type" class="form-select" required>
-                                                        <option value="refund_processed" selected>100% Proportional Fee Refund Issued</option>
-                                                        <option value="room_allotted">Emergency Equivalent Room Allotted</option>
-                                                        <option value="rejected">Dismiss Claim (Duplicate / Unsubstantiated)</option>
-                                                    </select>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label class="form-label small fw-bold text-muted">Official Resolution Remarks</label>
-                                                    <textarea name="admin_remarks" class="form-control" rows="2" placeholder="e.g. Refund of ₹6,500 credited to student account. Case closed." required></textarea>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer border-0 pt-0">
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-danger btn-sm fw-bold">
-                                                    <i class="bi bi-shield-check me-1"></i> Finalize Resolution
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
@@ -317,4 +298,54 @@ new Chart(document.getElementById('attendanceChart'), { type: 'doughnut', data: 
 new Chart(document.getElementById('wardenAttendanceChart'), { type: 'doughnut', data: { labels: ['Present','Absent','Leave'], datasets: [{ data: [ <?= $warden_attendance['present'] ?? 0 ?>, <?= $warden_attendance['absent'] ?? 0 ?>, <?= $warden_attendance['leave_days'] ?? 0 ?> ], backgroundColor: [ 'rgba(108, 99, 255, 0.8)', 'rgba(255, 171, 64, 0.8)', 'rgba(0, 230, 118, 0.8)' ], borderWidth: 0, cutout: '65%' }] }, options: { plugins: { legend: { position: 'bottom' } } }
 });
 </script>
+
+<!-- 5-DAY SLA CLAIM RESOLUTION MODALS (Rendered outside cards & tables to prevent backdrop freeze) -->
+<?php foreach($pending_disputes_list as $dispute): ?>
+    <div class="modal fade" id="resolveModal_<?= $dispute['id'] ?>" tabindex="-1" aria-labelledby="resolveLabel_<?= $dispute['id'] ?>" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border border-danger border-opacity-50" style="background: var(--inner-card-bg, #1a2234); color: var(--inner-heading, #fff); border-radius: 16px;">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                    <h5 class="modal-title fw-bold text-danger" id="resolveLabel_<?= $dispute['id'] ?>">
+                        <i class="bi bi-shield-check me-2"></i> Resolve 5-Day SLA Claim #<?= $dispute['id'] ?>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body pt-3">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                        <input type="hidden" name="dispute_id" value="<?= $dispute['id'] ?>">
+                        <input type="hidden" name="resolve_dispute" value="1">
+
+                        <div class="p-3 bg-secondary bg-opacity-10 rounded mb-3 small">
+                            <div><strong>Student:</strong> <?= htmlspecialchars($dispute['student_name']) ?> (<?= htmlspecialchars($dispute['email']) ?>)</div>
+                            <div><strong>Room Number:</strong> <?= htmlspecialchars($dispute['room_number']) ?></div>
+                            <div class="mt-1"><strong>Breach Notes:</strong> <?= htmlspecialchars($dispute['details']) ?></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Redressal Action</label>
+                            <select name="resolution_type" class="form-select border-secondary" required>
+                                <option value="refund_processed" selected>100% Proportional Fee Refund Issued</option>
+                                <option value="room_allotted">Emergency Equivalent Room Allotted</option>
+                                <option value="rejected">Dismiss Claim (Duplicate / Unsubstantiated)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Official Resolution Remarks</label>
+                            <textarea name="admin_remarks" class="form-control border-secondary" rows="2" placeholder="e.g. Refund of ₹6,500 credited to student account. Case closed." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25 pt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger btn-sm fw-bold">
+                            <i class="bi bi-shield-check me-1"></i> Finalize Resolution
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
+
 <?php include("../footer.php"); ?>

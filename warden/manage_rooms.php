@@ -58,67 +58,81 @@ if(isset($_POST['request_decommission']) || (isset($_POST['action']) && $_POST['
     } elseif(strlen($reason) < 20) {
         $error = "Please provide an extensive, verifiable reason (minimum 20 characters) for institutional audit.";
     } else {
-        // Fetch room info
-        $r_stmt = mysqli_prepare($conn, "SELECT id, room_number FROM rooms WHERE id = ?");
-        mysqli_stmt_bind_param($r_stmt, "i", $room_id);
-        mysqli_stmt_execute($r_stmt);
-        $room_res = mysqli_stmt_get_result($r_stmt);
-        $room_data = mysqli_fetch_assoc($room_res);
+        try {
+            // Fetch room info
+            $r_stmt = mysqli_prepare($conn, "SELECT id, room_number FROM rooms WHERE id = ?");
+            mysqli_stmt_bind_param($r_stmt, "i", $room_id);
+            mysqli_stmt_execute($r_stmt);
+            $room_res = mysqli_stmt_get_result($r_stmt);
+            $room_data = mysqli_fetch_assoc($room_res);
 
-        if(!$room_data) {
-            $error = "Room not found or already decommissioned.";
-        } else {
-            $room_num = $room_data['room_number'];
-
-            // Check if a pending petition already exists
-            $pending_chk = mysqli_query($conn, "SELECT id FROM room_decommission_requests WHERE room_id = $room_id AND status = 'pending'");
-            if(mysqli_num_rows($pending_chk) > 0) {
-                $error = "A decommission petition for Room '$room_num' is already pending Supreme Admin review.";
+            if(!$room_data) {
+                $error = "Room not found or already decommissioned.";
             } else {
-                // Fetch active residents
-                $st_stmt = mysqli_prepare($conn, "
-                    SELECT u.id, u.full_name, u.first_name, u.last_name, u.email
-                    FROM room_allocations ra
-                    JOIN users u ON ra.user_id = u.id
-                    WHERE ra.room_id = ? AND ra.status = 'active'
-                ");
-                mysqli_stmt_bind_param($st_stmt, "i", $room_id);
-                mysqli_stmt_execute($st_stmt);
-                $st_res = mysqli_stmt_get_result($st_stmt);
+                $room_num = $room_data['room_number'];
 
-                $affected = [];
-                while($st = mysqli_fetch_assoc($st_res)) {
-                    $name = trim($st['full_name'] ?? '');
-                    if(empty($name)) $name = trim(($st['first_name'] ?? '') . ' ' . ($st['last_name'] ?? ''));
-                    if(empty($name)) $name = $st['email'];
-                    $affected[] = [
-                        'id' => intval($st['id']),
-                        'name' => $name,
-                        'email' => $st['email']
-                    ];
-                }
-                $affected_json = json_encode($affected);
-
-                // Insert decommission request
-                $req_stmt = mysqli_prepare($conn, "
-                    INSERT INTO room_decommission_requests (room_id, room_number, warden_id, reason, affected_students, status)
-                    VALUES (?, ?, ?, ?, ?, 'pending')
-                ");
-                mysqli_stmt_bind_param($req_stmt, "isiss", $room_id, $room_num, $warden_id, $reason, $affected_json);
-
-                if(mysqli_stmt_execute($req_stmt)) {
-                    // Alert Admin
-                    $admin_title = "Action Required: Room $room_num Decommission Petition";
-                    $admin_msg = "Warden has submitted a formal petition to decommission Room $room_num. " . count($affected) . " resident(s) will be affected. Reason: $reason. Review on the Decommission Desk.";
-                    mysqli_query($conn, "INSERT INTO notifications (sender_id, target_role, title, message, is_read) VALUES ($warden_id, 'admin', '" . mysqli_real_escape_string($conn, $admin_title) . "', '" . mysqli_real_escape_string($conn, $admin_msg) . "', 0)");
-
-                    $_SESSION['action_type'] = 'warden_room_decommission_request';
-                    header("Location: ../thank_you.php");
-                    exit();
+                // Check if a pending petition already exists
+                $pending_chk = mysqli_query($conn, "SELECT id FROM room_decommission_requests WHERE room_id = $room_id AND status = 'pending'");
+                if(mysqli_num_rows($pending_chk) > 0) {
+                    $error = "A decommission petition for Room '$room_num' is already pending Supreme Admin review.";
                 } else {
-                    $error = "Failed to record petition: " . mysqli_error($conn);
+                    // Fetch active residents
+                    $st_stmt = mysqli_prepare($conn, "
+                        SELECT u.id, u.full_name, u.first_name, u.last_name, u.email
+                        FROM room_allocations ra
+                        JOIN users u ON ra.user_id = u.id
+                        WHERE ra.room_id = ? AND ra.status = 'active'
+                    ");
+                    mysqli_stmt_bind_param($st_stmt, "i", $room_id);
+                    mysqli_stmt_execute($st_stmt);
+                    $st_res = mysqli_stmt_get_result($st_stmt);
+
+                    $affected = [];
+                    while($st = mysqli_fetch_assoc($st_res)) {
+                        $name = trim($st['full_name'] ?? '');
+                        if(empty($name)) $name = trim(($st['first_name'] ?? '') . ' ' . ($st['last_name'] ?? ''));
+                        if(empty($name)) $name = $st['email'];
+                        $affected[] = [
+                            'id' => intval($st['id']),
+                            'name' => $name,
+                            'email' => $st['email']
+                        ];
+                    }
+                    $affected_json = json_encode($affected);
+
+                    // Insert decommission request
+                    $req_stmt = mysqli_prepare($conn, "
+                        INSERT INTO room_decommission_requests (room_id, room_number, warden_id, reason, affected_students, status)
+                        VALUES (?, ?, ?, ?, ?, 'pending')
+                    ");
+                    mysqli_stmt_bind_param($req_stmt, "isiss", $room_id, $room_num, $warden_id, $reason, $affected_json);
+
+                    if(mysqli_stmt_execute($req_stmt)) {
+                        // Alert Admin (guarded so notification error never breaks user flow)
+                        try {
+                            $admin_title = "Action Required: Room $room_num Decommission Petition";
+                            $admin_msg = "Warden has submitted a formal petition to decommission Room $room_num. " . count($affected) . " resident(s) will be affected. Reason: $reason. Review on the Decommission Desk.";
+                            
+                            $chk_tr = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'target_role'");
+                            if($chk_tr && mysqli_num_rows($chk_tr) > 0) {
+                                mysqli_query($conn, "INSERT INTO notifications (user_id, sender_id, target_role, title, message, is_read) VALUES (NULL, $warden_id, 'admin', '" . mysqli_real_escape_string($conn, $admin_title) . "', '" . mysqli_real_escape_string($conn, $admin_msg) . "', 0)");
+                            } else {
+                                mysqli_query($conn, "INSERT INTO notifications (user_id, title, message, is_read) VALUES (NULL, '" . mysqli_real_escape_string($conn, $admin_title) . "', '" . mysqli_real_escape_string($conn, $admin_msg) . "', 0)");
+                            }
+                        } catch (Throwable $ne) {
+                            error_log("Failed to dispatch admin notification: " . $ne->getMessage());
+                        }
+
+                        $_SESSION['action_type'] = 'warden_room_decommission_request';
+                        redirect_thank_you();
+                    } else {
+                        $error = "Failed to record petition: " . mysqli_error($conn);
+                    }
                 }
             }
+        } catch (Throwable $e) {
+            error_log("Warden decommission request error: " . $e->getMessage());
+            $error = "Could not submit decommission petition: " . $e->getMessage();
         }
     }
 }
