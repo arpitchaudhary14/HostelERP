@@ -1,33 +1,49 @@
+# ============================================================================
+# .gitignore for HostelERP
+# ============================================================================
+
 # Environment and Secrets
 .env
 .env.local
 .env.prod
+.env.*
+secrets.yaml
+
 # Dependency Directories
 /node_modules/
 /vendor/
 /PHPMailer/
+
 # Python & System Cache
 __pycache__/
 venv/
 env/
 .pytest_cache/
 *.pyc
+*.pyo
 *.log
-.DS_Store
-# User-Generated Content
+
+# User-Generated Content & Storage
 /uploads/
 /logs/
 /assets/profile/user_*
 /assets/profile/*.jpg
 /assets/profile/*.png
 /assets/profile/*.jpeg
-# IDE and System Files
+
+# IDE, OS and Temporary Scratch Files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+/scratch/
 
-# Electron App
+# Electron Desktop Build Artifacts
 hostelerp-desktop/dist/
 hostelerp-desktop/node_modules/
 hostelerp-desktop/build/

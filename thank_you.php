@@ -80,6 +80,27 @@ $thankYouConfig = [
         'return_link' => '/student/fees.php',
         'return_text' => 'View Receipt'
     ],
+    'warden_room_decommission_request' => [
+        'title' => 'Decommission Petition Forwarded',
+        'message' => 'Your room decommission petition has been formally recorded and forwarded to the Supreme Admin for institutional review. The room and its active residents remain fully protected until supreme approval.',
+        'icon' => 'shield-exclamation',
+        'return_link' => '/warden/manage_rooms.php',
+        'return_text' => 'Back to Manage Rooms'
+    ],
+    'admin_room_decommission_executed' => [
+        'title' => 'Decommission Authorized & Executed',
+        'message' => 'Supreme authorization verified. The room has been removed, active residents have been transitioned to the priority allocation pool, and formal notices with 5-Day SLA refund/relocation guarantees have been dispatched.',
+        'icon' => 'building-dash',
+        'return_link' => '/admin/manage_rooms.php',
+        'return_text' => 'Back to Room Configurations'
+    ],
+    'student_decommission_dispute' => [
+        'title' => 'Emergency Claim Dispatched to Admin',
+        'message' => 'Your 5-Day SLA room decommission claim has been logged under Highest Priority directly onto the Supreme Admin dashboard. The administration will process your equivalent room allotment or fee refund promptly.',
+        'icon' => 'patch-exclamation-fill',
+        'return_link' => '/student/my_room.php',
+        'return_text' => 'Back to Housing Desk'
+    ],
     'default' => [
         'title' => 'Action Successful!',
         'message' => 'Your action was completed successfully.',

@@ -157,7 +157,8 @@ Accounts may be suspended for policy violations.
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo '/'; ?>assets/js/app.js"></script>
+<?php $footer_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== false || strpos($_SERVER['SCRIPT_NAME'] ?? '', '/WebTechProject') !== false) ? '/WebTechProject/' : '/'; ?>
+<script src="<?= $footer_base_url ?>assets/js/app.js"></script>
 <script>
 function togglePrivacy(){
 var shortDiv = document.getElementById("privacyShort");

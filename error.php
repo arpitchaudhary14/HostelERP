@@ -1,5 +1,5 @@
 <?php
-$code = isset($_GET['code']) ? (int)$_GET['code'] : (isset($_SERVER['REDIRECT_STATUS']) ? (int)$_SERVER['REDIRECT_STATUS'] : 404);
+$code = (isset($code) && is_numeric($code)) ? (int)$code : (isset($_GET['code']) ? (int)$_GET['code'] : (isset($_SERVER['REDIRECT_STATUS']) ? (int)$_SERVER['REDIRECT_STATUS'] : 404));
 $errors = [
     400 => ['title' => 'Bad Request', 'desc' => "We couldn't process your request.", 'icon' => 'exclamation-triangle'],
     403 => ['title' => 'Access Denied', 'desc' => "You don't have permission to view this page.", 'icon' => 'slash-circle'],
@@ -10,14 +10,23 @@ $errors = [
 if (!array_key_exists($code, $errors)) {
     $code = 404;
 }
+http_response_code($code);
 $error = $errors[$code];
-$base_url = "";
-if (strpos($_SERVER['REQUEST_URI'], '/WebTechProject') !== false || file_exists(__DIR__ . '/assets')) {
-    $script_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-    $base_url = rtrim($script_dir, '/');
+if (!empty($custom_title)) {
+    $error['title'] = $custom_title;
+} elseif (!empty($_GET['title'])) {
+    $error['title'] = htmlspecialchars($_GET['title']);
 }
-if(empty($base_url)) {
-    $base_url = (strpos($_SERVER['REQUEST_URI'], '/WebTechProject/') === 0) ? '/WebTechProject' : '';
+if (!empty($custom_desc)) {
+    $error['desc'] = $custom_desc;
+} elseif (!empty($_GET['msg'])) {
+    $error['desc'] = htmlspecialchars($_GET['msg']);
+}
+$req_uri = $_SERVER['REQUEST_URI'] ?? '';
+$script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+$base_url = "";
+if (strpos($req_uri, '/WebTechProject') !== false || strpos($script_name, '/WebTechProject') !== false) {
+    $base_url = '/WebTechProject';
 }
 ?>
 <!DOCTYPE html>
@@ -115,10 +124,10 @@ if(empty($base_url)) {
                 "We're fixing this issue, kindly wait... or head back to the homepage."
             </div>
             <div class="d-flex flex-column gap-3 mt-4">
-                <a href="https://hostelerp.eastasia.cloudapp.azure.com/" class="btn-gradient w-100">
+                <a href="<?php echo htmlspecialchars($base_url); ?>/index.php" class="btn-gradient w-100">
                     <i class="bi bi-house-door"></i> Back to Homepage
                 </a>
-                <a href="https://hostelerp.eastasia.cloudapp.azure.com/login.php" class="btn-outline-custom w-100">
+                <a href="<?php echo htmlspecialchars($base_url); ?>/login.php" class="btn-outline-custom w-100">
                     <i class="bi bi-box-arrow-in-right"></i> Go to Login
                 </a>
             </div>

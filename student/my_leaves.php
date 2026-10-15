@@ -15,7 +15,8 @@ include("../header.php");
 <div class="container mt-4">
 <h4 class="mb-3" style="font-weight:700; color:#1a1a2e;">My Leave Requests</h4>
 <div class="glass-card-light">
-<table class="table table-bordered mb-0 table-sticky">
+<div class="table-responsive">
+<table class="table table-bordered mb-0 table-sticky" style="min-width: 600px;">
 <thead class="">
 <tr> <th>From</th> <th>To</th> <th>Reason</th> <th>Status</th> <th>Submitted</th>
 </tr>
@@ -38,6 +39,7 @@ echo "<span class='badge $cls'>$s</span>";
 <?php endwhile; ?>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 <?php include("../footer.php"); ?>

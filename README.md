@@ -22,10 +22,14 @@ A full-stack hostel management system with an AI assistant to automate student a
     -   Room Swapping desks where students request swaps subject to recipient consent and Warden mediation.
     -   Simplified unified room configurations (2-Seater / 3-Seater with AC, Air-Cooled, or Normal ventilation tiers).
 *   **System Knowledge Registry**: A secure portal for admins to dynamically add, update, and remove institutional protocols which instantly synchronize with the AI Assistant.
-*   **Desktop Application**: Full-fledged Native Desktop App built with Electron, offering seamless single-instance Deep Linking OAuth synchronization and CI/CD via GitHub Actions for Windows, macOS, and Linux.
+*   **Desktop Application (v2.0 Stable)**: Full-fledged Native Desktop App built with Electron, offering seamless single-instance Deep Linking OAuth synchronization, custom application menu (File, Navigate, View, Help), native exit confirmation dialogs, and automated CI/CD via GitHub Actions for Windows (x64, ARM64), macOS (Apple Silicon, Intel), and Linux (.deb, .AppImage).
+*   **Intelligent Client Detection**: Seamlessly detects whether a session originates from the Desktop Client or a standard web browser—automatically removing desktop download prompts inside the app and providing streamlined in-app exit controls.
+*   **Optimized Mobile Web Experience**: Fully responsive mobile interface with accordion dropdown navigation, mobile-first touch-scrolling data tables, and automatic device-aware download assistance.
+*   **Secure Download Dispatcher**: Built-in cryptographic download routing (`download.php`) with SHA-256 checksum verification, release package aliasing, and custom branded error handling (`error.php`) to safeguard the user journey.
 *   **SEO & UX Optimization**: Implemented PRG (Post/Redirect/Get) patterns for all forms to prevent duplicate submissions, auto-generated `.webp` images for fast loading, dynamic Meta Tags, and a robust Open Graph (OG) setup.
 *   **Rate Limiting**: IP-based and Email-based OTP request limits (5 per hour) to safeguard security flows.
-### Premium Upgrades & Hardening (May 2026)
+### Premium Upgrades & Hardening (May - October 2026)
+*   **HostelERP Desktop v2.0 Integration**: Native application menus (Home, Print/Receipts, Back/Forward, Fullscreen, Help) and clean exit confirmation dialogs.
 *   **Self-Aware Text-to-SQL RAG**: LEON AI utilizes live MySQL schema discovery to execute dynamic SELECT queries directly, enabling natural-language queries for plans, timings, costs, and availability.
 *   **Security Action Center**: Integrated actionable security links in OTP emails (Cancel OTP, Block IP, Audit Activity) for instant self-service account protection.
 *   **Login Auditing**: Comprehensive tracking of login attempts (IP, User-Agent, Type) with a user-facing activity log in the profile.
@@ -35,6 +39,7 @@ A full-stack hostel management system with an AI assistant to automate student a
 *   **Premium Email Templates**: Upgraded all system emails to high-end, branded HTML templates with clear security calls to action.
 *   **Defense in Depth**: Hardened the entire backend with 100% Prepared Statements, CSRF validation, and Session AFK auto-logout.
 ### Recent UI & UX Enhancements
+*   Mobile responsive optimization: eliminated card overlaps, fixed table horizontal touch scrolling, and unblocked mobile viewport scroll reveals.
 *   Upgraded Manage Rooms search queries into an integrated, glassmorphic bootstrap input group featuring pre-appended search indicators and a solid primary search trigger.
 *   Standardized portal navigation links with feature dropdown menus and role-based permissions across all user roles.
 ## Tech Stack

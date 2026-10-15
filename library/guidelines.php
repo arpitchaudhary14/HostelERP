@@ -1,6 +1,5 @@
 <?php
 session_start();
-require_once "../db.php";
 $pageTitle = 'Guidelines (Library) - HostelERP';
 $pageDesc = 'Access your Guidelines (Library) on HostelERP.';
 include("../header.php");

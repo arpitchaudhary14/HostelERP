@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . "/security_config.php";
 $role = $_SESSION['role'] ?? '';
-$_cu = strtok($_SERVER['REQUEST_URI'], '?');
+$_cu = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
 $_gy = strpos($_cu, '/gym/') !== false;
 $_lb = strpos($_cu, '/library/') !== false;
 $_ly = strpos($_cu, '/laundry/') !== false;
@@ -9,9 +9,23 @@ $_ad = strpos($_cu, '/admin/') !== false && !$_gy && !$_lb && !$_ly;
 $_wa = strpos($_cu, '/warden/') !== false && !$_gy && !$_lb && !$_ly;
 $_st = strpos($_cu, '/student/') !== false && !$_gy && !$_lb && !$_ly;
 $_ho = in_array($_cu, ['/','/index.php']);
-function _na(bool $c): string { return $c ? ' active' : ''; }
-function _ia(string $p): string { global $_cu; return ($_cu===$p) ? ' active' : ''; }
-function _di(string $icon, string $href, string $label, bool $bold=false): string { global $_cu; $act = ($_cu===$href) ? ' active' : ''; $fw = $bold ? ' fw-bold' : ''; $col = $bold ? ' text-primary' : ''; return "<li><a class=\"dropdown-item{$fw}{$col}{$act}\" href=\"{$href}\"><i class=\"bi bi-{$icon} item-icon\"></i>{$label}</a></li>\n";
+if (!function_exists('_na')) {
+    function _na(bool $c): string { return $c ? ' active' : ''; }
+}
+if (!function_exists('_ia')) {
+    function _ia(string $p): string { global $_cu; return ($_cu===$p) ? ' active' : ''; }
+}
+if (!function_exists('_di')) {
+    function _di(string $icon, string $href, string $label, bool $bold=false): string { global $_cu; $act = ($_cu===$href) ? ' active' : ''; $fw = $bold ? ' fw-bold' : ''; $col = $bold ? ' text-primary' : ''; return "<li><a class=\"dropdown-item{$fw}{$col}{$act}\" href=\"{$href}\"><i class=\"bi bi-{$icon} item-icon\"></i>{$label}</a></li>\n"; }
+}
+
+// Detect if running inside HostelERP Desktop App (Electron)
+$is_desktop_client = false;
+if (!empty($_SERVER['HTTP_USER_AGENT'])) {
+    $ua = $_SERVER['HTTP_USER_AGENT'];
+    if (stripos($ua, 'Electron') !== false || stripos($ua, 'hostelerp-desktop') !== false || stripos($ua, 'HostelERPDesktop') !== false) {
+        $is_desktop_client = true;
+    }
 }
 ?>
 <?php
@@ -28,13 +42,16 @@ $pageDesc = $pageDesc ?? 'HostelERP simplifies room allocation, attendance, comp
 <meta property="og:image" content="https://hostelerp.eastasia.cloudapp.azure.com/assets/images/banner.webp">
 <meta property="og:url" content="https://hostelerp.eastasia.cloudapp.azure.com<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? '') ?>">
 <meta property="og:type" content="website">
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> <link rel="stylesheet" href="/assets/css/style.css?v=<?= time() ?>"> <script>(function(){var t=localStorage.getItem('hostelerp-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+<?php
+$app_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== false || strpos($_SERVER['SCRIPT_NAME'] ?? '', '/WebTechProject') !== false) ? '/WebTechProject' : '';
+?>
+<link rel="icon" type="image/x-icon" href="<?= $app_base_url ?>/assets/favicon.ico"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> <link rel="stylesheet" href="<?= $app_base_url ?>/assets/css/style.css?v=<?= time() ?>"> <script>(function(){var t=localStorage.getItem('hostelerp-theme')||'light';document.documentElement.setAttribute('data-theme',t);var d=(window.hostelerpDesktop&&window.hostelerpDesktop.isDesktop)||/Electron|hostelerp-desktop|HostelERPDesktop/i.test(navigator.userAgent);if(d){document.documentElement.classList.add('is-desktop-app');window.isHostelERPDesktop=true;}})();</script>
 </head>
 <body class="d-flex flex-column min-vh-100 inner-bg">
 <nav class="navbar navbar-expand-lg navbar-dark navbar-glass">
 <div class="container-fluid">
 <a class="navbar-brand d-flex align-items-center" href="/index.php">
-<img src="/assets/images/logo.png" height="30" class="me-2" alt="HostelERP">
+<img src="<?= $app_base_url ?>/assets/images/logo.png" height="30" class="me-2" alt="HostelERP">
 <span>HostelERP</span>
 </a>
 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
@@ -261,11 +278,19 @@ $pageDesc = $pageDesc ?? 'HostelERP simplifies room allocation, attendance, comp
 </ul>
 </li>
 <?php } ?> 
-<li class="nav-item me-2 d-flex align-items-center">
+<?php if (!$is_desktop_client): ?>
+<li class="nav-item me-2 d-flex align-items-center nav-item-desktop-download">
 <button class="btn btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#downloadAppModal">
     <i class="bi bi-display me-1"></i> Get Desktop App
 </button>
 </li>
+<?php else: ?>
+<li class="nav-item me-2 d-flex align-items-center nav-item-desktop-exit">
+<button class="btn btn-outline-danger rounded-pill px-3 py-1 btn-sm fw-semibold" onclick="triggerDesktopExit()" title="Exit HostelERP Desktop">
+    <i class="bi bi-power me-1"></i> Exit App
+</button>
+</li>
+<?php endif; ?>
 <li class="nav-item me-2">
 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"> <span class="theme-icon">🌙</span> <span class="theme-label">Dark</span>
 </button>
@@ -282,4 +307,17 @@ $pageDesc = $pageDesc ?? 'HostelERP simplifies room allocation, attendance, comp
 </div>
 </div>
 </nav>
+<script>
+function triggerDesktopExit() {
+    if (window.hostelerpDesktop && typeof window.hostelerpDesktop.requestExit === 'function') {
+        window.hostelerpDesktop.requestExit();
+    } else {
+        if (confirm('Are you sure you want to exit HostelERP?')) {
+            window.close();
+        }
+    }
+}
+</script>
+<?php if (!$is_desktop_client): ?>
 <?php include __DIR__ . '/includes/download_modal.php'; ?>
+<?php endif; ?>

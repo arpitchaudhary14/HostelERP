@@ -28,12 +28,13 @@
 .env.local
 .env.*.local
 
-# Node.js (if frontend build exists)
+# Node.js and Electron
 node_modules
 npm-debug.log
 yarn-error.log
 package-lock.json
 yarn.lock
+hostelerp-desktop/
 
 # Python (if any local dev scripts)
 __pycache__
@@ -51,7 +52,7 @@ docker-compose.yml
 docker-compose.*.yml
 .dockerignore
 
-# Documentation and project files (keep out of image)
+# Documentation and project files
 README.md
 LICENSE
 *.md
@@ -65,6 +66,7 @@ logs
 .cache
 tmp
 temp
+scratch/
 
 # System and OS files
 Thumbs.db
@@ -78,11 +80,9 @@ Thumbs.db
 .env.local
 secrets.yaml
 
-# Development databases
+# Development databases & backups
 *.sqlite
 *.db
-
-# Backups
 *.backup
 *.bak
 *.sql.bak
@@ -99,17 +99,8 @@ coverage
 .coverage
 .nyc_output
 
-# Package managers (dev only)
-composer.lock
-vendor/tests
-
 # Large media files
 *.iso
 *.dmg
 *.tar.gz
 *.zip
-
-# Electron Desktop App
-hostelerp-desktop/dist
-hostelerp-desktop/node_modules
-hostelerp-desktop/build

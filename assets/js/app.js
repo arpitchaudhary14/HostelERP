@@ -3,6 +3,13 @@
     function initScrollReveal() {
         const reveals = document.querySelectorAll('.reveal');
         if (!reveals.length) return;
+
+        // On mobile devices or smaller screens, immediately reveal to guarantee no missing sections
+        if (window.innerWidth <= 991 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            reveals.forEach(el => el.classList.add('revealed'));
+            return;
+        }
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
@@ -12,7 +19,7 @@
                     }
                 });
             },
-            { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+            { threshold: 0.05, rootMargin: '0px 0px 60px 0px' }
         );
         reveals.forEach((el, i) => {
             el.style.setProperty('--reveal-index', i);
@@ -23,6 +30,18 @@
         document.body.classList.add('page-fade-in');
     }
     document.addEventListener('DOMContentLoaded', () => {
+        // Desktop App environment detection & UI cleanup
+        const isDesktopClient = (window.hostelerpDesktop && window.hostelerpDesktop.isDesktop) || 
+                                /Electron|hostelerp-desktop|HostelERPDesktop/i.test(navigator.userAgent);
+        if (isDesktopClient) {
+            document.documentElement.classList.add('is-desktop-app');
+            if (document.body) document.body.classList.add('is-desktop-app');
+            document.querySelectorAll('.nav-item-desktop-download, #downloadAppModal, [data-bs-target="#downloadAppModal"]').forEach(el => {
+                el.style.display = 'none';
+                el.remove();
+            });
+        }
+
         initPageTransition();
         initScrollReveal();
         ThemeToggle.init();

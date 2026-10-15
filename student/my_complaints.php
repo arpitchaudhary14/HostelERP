@@ -30,7 +30,8 @@ value="<?= htmlspecialchars($search) ?>">
 <?php if(mysqli_num_rows($result) == 0){ ?>
 <div class="alert alert-info">No complaints found.</div>
 <?php } else { ?>
-<table class="table table-bordered table-hover table-sticky">
+<div class="table-responsive">
+<table class="table table-bordered table-hover table-sticky" style="min-width: 550px;">
 <tr>
 <th>Subject</th>
 <th>Message</th>
@@ -54,6 +55,7 @@ value="<?= htmlspecialchars($search) ?>">
 </tr>
 <?php } ?>
 </table>
+</div>
 <?php } ?>
 </div>
 <?php include("../footer.php"); ?>

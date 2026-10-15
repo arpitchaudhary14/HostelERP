@@ -36,7 +36,8 @@ value="<?= htmlspecialchars($search) ?>">
 </div>
 </div>
 </form>
-<table class="table table-bordered table-sticky">
+<div class="table-responsive">
+<table class="table table-bordered table-sticky" style="min-width: 600px;">
 <tr>
 <th>Student</th>
 <th>Message</th>
@@ -57,5 +58,6 @@ value="<?= htmlspecialchars($search) ?>">
 </tr>
 <?php } ?>
 </table>
+</div>
 </div>
 <?php include("../footer.php"); ?>

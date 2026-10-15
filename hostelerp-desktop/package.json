@@ -1,13 +1,13 @@
 {
   "name": "hostelerp-desktop",
-  "version": "1.0.9",
+  "version": "2.0.0",
   "description": "HostelERP Desktop Application",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"
   },
-  "keywords": ["hostelerp", "electron", "desktop"],
+  "keywords": ["hostelerp", "desktop", "erp"],
   "author": "HostelERP Team <admin@hostelerp.com>",
   "repository": "https://github.com/arpitchaudhary14/HostelERP",
   "license": "MIT",
@@ -27,8 +27,8 @@
     ],
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64", "ia32", "arm64"] },
-        { "target": "portable", "arch": ["x64", "ia32"] },
+        { "target": "nsis", "arch": ["x64", "arm64"] },
+        { "target": "portable", "arch": ["x64"] },
         { "target": "zip", "arch": ["x64", "arm64"] }
       ],
       "icon": "assets/icon.ico"

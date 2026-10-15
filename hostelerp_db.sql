@@ -1,8 +1,11 @@
 CREATE DATABASE IF NOT EXISTS hostelerp_db;
 USE hostelerp_db;
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100),
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    dob DATE,
     email VARCHAR(100) UNIQUE,
     phone VARCHAR(15),
     gender VARCHAR(10),
@@ -11,18 +14,20 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE,
     password VARCHAR(255),
     profile_pic VARCHAR(255) DEFAULT 'default.png',
+    status ENUM('active','banned') DEFAULT 'active',
+    google_id VARCHAR(100) DEFAULT NULL,
+    microsoft_id VARCHAR(100) DEFAULT NULL,
+    two_factor_enabled TINYINT(1) DEFAULT 0,
+    is_verified TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-SELECT * FROM users;
-ALTER TABLE users
-ADD first_name VARCHAR(50),
-ADD last_name VARCHAR(50),
-ADD dob DATE;
 CREATE TABLE rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     room_number VARCHAR(20) NOT NULL,
     capacity INT NOT NULL,
     current_occupancy INT DEFAULT 0,
+    room_type VARCHAR(20) DEFAULT '2-Seater',
+    comfort_tier VARCHAR(20) DEFAULT 'AC',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE room_allocations (
@@ -31,6 +36,8 @@ CREATE TABLE room_allocations (
     room_id INT NOT NULL,
     allocated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     vacated_at TIMESTAMP NULL,
+    expires_at TIMESTAMP NULL,
+    is_verified TINYINT DEFAULT 1,
     status ENUM('active','vacated') DEFAULT 'active',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
@@ -115,12 +122,12 @@ CREATE TABLE otp_codes (
     ip_address VARCHAR(45) DEFAULT NULL,
     expiry_time DATETIME
 );
-ALTER TABLE users
-  ADD status ENUM('active','banned') DEFAULT 'active',
-  ADD google_id VARCHAR(100) DEFAULT NULL,
-  ADD microsoft_id VARCHAR(100) DEFAULT NULL,
-  ADD two_factor_enabled TINYINT(1) DEFAULT 0,
-  ADD is_verified TINYINT(1) DEFAULT 0;
+CREATE TABLE IF NOT EXISTS system_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hostel_name VARCHAR(100) DEFAULT 'HostelERP',
+    contact_email VARCHAR(100) DEFAULT 'support@hostelerp.com',
+    contact_phone VARCHAR(20) DEFAULT '+91 9876543210'
+);
 INSERT INTO system_settings (id, hostel_name, contact_email, contact_phone)
 SELECT 1, 'HostelERP', 'support@hostelerp.com', '+91 9876543210'
 WHERE NOT EXISTS (SELECT 1 FROM system_settings WHERE id = 1);
@@ -129,12 +136,6 @@ SET first_name = TRIM(SUBSTRING_INDEX(full_name, ' ', 1)),
     last_name  = TRIM(SUBSTRING(full_name, LOCATE(' ', full_name)))
 WHERE (first_name IS NULL OR first_name = '')
   AND full_name IS NOT NULL AND full_name != '';
-CREATE TABLE IF NOT EXISTS system_settings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    hostel_name VARCHAR(100) DEFAULT 'HostelERP',
-    contact_email VARCHAR(100) DEFAULT 'support@hostelerp.com',
-    contact_phone VARCHAR(20) DEFAULT '+91 9876543210'
-);
 CREATE TABLE IF NOT EXISTS otp_rate_limits (
     id INT AUTO_INCREMENT PRIMARY KEY,
     identifier VARCHAR(100) NOT NULL,
@@ -173,12 +174,15 @@ CREATE TABLE IF NOT EXISTS mess_menu (
 );
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NULL,
+    sender_id INT NULL,
+    target_role VARCHAR(20) DEFAULT 'global',
     title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
     is_read TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE TABLE IF NOT EXISTS documents (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -191,7 +195,6 @@ CREATE TABLE IF NOT EXISTS documents (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
 );
-SELECT * FROM users;
 CREATE TABLE IF NOT EXISTS warden_leave_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     warden_id INT NOT NULL,
@@ -252,6 +255,7 @@ CREATE TABLE IF NOT EXISTS gym_trainers (
     phone VARCHAR(15),
     specialization VARCHAR(255),
     schedule TEXT,
+    bio TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS gym_attendance (
@@ -358,7 +362,84 @@ INSERT INTO library_books (title, author, isbn, category_id, total_copies, avail
 ('Data Structures in C++', 'E. Balagurusamy', '978-9385965333', 1, 8, 8, 'Shelf A3'),
 ('Wings of Fire', 'A.P.J. Abdul Kalam', '978-8173711466', 5, 4, 4, 'Shelf D1')
 ON DUPLICATE KEY UPDATE title=title;
-ALTER TABLE library_books 
-ADD COLUMN description TEXT DEFAULT NULL AFTER location;
-DESC library_books;
-ALTER TABLE gym_trainers ADD COLUMN bio TEXT DEFAULT NULL AFTER schedule;
+CREATE TABLE IF NOT EXISTS laundry_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    clothes_limit INT NOT NULL,
+    duration_days INT NOT NULL DEFAULT 30,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS laundry_subscriptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    plan_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    remaining_clothes INT NOT NULL,
+    status ENUM('Active','Expired','Cancelled') DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (plan_id) REFERENCES laundry_plans(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS laundry_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    clothes_count INT NOT NULL,
+    service_type VARCHAR(50) NOT NULL,
+    notes TEXT,
+    status ENUM('Pending','Washing','Drying','Ironing','Ready','Collected','Delivered') DEFAULT 'Pending',
+    pickup_date DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS laundry_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(50),
+    transaction_id VARCHAR(100),
+    status ENUM('Completed','Pending','Failed') DEFAULT 'Completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+INSERT INTO laundry_plans (name, price, clothes_limit, duration_days, description) VALUES
+('Standard', 299.00, 30, 30, 'Essential wash & fold service for everyday hostel wear.'),
+('Pro Active', 499.00, 60, 30, 'Extended laundry capacity with steam ironing inclusion.'),
+('Elite All-Inclusive', 799.00, 100, 30, 'Priority express dispatch and delicate garments care.')
+ON DUPLICATE KEY UPDATE name=name;
+
+CREATE TABLE IF NOT EXISTS room_decommission_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    room_number VARCHAR(50) NOT NULL,
+    warden_id INT NOT NULL,
+    reason TEXT NOT NULL,
+    affected_students TEXT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    admin_id INT NULL,
+    admin_remarks TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP NULL,
+    FOREIGN KEY (warden_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS room_decommission_disputes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    room_number VARCHAR(50) NOT NULL,
+    claim_type ENUM('fee_refund', 'equivalent_room', 'both') DEFAULT 'fee_refund',
+    details TEXT NOT NULL,
+    status ENUM('pending', 'resolved', 'rejected') DEFAULT 'pending',
+    resolution_type ENUM('refund_processed', 'room_allotted', 'rejected') NULL,
+    admin_remarks TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP NULL,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
