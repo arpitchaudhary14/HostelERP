@@ -61,7 +61,7 @@ function createWindow() {
 
   // Security: Handle external links (open in user's default browser)
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.includes('google.com') || url.includes('microsoft.com') || !url.includes('azurecom')) {
+    if (url.includes('google.com') || url.includes('microsoft.com') || (!url.includes('azure.com') && !url.includes('localhost') && !url.includes('127.0.0.1'))) {
       shell.openExternal(url);
       return { action: 'deny' };
     }

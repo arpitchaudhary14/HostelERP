@@ -123,7 +123,7 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                     Installs HostelERP with automatic updates, desktop shortcut, and protocol handler. Compatible with Windows 10 &amp; 11 (64-bit). Runs natively on Intel/AMD and via high-speed Prism emulation on Windows ARM64.
                   </p>
                   <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-Setup-1.0.9.exe" class="btn btn-primary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Windows Setup (x64)', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-Setup-2.0.0.exe" class="btn btn-primary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Windows Setup (x64)', this.href)">
                       <i class="bi bi-download me-1"></i> Download Setup (.exe)
                       <span class="badge bg-white text-primary ms-1" style="font-size:0.75rem;">211 MB</span>
                     </a>
@@ -144,13 +144,13 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                   </div>
                   <p class="text-muted small mb-3">Run immediately from a USB flash drive or folder without administrator privileges.</p>
                   <div class="d-flex flex-wrap gap-2">
-                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9.exe" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable .exe', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0.exe" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable .exe', this.href)">
                       <i class="bi bi-play-circle me-1"></i> Standalone App (.exe) <span class="badge bg-primary-subtle text-primary ms-1">135 MB</span>
                     </a>
-                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9-win.zip" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable Zip x64', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0-win.zip" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable Zip x64', this.href)">
                       <i class="bi bi-file-earmark-zip me-1"></i> Portable Zip (x64) <span class="badge bg-secondary-subtle text-secondary ms-1">99 MB</span>
                     </a>
-                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9-arm64-win.zip" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable Zip ARM64', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0-arm64-win.zip" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-2 fw-semibold download-trigger" onclick="handleDownload(event, 'Portable Zip ARM64', this.href)">
                       <i class="bi bi-cpu me-1"></i> Native ARM64 (.zip) <span class="badge bg-dark-subtle text-dark ms-1">99 MB</span>
                     </a>
                   </div>
@@ -184,7 +184,7 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                           </div>
                           <p class="text-muted small mb-2">M1, M2, M3, M4 Macs (2020 to Present: MacBook Air/Pro, iMac, Mac mini, Studio).</p>
                         </div>
-                        <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9-arm64.dmg" class="btn btn-dark w-100 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'macOS Apple Silicon .dmg', this.href)">
+                        <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0-arm64.dmg" class="btn btn-dark w-100 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'macOS Apple Silicon .dmg', this.href)">
                           <i class="bi bi-download me-1"></i> Download .dmg <span class="badge bg-light text-dark ms-1">90 MB</span>
                         </a>
                       </div>
@@ -200,7 +200,7 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                           </div>
                           <p class="text-muted small mb-2">For older Intel-based Macs manufactured before late 2020.</p>
                         </div>
-                        <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9.dmg" class="btn btn-outline-dark w-100 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'macOS Intel .dmg', this.href)">
+                        <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0.dmg" class="btn btn-outline-dark w-100 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'macOS Intel .dmg', this.href)">
                           <i class="bi bi-download me-1"></i> Download .dmg <span class="badge bg-secondary text-white ms-1">95 MB</span>
                         </a>
                       </div>
@@ -233,10 +233,10 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                     For Ubuntu, Debian, Linux Mint, Pop!_OS, and Kali. Install with <code>sudo apt install ./hostelerp-desktop_*.deb</code>.
                   </p>
                   <div class="d-flex flex-wrap gap-2">
-                    <a href="<?= $modal_base_url ?>/download.php?file=hostelerp-desktop_1.0.9_amd64.deb" class="btn btn-warning text-dark fw-bold px-3 rounded-pill download-trigger" onclick="handleDownload(event, 'Linux .deb x64', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=hostelerp-desktop_2.0.0_amd64.deb" class="btn btn-warning text-dark fw-bold px-3 rounded-pill download-trigger" onclick="handleDownload(event, 'Linux .deb x64', this.href)">
                       <i class="bi bi-download me-1"></i> x64 (AMD64) .deb <span class="badge bg-dark text-white ms-1">69 MB</span>
                     </a>
-                    <a href="<?= $modal_base_url ?>/download.php?file=hostelerp-desktop_1.0.9_arm64.deb" class="btn btn-outline-dark px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Linux .deb arm64', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=hostelerp-desktop_2.0.0_arm64.deb" class="btn btn-outline-dark px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Linux .deb arm64', this.href)">
                       <i class="bi bi-download me-1"></i> ARM64 .deb <span class="badge bg-secondary ms-1">65 MB</span>
                     </a>
                   </div>
@@ -254,10 +254,10 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
                     Runs directly on any distribution (Fedora, Arch Linux, openSUSE, Debian, Ubuntu). Make executable with <code>chmod +x</code> and run.
                   </p>
                   <div class="d-flex flex-wrap gap-2">
-                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9.AppImage" class="btn btn-outline-secondary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Linux AppImage x64', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0.AppImage" class="btn btn-outline-secondary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Linux AppImage x64', this.href)">
                       <i class="bi bi-play-circle me-1"></i> x64 (AMD64) .AppImage <span class="badge bg-secondary ms-1">99 MB</span>
                     </a>
-                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-1.0.9-arm64.AppImage" class="btn btn-outline-secondary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Linux AppImage arm64', this.href)">
+                    <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-2.0.0-arm64.AppImage" class="btn btn-outline-secondary px-3 rounded-pill fw-semibold download-trigger" onclick="handleDownload(event, 'Linux AppImage arm64', this.href)">
                       <i class="bi bi-play-circle me-1"></i> ARM64 .AppImage <span class="badge bg-secondary ms-1">99 MB</span>
                     </a>
                   </div>
@@ -277,7 +277,7 @@ $modal_base_url = (strpos($_SERVER['REQUEST_URI'] ?? '', '/WebTechProject') !== 
           <i class="bi bi-shield-check text-success me-1"></i> Safe &amp; verified SHA-256 releases
         </div>
         <div class="d-flex gap-2">
-          <a href="https://github.com/arpitchaudhary14/HostelERP/releases/tag/v1.0.9" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+          <a href="https://github.com/arpitchaudhary14/HostelERP/releases/tag/v2.0.0" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
             <i class="bi bi-github me-1"></i> v2.0 Release Notes &amp; Hashes
           </a>
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
@@ -335,7 +335,7 @@ function selectOS(osName) {
 function showDiscontinuedNotice(archName) {
   const alertBox = document.getElementById('modal-alert-box');
   const alertText = document.getElementById('modal-alert-text');
-  alertText.innerHTML = '<strong>' + archName + ' Notice:</strong> 32-bit architecture is no longer supported by HostelERP v2.0. For 32-bit devices, please continue using the full HostelERP web application directly in your browser. <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-Setup-1.0.9-ia32.exe" target="_blank" class="alert-link text-decoration-underline ms-1">View 404 response</a>';
+  alertText.innerHTML = '<strong>' + archName + ' Notice:</strong> 32-bit architecture is no longer supported by HostelERP v2.0. For 32-bit devices, please continue using the full HostelERP web application directly in your browser. <a href="<?= $modal_base_url ?>/download.php?file=HostelERP-Setup-2.0.0-ia32.exe" target="_blank" class="alert-link text-decoration-underline ms-1">View 404 response</a>';
   alertBox.style.display = 'block';
   alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
