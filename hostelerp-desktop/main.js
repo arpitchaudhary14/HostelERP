@@ -226,7 +226,7 @@ function setupApplicationMenu() {
               type: 'info',
               title: 'About HostelERP',
               message: 'HostelERP Desktop v2.0 Stable',
-              detail: 'Modern Hostel Management ERP System.\nDesigned & Built with modern web technologies and Electron.',
+              detail: 'Modern Hostel Management ERP System.\nYou can perform multiple operations.',
               icon: path.join(__dirname, 'assets/icon.png')
             });
           }
