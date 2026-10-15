@@ -55,7 +55,7 @@ function createWindow() {
 
   // Identify as HostelERP Desktop client in HTTP User-Agent
   const defaultUA = mainWindow.webContents.getUserAgent();
-  mainWindow.webContents.setUserAgent(`${defaultUA} HostelERPDesktop/2.0 hostelerp-desktop/2.0`);
+  mainWindow.webContents.setUserAgent(`${defaultUA} HostelERPDesktop/2.0.1 hostelerp-desktop/2.0.1`);
 
   mainWindow.loadURL(LIVE_SITE_URL);
 
@@ -225,7 +225,7 @@ function setupApplicationMenu() {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About HostelERP',
-              message: 'HostelERP Desktop v2.0 Stable',
+              message: 'HostelERP Desktop v2.0.1 Stable',
               detail: 'Modern Hostel Management ERP System.\nYou can perform multiple operations.',
               icon: path.join(__dirname, 'assets/icon.png')
             });
