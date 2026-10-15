@@ -264,72 +264,6 @@ include("../header.php");
                                 <?php endif; ?>
                             </td>
                         </tr>
-
-                        <!-- DECOMMISSION WARNING MODAL -->
-                        <div class="modal fade" id="decomModal_<?= $r['id'] ?>" tabindex="-1" aria-labelledby="decomModalLabel_<?= $r['id'] ?>" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content glass-card-light" style="border: 2px solid rgba(239, 68, 68, 0.4);">
-                                    <div class="modal-header border-0 pb-0">
-                                        <h5 class="modal-title text-danger fw-bold" id="decomModalLabel_<?= $r['id'] ?>">
-                                            <i class="bi bi-shield-exclamation me-2"></i> Supreme Decommission Petition: Room <?= htmlspecialchars($r['room_number']) ?>
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <form method="POST">
-                                        <div class="modal-body pt-3">
-                                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                            <input type="hidden" name="room_id" value="<?= $r['id'] ?>">
-                                            <input type="hidden" name="action" value="request_decommission">
-
-                                            <!-- SEVERE AUDIT WARNING ALERT -->
-                                            <div class="alert alert-danger border-start border-4 border-danger py-3 px-3 mb-3">
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <i class="bi bi-exclamation-triangle-fill fs-4 me-2 text-danger"></i>
-                                                    <strong class="text-danger fs-6">INSTITUTIONAL AUDIT & LEGAL NOTICE</strong>
-                                                </div>
-                                                <p class="mb-0 small" style="line-height: 1.5;">
-                                                    Decommissioning a room immediately impacts student residency rights. <strong>If this petition is determined to be unnecessary, frivolous, retaliatory, or lacking verifiable structural/hazard grounds upon institutional audit, strict disciplinary proceedings and termination of Warden service will be initiated under hostel bylaws.</strong>
-                                                </p>
-                                            </div>
-
-                                            <div class="p-3 bg-secondary bg-opacity-10 rounded mb-3">
-                                                <div class="row small g-2">
-                                                    <div class="col-sm-6"><strong>Room:</strong> Room <?= htmlspecialchars($r['room_number']) ?> (<?= htmlspecialchars($r['room_type'] ?? '2-Seater') ?> - <?= htmlspecialchars($r['comfort_tier'] ?? 'Normal') ?>)</div>
-                                                    <div class="col-sm-6"><strong>Current Occupancy:</strong> <?= count($res_names) ?> / <?= intval($r['capacity']) ?> students</div>
-                                                    <div class="col-12 mt-2">
-                                                        <strong>Active Residents Impacted:</strong>
-                                                        <?php if(empty($res_names)): ?>
-                                                            <span class="text-muted">None (Room is currently unoccupied)</span>
-                                                        <?php else: ?>
-                                                            <span class="text-danger fw-semibold"><?= htmlspecialchars(implode(', ', $res_names)) ?></span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label text-muted small fw-bold">Verifiable Ground / Operational Justification <span class="text-danger">*</span></label>
-                                                <textarea name="reason" class="form-control border-secondary" rows="3" placeholder="Provide complete technical explanation (e.g., Major ceiling leakage, electrical fault, planned renovation)..." required minlength="20"></textarea>
-                                                <div class="form-text small text-muted">This explanation will be permanently recorded in the institutional audit registry and reviewed by Supreme Admin.</div>
-                                            </div>
-
-                                            <div class="form-check p-3 bg-danger bg-opacity-10 rounded border border-danger border-opacity-25">
-                                                <input class="form-check-input ms-0 me-2" type="checkbox" name="certify_warning" id="certify_<?= $r['id'] ?>" required>
-                                                <label class="form-check-label small fw-semibold text-danger-emphasis" for="certify_<?= $r['id'] ?>">
-                                                    I solemnly affirm that this petition is based solely on genuine operational grounds and understand that Supreme Admin authorization is mandatory before any physical room closure.
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer border-0 pt-0">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" name="request_decommission" class="btn btn-danger fw-bold btn-sm">
-                                                <i class="bi bi-send-check me-1"></i> Submit to Admin for Supreme Approval
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
                     <?php endforeach; ?>
                     <?php if(empty($rooms)): ?>
                         <tr><td colspan="7" class="text-center text-muted">No rooms added yet.</td></tr>
@@ -338,6 +272,91 @@ include("../header.php");
             </table>
         </div>
     </div>
+
+    <!-- DECOMMISSION WARNING MODALS (Rendered cleanly outside table & cards to prevent backdrop z-index trapping) -->
+    <?php foreach($rooms as $r): 
+        $st_stmt = mysqli_prepare($conn, "
+            SELECT u.full_name, u.first_name, u.last_name, u.email
+            FROM room_allocations ra
+            JOIN users u ON ra.user_id = u.id
+            WHERE ra.room_id = ? AND ra.status = 'active'
+        ");
+        mysqli_stmt_bind_param($st_stmt, "i", $r['id']);
+        mysqli_stmt_execute($st_stmt);
+        $st_res = mysqli_stmt_get_result($st_stmt);
+        $res_names = [];
+        while($st = mysqli_fetch_assoc($st_res)) {
+            $name = trim($st['full_name'] ?? '');
+            if(empty($name)) $name = trim(($st['first_name'] ?? '') . ' ' . ($st['last_name'] ?? ''));
+            if(empty($name)) $name = $st['email'];
+            $res_names[] = $name;
+        }
+    ?>
+        <div class="modal fade" id="decomModal_<?= $r['id'] ?>" tabindex="-1" aria-labelledby="decomModalLabel_<?= $r['id'] ?>" aria-hidden="true" style="z-index: 1060;">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content shadow-lg border border-danger border-opacity-50" style="background: var(--inner-card-bg, #1a2234); color: var(--inner-heading, #fff); border-radius: 16px;">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                        <h5 class="modal-title text-danger fw-bold" id="decomModalLabel_<?= $r['id'] ?>">
+                            <i class="bi bi-shield-exclamation me-2"></i> Supreme Decommission Petition: Room <?= htmlspecialchars($r['room_number']) ?>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST">
+                        <div class="modal-body pt-3">
+                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                            <input type="hidden" name="room_id" value="<?= $r['id'] ?>">
+                            <input type="hidden" name="action" value="request_decommission">
+
+                            <!-- SEVERE AUDIT WARNING ALERT -->
+                            <div class="alert alert-danger border-start border-4 border-danger py-3 px-3 mb-3">
+                                <div class="d-flex align-items-center mb-1">
+                                    <i class="bi bi-exclamation-triangle-fill fs-4 me-2 text-danger"></i>
+                                    <strong class="text-danger fs-6">INSTITUTIONAL AUDIT & LEGAL NOTICE</strong>
+                                </div>
+                                <p class="mb-0 small" style="line-height: 1.5;">
+                                    Decommissioning a room immediately impacts student residency rights. <strong>If this petition is determined to be unnecessary, frivolous, retaliatory, or lacking verifiable structural/hazard grounds upon institutional audit, strict disciplinary proceedings and termination of Warden service will be initiated under hostel bylaws.</strong>
+                                </p>
+                            </div>
+
+                            <div class="p-3 bg-secondary bg-opacity-10 rounded mb-3">
+                                <div class="row small g-2">
+                                    <div class="col-sm-6"><strong>Room:</strong> Room <?= htmlspecialchars($r['room_number']) ?> (<?= htmlspecialchars($r['room_type'] ?? '2-Seater') ?> - <?= htmlspecialchars($r['comfort_tier'] ?? 'Normal') ?>)</div>
+                                    <div class="col-sm-6"><strong>Current Occupancy:</strong> <?= count($res_names) ?> / <?= intval($r['capacity']) ?> students</div>
+                                    <div class="col-12 mt-2">
+                                        <strong>Active Residents Impacted:</strong>
+                                        <?php if(empty($res_names)): ?>
+                                            <span class="text-muted">None (Room is currently unoccupied)</span>
+                                        <?php else: ?>
+                                            <span class="text-danger fw-semibold"><?= htmlspecialchars(implode(', ', $res_names)) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Verifiable Ground / Operational Justification <span class="text-danger">*</span></label>
+                                <textarea name="reason" class="form-control border-secondary" rows="3" placeholder="Provide complete technical explanation (e.g., Major ceiling leakage, electrical fault, planned renovation)..." required minlength="20"></textarea>
+                                <div class="form-text small text-muted">This explanation will be permanently recorded in the institutional audit registry and reviewed by Supreme Admin.</div>
+                            </div>
+
+                            <div class="form-check p-3 bg-danger bg-opacity-10 rounded border border-danger border-opacity-25">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" name="certify_warning" id="certify_<?= $r['id'] ?>" required>
+                                <label class="form-check-label small fw-semibold text-danger-emphasis" for="certify_<?= $r['id'] ?>">
+                                    I solemnly affirm that this petition is based solely on genuine operational grounds and understand that Supreme Admin authorization is mandatory before any physical room closure.
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top border-secondary border-opacity-25 pt-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" name="request_decommission" class="btn btn-danger fw-bold btn-sm">
+                                <i class="bi bi-send-check me-1"></i> Submit to Admin for Supreme Approval
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
 
     <!-- WARDEN'S PETITIONS HISTORY -->
     <?php if(!empty($my_petitions)): ?>
